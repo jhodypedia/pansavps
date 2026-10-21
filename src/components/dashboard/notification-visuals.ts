@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   Bell,
+  CalendarClock,
   CreditCard,
   KeyRound,
   LifeBuoy,
@@ -28,6 +29,7 @@ export const notificationToneClass: Record<NotificationTone, string> = {
 
 export function notificationTypeLabel(type: string): string {
   if (type.includes("failed")) return "Kegagalan";
+  if (type.includes("weekly") && type.includes("expiry")) return "VPS mingguan";
   if (type.includes("terminated")) return "Layanan berhenti";
   if (type.includes("suspended")) return "Penangguhan";
   if (type.includes("renewed")) return "Perpanjangan";
@@ -48,6 +50,9 @@ export function notificationVisual(type: string): {
   tone: NotificationTone;
 } {
   if (type.includes("failed")) return { icon: ServerCrash, tone: "red" };
+  if (type.includes("weekly") && type.includes("expiry")) {
+    return { icon: CalendarClock, tone: "amber" };
+  }
   if (type.includes("terminated")) return { icon: PowerOff, tone: "red" };
   if (type.includes("suspended")) return { icon: PauseCircle, tone: "amber" };
   if (type.includes("renewed")) return { icon: RefreshCw, tone: "green" };

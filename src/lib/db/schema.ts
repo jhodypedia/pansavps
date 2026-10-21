@@ -13,7 +13,7 @@ import {
    ────────────────────────────────────────────────────────────── */
 export type Role = "admin" | "user";
 export type UserStatus = "active" | "suspended";
-export type BillingCycle = "monthly" | "quarterly" | "yearly";
+export type BillingCycle = "weekly" | "monthly" | "quarterly" | "yearly";
 export type OrderStatus =
   | "pending_payment"
   | "paid"
@@ -145,6 +145,7 @@ export const plans = sqliteTable(
     transferTb: integer("transfer_tb").notNull().default(1),
     costMonthlyUsd: real("cost_monthly_usd").notNull().default(0),
     priceMonthly: integer("price_monthly").notNull().default(0),
+    priceWeekly: integer("price_weekly"),
     pricingMode: text("pricing_mode", { enum: ["auto", "custom"] })
       .notNull()
       .default("auto"),
@@ -321,6 +322,7 @@ export const services = sqliteTable(
     ipv6: text("ipv6"),
     rootPasswordEncrypted: text("root_password_encrypted"),
     sshKeyId: text("ssh_key_id"),
+    billingCycle: text("billing_cycle").$type<BillingCycle>().notNull().default("monthly"),
     status: text("status").$type<ServiceStatus>().notNull().default("provisioning"),
     periodStart: ts("period_start"),
     periodEnd: ts("period_end"),

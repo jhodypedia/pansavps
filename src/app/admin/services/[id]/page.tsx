@@ -16,6 +16,7 @@ import { db } from "@/lib/db";
 import { auditLogs, invoices, osImages, plans, regions, services, users } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth";
 import {
+  cycleLabel,
   formatDate,
   formatDateTime,
   formatIDR,
@@ -125,7 +126,11 @@ export default async function AdminServiceDetailPage({
               <InfoRow label="IPv6" value={<span className="font-mono text-xs">{service.ipv6 ?? "—"}</span>} />
               <InfoRow label="Dibuat" value={formatDateTime(service.createdAt)} />
               <InfoRow label="Masa aktif" value={`${formatDate(service.periodStart)} — ${formatDate(service.periodEnd)}`} />
-              <InfoRow label="Auto renew" value={service.autoRenew ? "Aktif" : "Nonaktif"} />
+              <InfoRow label="Siklus" value={cycleLabel[service.billingCycle]} />
+              <InfoRow
+                label="Auto renew"
+                value={service.billingCycle === "weekly" ? "Dihapus otomatis" : service.autoRenew ? "Aktif" : "Nonaktif"}
+              />
             </dl>
           </SectionCard>
 

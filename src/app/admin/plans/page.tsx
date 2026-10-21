@@ -5,7 +5,7 @@ import { planPriceHistory, plans, regions, services, users } from "@/lib/db/sche
 import { requireAdmin } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { formatDateTime, formatIDR } from "@/lib/format";
-import { marginInfo } from "@/lib/pricing";
+import { cycleUnitPrice, marginInfo } from "@/lib/pricing";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -17,6 +17,7 @@ import { loadDoCatalog } from "@/server/services/do-catalog";
 export const metadata = { title: "Paket VPS" };
 
 const fieldLabels: Record<string, string> = {
+  priceWeekly: "Harga mingguan",
   priceMonthly: "Harga bulanan",
   priceQuarterly: "Harga 3 bulan",
   priceYearly: "Harga tahunan",
@@ -126,6 +127,7 @@ export default async function AdminPlansPage() {
                   <th className="px-4 py-2.5">Paket</th>
                   <th className="px-4 py-2.5">Spesifikasi</th>
                   <th className="px-4 py-2.5">Modal</th>
+                  <th className="px-4 py-2.5">Harga / minggu</th>
                   <th className="px-4 py-2.5">Harga / bulan</th>
                   <th className="px-4 py-2.5">Margin</th>
                   <th className="px-4 py-2.5">Region</th>
@@ -157,6 +159,12 @@ export default async function AdminPlansPage() {
                       <td className="px-4 py-3 whitespace-nowrap text-[#5B6B60]">
                         <p>{formatIDR(margin.modal)}</p>
                         <p className="text-xs text-[#8A9A90]">${plan.costMonthlyUsd.toFixed(2)}</p>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <p className="font-semibold text-[#101613]">{formatIDR(cycleUnitPrice(plan, "weekly"))}</p>
+                        <p className="text-xs text-[#8A9A90]">
+                          {plan.priceWeekly ? "Custom" : "Otomatis"}
+                        </p>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <p className="font-semibold text-[#101613]">{formatIDR(plan.priceMonthly)}</p>

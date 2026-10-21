@@ -118,6 +118,7 @@ export const planSchema = z.object({
   transferTb: z.coerce.number().int().min(0).max(100),
   costMonthlyUsd: z.coerce.number().min(0).max(100000),
   priceMonthly: z.coerce.number().int().min(0).max(1_000_000_000),
+  priceWeekly: z.coerce.number().int().min(0).max(1_000_000_000).nullable().optional(),
   priceQuarterly: z.coerce.number().int().min(0).max(1_000_000_000).nullable().optional(),
   priceYearly: z.coerce.number().int().min(0).max(1_000_000_000).nullable().optional(),
   promoPriceMonthly: z.coerce.number().int().min(0).max(1_000_000_000).nullable().optional(),
@@ -160,7 +161,7 @@ export const orderSchema = z.object({
       /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/,
       "Hostname hanya huruf kecil, angka, dan strip (tanpa titik).",
     ),
-  billingCycle: z.enum(["monthly", "quarterly", "yearly"]),
+  billingCycle: z.enum(["weekly", "monthly", "quarterly", "yearly"]),
   promoCode: z.string().trim().max(30).optional().or(z.literal("")),
   paymentMethod: z.enum(["balance", "manual", "tripay"]),
   paymentChannel: z.string().trim().max(30).optional(),
@@ -209,7 +210,7 @@ export const topupSchema = z.object({
 
 export const renewSchema = z.object({
   serviceId: z.string().min(1),
-  cycle: z.enum(["monthly", "quarterly", "yearly"]),
+  cycle: z.enum(["weekly", "monthly", "quarterly", "yearly"]),
   paymentMethod: z.enum(["balance", "manual", "tripay"]),
   paymentChannel: z.string().trim().max(30).optional(),
 });

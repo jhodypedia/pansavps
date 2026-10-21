@@ -207,9 +207,9 @@ export default async function InvoiceDetailPage({
     invoice.type === "topup"
       ? "Saldo akan ditambahkan otomatis setelah pembayaran terkonfirmasi."
       : service
-        ? `${service.hostname} · ${cycleText}${snapshot ? ` · ${snapshot.months} bulan` : ""}`
+        ? `${service.hostname} · ${cycleText}`
         : snapshot
-          ? `${snapshot.planName} · ${cycleText} · ${snapshot.months} bulan`
+          ? `${snapshot.planName} · ${cycleText}`
           : "Layanan cloud VPS dengan aktivasi otomatis.";
   const paymentStep: "done" | "active" | "failed" =
     paid ? "done" : invoice.status === "expired" ? "failed" : "active";

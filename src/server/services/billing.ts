@@ -1,6 +1,5 @@
 import "server-only";
 
-import { addMonths } from "date-fns";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -12,13 +11,14 @@ import {
   plans,
   services,
   users,
+  type BillingCycle,
   type Invoice,
   type Order,
   type Service,
 } from "@/lib/db/schema";
 import { getSettings, isMockMode } from "@/lib/settings";
-import { CYCLE_MONTHS } from "@/lib/pricing";
-import { cycleUnitPrice, upgradeProration } from "@/lib/pricing";
+import { addBillingCycle, cycleUnitPrice, upgradeProration } from "@/lib/pricing";
+import { formatDate } from "@/lib/format";
 import { formatIDR, invoiceNumber as makeInvoiceNumber, uid } from "@/lib/format";
 import { invoiceExpiryDate } from "@/lib/invoices";
 import { notifyAdmins, notifyUserEvent } from "@/lib/notifications";
@@ -195,9 +195,9 @@ export async function settleInvoice(input: SettleInput): Promise<SettleResult> {
         order = orderRow;
         const plan = tx.select().from(plans).where(eq(plans.id, orderRow.planId)).get();
         planName = plan?.name;
-        const months = orderRow.priceSnapshot.months ?? 1;
         const now = new Date();
         const serviceId = uid("srv_", 16);
+        const weekly = orderRow.billingCycle === "weekly";
         tx.insert(services)
           .values({
             id: serviceId,
@@ -209,10 +209,12 @@ export async function settleInvoice(input: SettleInput): Promise<SettleResult> {
             osSlug: orderRow.osSlug,
             sizeSlug: plan?.doSizeSlug ?? "",
             sshKeyId: orderRow.sshKeyId,
+            billingCycle: orderRow.billingCycle,
             status: "provisioning",
             periodStart: now,
-            periodEnd: addMonths(now, months),
-            autoRenew: true,
+            periodEnd: addBillingCycle(now, orderRow.billingCycle),
+            // VPS mingguan berakhir dan dihapus otomatis setelah 7 hari.
+            autoRenew: !weekly,
           })
           .run();
         tx.update(orders)
@@ -239,15 +241,20 @@ export async function settleInvoice(input: SettleInput): Promise<SettleResult> {
     if (invoice.type === "renewal" && invoice.serviceId) {
       const svc = tx.select().from(services).where(eq(services.id, invoice.serviceId)).get();
       if (svc) {
-        const meta = (invoice.metadata ?? {}) as { cycle?: keyof typeof CYCLE_MONTHS };
-        const months = CYCLE_MONTHS[meta.cycle ?? "monthly"] ?? 1;
+        const meta = (invoice.metadata ?? {}) as { cycle?: BillingCycle };
+        const cycle = meta.cycle ?? svc.billingCycle;
         const from = svc.periodEnd && svc.periodEnd > new Date() ? svc.periodEnd : new Date();
-        const next = addMonths(from, months);
+        const next = addBillingCycle(from, cycle);
         tx.update(services)
-          .set({ periodEnd: next, status: svc.status === "suspended" ? "suspended" : "active" })
+          .set({
+            billingCycle: cycle,
+            periodEnd: next,
+            autoRenew: cycle === "weekly" ? false : svc.autoRenew,
+            status: svc.status === "suspended" ? "suspended" : "active",
+          })
           .where(eq(services.id, svc.id))
           .run();
-        service = { ...svc, periodEnd: next };
+        service = { ...svc, billingCycle: cycle, periodEnd: next, autoRenew: cycle === "weekly" ? false : svc.autoRenew };
         planName = tx.select().from(plans).where(eq(plans.id, svc.planId)).get()?.name;
       }
     }
@@ -365,16 +372,16 @@ async function afterSettlement(result: SettleResult) {
         userId: result.user.id,
         event: "service_renewed",
         title: "VPS diperpanjang",
-        body: `VPS ${result.service.hostname} diperpanjang sampai ${result.service.periodEnd?.toLocaleDateString("id-ID") ?? "—"}.`,
+        body: `VPS ${result.service.hostname} diperpanjang sampai ${formatDate(result.service.periodEnd)}.`,
         link: `/dashboard/vps/${result.service.id}`,
         emailVars: {
           hostname: result.service.hostname,
-          jatuh_tempo: result.service.periodEnd?.toLocaleDateString("id-ID") ?? "—",
+          jatuh_tempo: formatDate(result.service.periodEnd),
           link: `/dashboard/vps/${result.service.id}`,
         },
         waPayload: {
           hostname: result.service.hostname,
-          jatuh_tempo: result.service.periodEnd?.toLocaleDateString("id-ID") ?? "—",
+          jatuh_tempo: formatDate(result.service.periodEnd),
           link: `/dashboard/vps/${result.service.id}`,
         },
       });
@@ -414,7 +421,7 @@ export async function payInvoiceWithBalance(invoiceId: string, userId: string): 
 export async function createRenewalInvoice(input: {
   userId: string;
   serviceId: string;
-  cycle: keyof typeof CYCLE_MONTHS;
+  cycle: BillingCycle;
 }) {
   const svc = db.select().from(services).where(eq(services.id, input.serviceId)).get();
   if (!svc) throw new BillingError("NOT_FOUND", "VPS tidak ditemukan.");

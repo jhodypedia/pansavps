@@ -7,7 +7,7 @@ import type { Plan } from "@/lib/db/schema";
 import { listSizes, type DoSize } from "@/lib/digitalocean";
 import { getDefaultDoAccount } from "@/lib/do-accounts";
 import { getSettings, isMockMode } from "@/lib/settings";
-import { priceFromMarkup } from "@/lib/pricing";
+import { priceFromMarkup, suggestedWeeklyPrice } from "@/lib/pricing";
 
 export type DoCatalogItem = {
   size: DoSize;
@@ -180,6 +180,7 @@ export async function syncDoCatalog(): Promise<{
           transferTb: Math.max(0, Math.round(Number(size.transfer) || 0)),
           costMonthlyUsd: cost,
           priceMonthly,
+          priceWeekly: suggestedWeeklyPrice(priceMonthly),
           priceQuarterly: cycles.quarterly,
           priceYearly: cycles.yearly,
           pricingMode: "auto",

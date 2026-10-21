@@ -28,6 +28,7 @@ import type { TripayChannel } from "@/lib/payments/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { suggestedWeeklyPrice } from "@/lib/pricing";
 import { toastError, toastSuccess } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +41,7 @@ type PlanView = {
   diskGb: number;
   transferTb: number;
   priceMonthly: number;
+  priceWeekly: number | null;
   promoPriceMonthly: number | null;
   priceQuarterly: number | null;
   priceYearly: number | null;
@@ -54,6 +56,7 @@ type Provider = { id: string; label: string; description: string };
 type KeyView = { id: string; name: string; fingerprint: string };
 
 const cycles: { key: BillingCycle; label: string; hint: string }[] = [
+  { key: "weekly", label: "Mingguan", hint: "Aktif 7 hari, lalu dihapus otomatis" },
   { key: "monthly", label: "Bulanan", hint: "Fleksibel, bayar per bulan" },
   { key: "quarterly", label: "3 Bulan", hint: "Hemat dibanding bulanan" },
   { key: "yearly", label: "Tahunan", hint: "Harga terbaik" },
@@ -71,11 +74,23 @@ function idr(value: number) {
 }
 
 function cyclePrice(plan: PlanView, cycle: BillingCycle) {
+  if (cycle === "weekly") {
+    return plan.priceWeekly && plan.priceWeekly > 0
+      ? plan.priceWeekly
+      : suggestedWeeklyPrice(plan.priceMonthly);
+  }
   if (cycle === "monthly") {
     return plan.promoPriceMonthly && plan.promoPriceMonthly > 0
       ? plan.promoPriceMonthly
       : plan.priceMonthly;
   }
+  if (cycle === "quarterly") return plan.priceQuarterly ?? plan.priceMonthly * 3;
+  return plan.priceYearly ?? plan.priceMonthly * 12;
+}
+
+function cycleNormalPrice(plan: PlanView, cycle: BillingCycle) {
+  if (cycle === "weekly") return cyclePrice(plan, "weekly");
+  if (cycle === "monthly") return plan.priceMonthly;
   if (cycle === "quarterly") return plan.priceQuarterly ?? plan.priceMonthly * 3;
   return plan.priceYearly ?? plan.priceMonthly * 12;
 }
@@ -146,8 +161,10 @@ export function CheckoutWizard({
   const subtotal = plan ? cyclePrice(plan, cycle) : 0;
   const discount = promo?.discount ?? 0;
   const total = Math.max(0, subtotal + (plan?.setupFee ?? 0) - discount);
-  const months = cycle === "monthly" ? 1 : cycle === "quarterly" ? 3 : 12;
-  const monthlyEquivalent = Math.round(subtotal / months);
+  const monthlyEquivalent =
+    cycle === "weekly"
+      ? Math.round(subtotal * (30 / 7))
+      : Math.round(subtotal / (cycle === "monthly" ? 1 : cycle === "quarterly" ? 3 : 12));
   const canAfford = total <= balance;
 
   function applyPromo() {
@@ -324,16 +341,11 @@ export function CheckoutWizard({
 
               <div className="pt-2">
                 <h3 className="text-sm font-bold text-[#101613]">Siklus penagihan</h3>
-                <div className="mt-2 grid gap-3 sm:grid-cols-3">
+                <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {cycles.map((item) => {
                     const selected = cycle === item.key;
                     const price = cyclePrice(plan, item.key);
-                    const normal =
-                      item.key === "monthly"
-                        ? plan.priceMonthly
-                        : item.key === "quarterly"
-                          ? plan.priceMonthly * 3
-                          : plan.priceMonthly * 12;
+                    const normal = cycleNormalPrice(plan, item.key);
                     const save = normal > price ? Math.round(((normal - price) / normal) * 100) : 0;
                     return (
                       <button
@@ -363,6 +375,12 @@ export function CheckoutWizard({
                     );
                   })}
                 </div>
+                {cycle === "weekly" ? (
+                  <div className="mt-3 rounded-xl border border-[#FDE68A] bg-[#FFFBEB] p-3 text-xs leading-relaxed text-[#92400E]">
+                    <strong>VPS mingguan aktif 7 hari.</strong> Droplet akan dihapus otomatis saat masa aktif
+                    berakhir (WIB). Kamu akan mendapat pengingat H-1 untuk memperpanjang sebelum data hilang.
+                  </div>
+                ) : null}
               </div>
             </section>
           ) : null}
@@ -739,6 +757,12 @@ export function CheckoutWizard({
               ) : null}
               <SummaryRow label={`Ekuivalen/bulan`} value={idr(monthlyEquivalent)} muted />
             </div>
+            {cycle === "weekly" ? (
+              <div className="rounded-lg border border-[#FDE68A] bg-[#FFFBEB] p-3 text-xs text-[#92400E]">
+                VPS mingguan dihapus otomatis setelah 7 hari. Pengingat H-1 dikirim melalui notifikasi, email,
+                dan WhatsApp.
+              </div>
+            ) : null}
             <div className="flex items-end justify-between border-t border-[#EDF1EE] pt-3">
               <span className="text-sm font-semibold text-[#101613]">Total</span>
               <span className="font-display text-xl font-bold text-[#0B3D2E]">{idr(total)}</span>

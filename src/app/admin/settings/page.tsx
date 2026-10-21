@@ -44,10 +44,10 @@ export default async function AdminSettingsPage({
   const clientSettings = { ...settings };
   for (const key of ENCRYPTED_SETTING_KEYS) clientSettings[key] = "";
 
-  const templateKeys = (settings.email_templates || Object.keys(DEFAULT_EMAIL_TEMPLATES).join(","))
-    .split(",")
-    .map((key) => key.trim())
-    .filter((key) => key && DEFAULT_EMAIL_TEMPLATES[key]);
+  const templateKeys = [
+    ...(settings.email_templates || "").split(",").map((key) => key.trim()),
+    ...Object.keys(DEFAULT_EMAIL_TEMPLATES),
+  ].filter((key, index, all) => key && DEFAULT_EMAIL_TEMPLATES[key] && all.indexOf(key) === index);
   const emailTemplates = templateKeys.map((key) => {
     const fallback = DEFAULT_EMAIL_TEMPLATES[key];
     const customSubject = settings[`email_subject_${key}`];

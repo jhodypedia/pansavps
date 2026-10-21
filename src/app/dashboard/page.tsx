@@ -234,7 +234,10 @@ export default async function DashboardPage() {
                         <div className="min-w-0">
                           <p className="truncate text-sm font-bold text-[#101613]">{service.hostname}</p>
                           <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#5B6B60]">
-                            <span>{plan?.name ?? "Paket"}</span>
+                            <span>
+                              {plan?.name ?? "Paket"} · {cycleLabel[service.billingCycle]}
+                              {service.billingCycle === "weekly" ? " · hapus otomatis" : ""}
+                            </span>
                             <span className="inline-flex items-center gap-1">
                               <Globe2 className="size-3" /> {region?.name ?? service.regionSlug}
                             </span>

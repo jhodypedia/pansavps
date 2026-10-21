@@ -16,7 +16,7 @@ import {
   Trash2,
   Zap,
 } from "lucide-react";
-import type { Service, Snapshot } from "@/lib/db/schema";
+import type { BillingCycle, Service, Snapshot } from "@/lib/db/schema";
 import {
   serviceActionAction,
   revealPasswordAction,
@@ -367,16 +367,18 @@ export function RenewServiceDialog({
   providers,
   tripayChannels,
   balance,
+  defaultCycle = "monthly",
 }: {
   serviceId: string;
   hostname: string;
-  prices: { monthly: number; quarterly: number; yearly: number };
+  prices: { weekly: number; monthly: number; quarterly: number; yearly: number };
   providers: Provider[];
   tripayChannels: TripayChannel[];
   balance: number;
+  defaultCycle?: BillingCycle;
 }) {
   const [open, setOpen] = useState(false);
-  const [cycle, setCycle] = useState<"monthly" | "quarterly" | "yearly">("monthly");
+  const [cycle, setCycle] = useState<BillingCycle>(defaultCycle);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -388,7 +390,8 @@ export function RenewServiceDialog({
         <DialogHeader>
           <DialogTitle>Perpanjang {hostname}</DialogTitle>
           <DialogDescription>
-            Perpanjangan memperpanjang masa aktif dari tanggal berakhir saat ini.
+            Perpanjangan memperpanjang masa aktif dari tanggal berakhir saat ini. VPS mingguan dapat
+            diperpanjang sebelum batas 7 hari agar tidak dihapus otomatis.
           </DialogDescription>
         </DialogHeader>
         <ActionForm action={renewServiceAction} onSuccess={() => setOpen(false)}>
@@ -400,6 +403,7 @@ export function RenewServiceDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="weekly">Mingguan (7 hari) — {formatPrice(prices.weekly)}</SelectItem>
                 <SelectItem value="monthly">Bulanan — {formatPrice(prices.monthly)}</SelectItem>
                 <SelectItem value="quarterly">3 Bulan — {formatPrice(prices.quarterly)}</SelectItem>
                 <SelectItem value="yearly">Tahunan — {formatPrice(prices.yearly)}</SelectItem>

@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatIDR } from "@/lib/format";
-import { priceFromMarkup } from "@/lib/pricing";
+import { priceFromMarkup, suggestedWeeklyPrice } from "@/lib/pricing";
 import { toastError, toastSuccess } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
@@ -205,7 +205,24 @@ export function PlanEditor({
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="space-y-2">
+              <Label htmlFor={`weekly-${plan?.id ?? "new"}`}>Harga mingguan (Rp)</Label>
+              <Input
+                id={`weekly-${plan?.id ?? "new"}`}
+                name="priceWeekly"
+                type="number"
+                min={0}
+                step={1000}
+                defaultValue={plan?.priceWeekly ?? ""}
+                placeholder={
+                  sellingPrice > 0 ? `Otomatis: ${formatIDR(suggestedWeeklyPrice(sellingPrice))}` : "Otomatis"
+                }
+              />
+              <p className="text-[11px] leading-snug text-[#8A9A90]">
+                Aktif 7 hari lalu dihapus otomatis. Kosongkan untuk memakai harga otomatis.
+              </p>
+            </div>
             <div className="space-y-2">
               <Label htmlFor={`monthly-${plan?.id ?? "new"}`}>Harga bulanan (Rp)</Label>
               <Input

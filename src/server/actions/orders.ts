@@ -11,6 +11,7 @@ import {
   payments,
   tickets,
   users,
+  type BillingCycle,
   type Invoice,
 } from "@/lib/db/schema";
 import { getSessionUser, isUserVerified } from "@/lib/auth";
@@ -211,7 +212,7 @@ export async function createOrderAction(
 export async function validatePromoAction(input: {
   code: string;
   planId: number;
-  cycle: "monthly" | "quarterly" | "yearly";
+  cycle: BillingCycle;
 }): Promise<ActionResult<{ discount: number; total: number }>> {
   const user = await getSessionUser();
   if (!user) return fail("Sesi berakhir.");

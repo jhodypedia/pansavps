@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight, Check, Cpu, Database, Globe2, HardDrive } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { BillingCycle } from "@/lib/db/schema";
 import { cycleDiscountPercent, cycleUnitPrice, type Plan } from "@/lib/pricing";
 import { cycleLabel, formatIDR } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-type Cycle = "monthly" | "quarterly" | "yearly";
-const cycles: Cycle[] = ["monthly", "quarterly", "yearly"];
+type Cycle = BillingCycle;
+const cycles: Cycle[] = ["weekly", "monthly", "quarterly", "yearly"];
 
 export function PricingTable({ items }: { items: Plan[] }) {
   const [cycle, setCycle] = useState<Cycle>("monthly");
@@ -43,7 +44,12 @@ export function PricingTable({ items }: { items: Plan[] }) {
         {items.map((plan) => {
           const price = cycleUnitPrice(plan, cycle);
           const discount = cycleDiscountPercent(plan, cycle);
-          const monthlyEquivalent = cycle === "monthly" ? price : Math.round(price / (cycle === "quarterly" ? 3 : 12));
+          const monthlyEquivalent =
+            cycle === "weekly"
+              ? Math.round(price * (30 / 7))
+              : cycle === "monthly"
+                ? price
+                : Math.round(price / (cycle === "quarterly" ? 3 : 12));
           return (
             <div
               key={plan.id}
@@ -73,7 +79,7 @@ export function PricingTable({ items }: { items: Plan[] }) {
                 <div className="flex items-end gap-2">
                   <span className="font-display text-3xl font-bold text-[#101613]">{formatIDR(price)}</span>
                   <span className="pb-1 text-sm text-[#5B6B60]">
-                    /{cycle === "monthly" ? "bulan" : cycle === "quarterly" ? "3 bulan" : "tahun"}
+                    /{cycle === "weekly" ? "minggu" : cycle === "monthly" ? "bulan" : cycle === "quarterly" ? "3 bulan" : "tahun"}
                   </span>
                 </div>
                 {cycle !== "monthly" ? (
@@ -81,6 +87,8 @@ export function PricingTable({ items }: { items: Plan[] }) {
                     Setara {formatIDR(monthlyEquivalent)}/bulan
                     {discount > 0 ? (
                       <span className="ml-1.5 font-semibold text-[#15803D]">· hemat {discount}%</span>
+                    ) : cycle === "weekly" ? (
+                      <span className="ml-1.5 font-semibold text-[#92400E]">· hapus otomatis 7 hari</span>
                     ) : null}
                   </p>
                 ) : (plan.promoPriceMonthly ?? 0) > 0 ? (
@@ -125,6 +133,11 @@ export function PricingTable({ items }: { items: Plan[] }) {
         })}
       </div>
 
+      <p className="mx-auto mt-5 max-w-2xl text-center text-xs leading-relaxed text-[#8A9A90]">
+        Paket mingguan aktif selama 7 hari dan droplet dihapus otomatis saat masa aktif berakhir. Pengingat
+        H-1 dikirim melalui notifikasi, email, dan WhatsApp (WIB).
+      </p>
+
       <div className="mt-12 overflow-hidden rounded-2xl border border-[#E3E8E4] bg-white">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
@@ -135,6 +148,7 @@ export function PricingTable({ items }: { items: Plan[] }) {
                 <th className="px-5 py-3">RAM</th>
                 <th className="px-5 py-3">SSD</th>
                 <th className="px-5 py-3">Transfer</th>
+                <th className="px-5 py-3">Mingguan</th>
                 <th className="px-5 py-3">Bulanan</th>
                 <th className="px-5 py-3">Tahunan</th>
               </tr>
@@ -147,6 +161,7 @@ export function PricingTable({ items }: { items: Plan[] }) {
                   <td className="px-5 py-3.5 text-[#5B6B60]">{plan.ramMb / 1024} GB</td>
                   <td className="px-5 py-3.5 text-[#5B6B60]">{plan.diskGb} GB</td>
                   <td className="px-5 py-3.5 text-[#5B6B60]">{plan.transferTb} TB</td>
+                  <td className="px-5 py-3.5 text-[#5B6B60]">{formatIDR(cycleUnitPrice(plan, "weekly"))}</td>
                   <td className="px-5 py-3.5 text-[#5B6B60]">{formatIDR(cycleUnitPrice(plan, "monthly"))}</td>
                   <td className="px-5 py-3.5 font-semibold text-[#101613]">
                     {formatIDR(cycleUnitPrice(plan, "yearly"))}

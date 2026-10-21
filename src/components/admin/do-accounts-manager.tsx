@@ -14,6 +14,7 @@ import { SectionCard } from "@/components/dashboard/section-card";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { formatDate } from "@/lib/format";
 
 function AccountFields({
   account,
@@ -119,7 +120,7 @@ export function DoAccountsManager({ accounts }: { accounts: DoAccountView[] }) {
                     <KeyRound className="size-3" /> {account.tokenHint}
                   </p>
                   <p className="mt-1 text-[11px] text-[#8A9A90]">
-                    Ditambahkan {new Date(account.createdAt).toLocaleDateString("id-ID")}
+                    Ditambahkan {formatDate(account.createdAt)}
                   </p>
                 </div>
               </div>

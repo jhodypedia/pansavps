@@ -20,6 +20,7 @@ import {
 } from "@/lib/db/schema";
 import { buildPriceSnapshot, calculateDiscount, priceBreakdown, CYCLE_MONTHS } from "@/lib/pricing";
 import {
+  formatDateTime,
   formatIDR,
   invoiceNumber as makeInvoiceNumber,
   orderNumber as makeOrderNumber,
@@ -216,20 +217,20 @@ export async function createOrder(input: OrderInput, userId: string) {
     userId,
     event: "order_created",
     title: "Pesanan dibuat",
-    body: `Pesanan ${number} untuk ${plan.name} menunggu pembayaran sebelum ${expiresAt.toLocaleString("id-ID")}.`,
+    body: `Pesanan ${number} untuk ${plan.name} menunggu pembayaran sebelum ${formatDateTime(expiresAt)}.`,
     link: `/dashboard/pesanan/${orderId}`,
     emailVars: {
       order_number: number,
       nama_paket: plan.name,
       total: formatIDR(snapshot.total),
-      jatuh_tempo: expiresAt.toLocaleString("id-ID"),
+      jatuh_tempo: formatDateTime(expiresAt),
       link: `/dashboard/pesanan/${orderId}`,
     },
     waPayload: {
       order_number: number,
       nama_paket: plan.name,
       total: formatIDR(snapshot.total),
-      jatuh_tempo: expiresAt.toLocaleString("id-ID"),
+      jatuh_tempo: formatDateTime(expiresAt),
       link: `/dashboard/pesanan/${orderId}`,
     },
   });

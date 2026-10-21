@@ -1,11 +1,25 @@
+import { addDays, addMonths } from "date-fns";
 import type { BillingCycle, Plan, PromoCode, PriceSnapshot } from "@/lib/db/schema";
 import type { Plan as PlanType } from "@/lib/db/schema";
 
 export const CYCLE_MONTHS: Record<BillingCycle, number> = {
+  weekly: 7 / 30,
   monthly: 1,
   quarterly: 3,
   yearly: 12,
 };
+
+/** Harga mingguan disarankan; admin tetap bisa menimpanya per produk. */
+export function suggestedWeeklyPrice(monthlyPrice: number): number {
+  if (!Number.isFinite(monthlyPrice) || monthlyPrice <= 0) return 0;
+  return Math.max(9000, Math.round((monthlyPrice * 0.35) / 1000) * 1000);
+}
+
+/** Tambah durasi siklus dari tanggal mulai. Mingguan memakai 7 hari kalender. */
+export function addBillingCycle(start: Date, cycle: BillingCycle): Date {
+  if (cycle === "weekly") return addDays(start, 7);
+  return addMonths(start, CYCLE_MONTHS[cycle]);
+}
 
 export function roundToNineThousand(value: number): number {
   // Gaya harga retail: ribuan terdekat yang berakhiran 9.000.
@@ -15,6 +29,11 @@ export function roundToNineThousand(value: number): number {
 
 /** Harga satuan paket untuk satu siklus (sudah termasuk promo bulanan bila ada). */
 export function cycleUnitPrice(plan: PlanType, cycle: BillingCycle): number {
+  if (cycle === "weekly") {
+    return plan.priceWeekly && plan.priceWeekly > 0
+      ? plan.priceWeekly
+      : suggestedWeeklyPrice(plan.priceMonthly);
+  }
   if (cycle === "monthly") {
     return plan.promoPriceMonthly && plan.promoPriceMonthly > 0 && plan.promoPriceMonthly < plan.priceMonthly
       ? plan.promoPriceMonthly
@@ -27,12 +46,18 @@ export function cycleUnitPrice(plan: PlanType, cycle: BillingCycle): number {
 }
 
 export function normalCyclePrice(plan: PlanType, cycle: BillingCycle): number {
+  if (cycle === "weekly") {
+    return plan.priceWeekly && plan.priceWeekly > 0
+      ? plan.priceWeekly
+      : suggestedWeeklyPrice(plan.priceMonthly);
+  }
   if (cycle === "monthly") return plan.priceMonthly;
   if (cycle === "quarterly") return plan.priceQuarterly ?? plan.priceMonthly * 3;
   return plan.priceYearly ?? plan.priceMonthly * 12;
 }
 
 export function cycleDiscountPercent(plan: PlanType, cycle: BillingCycle): number {
+  if (cycle === "weekly") return 0;
   const normal = plan.priceMonthly * CYCLE_MONTHS[cycle];
   const actual = normalCyclePrice(plan, cycle);
   if (!normal || actual >= normal) return 0;

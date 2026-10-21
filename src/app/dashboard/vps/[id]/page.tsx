@@ -21,6 +21,7 @@ import { invoices, osImages, plans, regions } from "@/lib/db/schema";
 import { isUserVerified, requireUser } from "@/lib/auth";
 import {
   cycleLabel,
+  cyclePriceUnit,
   formatDate,
   formatDateTime,
   formatIDR,
@@ -135,10 +136,12 @@ export default async function ServiceDetailPage({
                 serviceId={service.id}
                 hostname={service.hostname}
                 prices={{
+                  weekly: cycleUnitPrice(plan, "weekly"),
                   monthly: cycleUnitPrice(plan, "monthly"),
                   quarterly: cycleUnitPrice(plan, "quarterly"),
                   yearly: cycleUnitPrice(plan, "yearly"),
                 }}
+                defaultCycle={service.billingCycle}
                 providers={providers}
                 tripayChannels={tripayChannels}
                 balance={user.balance}
@@ -205,6 +208,17 @@ export default async function ServiceDetailPage({
         </div>
       ) : null}
 
+      {service.billingCycle === "weekly" && ["active", "suspended"].includes(service.status) ? (
+        <div className="rounded-2xl border border-[#FDE68A] bg-[#FFFBEB] p-4 text-sm text-[#92400E]">
+          <p className="font-bold">VPS mingguan · dihapus otomatis</p>
+          <p className="mt-1 leading-relaxed">
+            Masa aktif berakhir <strong>{formatDateTime(service.periodEnd)}</strong>. Droplet akan dihapus
+            otomatis saat masa aktif selesai. Kamu akan menerima pengingat H-1; perpanjang sebelum batas waktu
+            jika masih membutuhkan server.
+          </p>
+        </div>
+      ) : null}
+
       <div className="flex gap-1 overflow-x-auto border-b border-[#E3E8E4] pb-px">
         {tabs.map((item) => (
           <Link
@@ -268,15 +282,25 @@ export default async function ServiceDetailPage({
             <SectionCard title="Langganan">
               <dl className="divide-y divide-[#EDF1EE]">
                 <InfoRow label="Paket" value={plan?.name ?? "—"} />
-                <InfoRow label="Harga bulanan" value={plan ? formatIDR(cycleUnitPrice(plan, "monthly")) : "—"} />
+                <InfoRow label="Siklus" value={cycleLabel[service.billingCycle]} />
+                <InfoRow
+                  label={`Harga ${cyclePriceUnit[service.billingCycle]}`}
+                  value={plan ? formatIDR(cycleUnitPrice(plan, service.billingCycle)) : "—"}
+                />
                 <InfoRow
                   label="Perpanjangan berikutnya"
                   value={formatDate(service.periodEnd)}
-                  hint={`${cycleLabel.monthly} · ${service.autoRenew ? "otomatis" : "manual"}`}
+                  hint={
+                    service.billingCycle === "weekly"
+                      ? "Mingguan · dihapus otomatis"
+                      : `${cycleLabel[service.billingCycle]} · ${service.autoRenew ? "otomatis" : "manual"}`
+                  }
                 />
               </dl>
               <div className="mt-4 flex flex-wrap gap-2">
-                <AutoRenewToggle serviceId={service.id} enabled={service.autoRenew} />
+                {service.billingCycle !== "weekly" ? (
+                  <AutoRenewToggle serviceId={service.id} enabled={service.autoRenew} />
+                ) : null}
                 {verified && service.status === "active" ? (
                   <UpgradeServiceDialog
                     serviceId={service.id}

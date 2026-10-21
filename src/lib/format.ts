@@ -1,5 +1,6 @@
-import { format, formatDistanceToNowStrict } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
 import { id as localeId } from "date-fns/locale";
+import { APP_TIME_ZONE, wibDateCompact, wibYearMonth } from "@/lib/time";
 
 const idr = new Intl.NumberFormat("id-ID", {
   style: "currency",
@@ -19,19 +20,47 @@ export function formatIDRShort(value: number): string {
   return formatIDR(value);
 }
 
+const longDateFormatter = new Intl.DateTimeFormat("id-ID", {
+  timeZone: APP_TIME_ZONE,
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+const dateTimeFormatter = new Intl.DateTimeFormat("id-ID", {
+  timeZone: APP_TIME_ZONE,
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+const shortDateFormatter = new Intl.DateTimeFormat("id-ID", {
+  timeZone: APP_TIME_ZONE,
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+});
+
 export function formatDate(value: Date | number | string | null | undefined): string {
   if (!value) return "—";
-  return format(new Date(value), "d MMMM yyyy", { locale: localeId });
+  return longDateFormatter.format(new Date(value));
 }
 
 export function formatDateTime(value: Date | number | string | null | undefined): string {
   if (!value) return "—";
-  return format(new Date(value), "d MMM yyyy, HH:mm", { locale: localeId });
+  const date = new Date(value);
+  const parts = dateTimeFormatter.formatToParts(date);
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? "";
+  return `${get("day")} ${get("month")} ${get("year")}, ${get("hour")}:${get("minute")} WIB`;
 }
 
 export function formatDateShort(value: Date | number | string | null | undefined): string {
   if (!value) return "—";
-  return format(new Date(value), "dd MMM yyyy", { locale: localeId });
+  return shortDateFormatter.format(new Date(value));
 }
 
 export function formatRelative(value: Date | number | string | null | undefined): string {
@@ -48,12 +77,21 @@ export function formatPercent(value: number): string {
 }
 
 export const cycleLabel: Record<string, string> = {
+  weekly: "Mingguan",
   monthly: "Bulanan",
   quarterly: "3 Bulan",
   yearly: "Tahunan",
 };
 
+export const cyclePriceUnit: Record<string, string> = {
+  weekly: "minggu",
+  monthly: "bulan",
+  quarterly: "3 bulan",
+  yearly: "tahun",
+};
+
 export const cycleMonths: Record<string, number> = {
+  weekly: 7 / 30,
   monthly: 1,
   quarterly: 3,
   yearly: 12,
@@ -173,17 +211,11 @@ export function uid(prefix: string, length = 14): string {
 }
 
 export function orderNumber(): string {
-  const now = new Date();
-  const ymd = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(
-    now.getDate(),
-  ).padStart(2, "0")}`;
-  return `ORD-${ymd}-${uid("", 4)}`;
+  return `ORD-${wibDateCompact()}-${uid("", 4)}`;
 }
 
 export function invoiceNumber(): string {
-  const now = new Date();
-  const ym = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
-  return `INV-${ym}-${uid("", 6)}`;
+  return `INV-${wibYearMonth()}-${uid("", 6)}`;
 }
 
 export function ticketNumber(): string {

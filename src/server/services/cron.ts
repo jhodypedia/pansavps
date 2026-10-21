@@ -1,7 +1,7 @@
 import "server-only";
 
-import { addDays, differenceInCalendarDays } from "date-fns";
-import { and, eq, gte, lte, isNull, asc } from "drizzle-orm";
+import { addDays } from "date-fns";
+import { and, eq, gte, inArray, lte, ne, isNull, asc } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   cronLogs,
@@ -16,7 +16,8 @@ import { getSetting, setSetting } from "@/lib/settings";
 import { dropletAction, deleteDroplet, getDroplet, listDropletsByTag } from "@/lib/digitalocean";
 import { getActiveDoAccounts } from "@/lib/do-accounts";
 import { notifyAdmins, notifyUserEvent } from "@/lib/notifications";
-import { uid } from "@/lib/format";
+import { formatDateTime, uid } from "@/lib/format";
+import { differenceInWibCalendarDays } from "@/lib/time";
 import { cycleUnitPrice } from "@/lib/pricing";
 import { plans } from "@/lib/db/schema";
 import { syncDoCatalog } from "./do-catalog";
@@ -34,13 +35,14 @@ async function reminders(): Promise<number> {
     .split(",")
     .map((v) => Number(v.trim()))
     .filter((v) => Number.isFinite(v) && v > 0);
+  const maxThreshold = Math.max(1, ...thresholds);
   const upcoming = db
     .select()
     .from(services)
     .where(
       and(
         eq(services.status, "active"),
-        lte(services.periodEnd, addDays(now, Math.max(...thresholds, 0) + 1)),
+        lte(services.periodEnd, addDays(now, maxThreshold + 1)),
       ),
     )
     .all();
@@ -48,10 +50,36 @@ async function reminders(): Promise<number> {
   let sent = 0;
   for (const svc of upcoming) {
     if (!svc.periodEnd) continue;
-    const days = differenceInCalendarDays(svc.periodEnd, now);
-    for (const threshold of thresholds) {
+    const weekly = svc.billingCycle === "weekly";
+    // Selisih hari dihitung berdasarkan kalender WIB, bukan timezone server (UTC).
+    const days = differenceInWibCalendarDays(svc.periodEnd, now);
+    const serviceThresholds = weekly ? [1] : thresholds;
+
+    for (const threshold of serviceThresholds) {
       if (days > threshold || days < 0) continue;
-      const kind = `h-${threshold}`;
+
+      let kind = weekly ? "weekly-h-1" : `h-${threshold}`;
+      if (weekly) {
+        // H-1 adalah pengingat utama. H-0 hanya fallback bila cron terlewat.
+        if (days === 0) {
+          const hMinusOneSent = db
+            .select()
+            .from(reminderLog)
+            .where(
+              and(
+                eq(reminderLog.serviceId, svc.id),
+                eq(reminderLog.kind, "weekly-h-1"),
+                eq(reminderLog.periodEnd, svc.periodEnd),
+              ),
+            )
+            .get();
+          if (hMinusOneSent) continue;
+          kind = "weekly-h-0";
+        } else if (days !== 1) {
+          continue;
+        }
+      }
+
       const exists = db
         .select()
         .from(reminderLog)
@@ -64,22 +92,31 @@ async function reminders(): Promise<number> {
         )
         .get();
       if (exists) continue;
+
       const user = db.select().from(users).where(eq(users.id, svc.userId)).get();
       if (!user) continue;
+      const expiry = formatDateTime(svc.periodEnd);
+      const title = weekly ? "VPS mingguan segera berakhir" : "VPS akan jatuh tempo";
+      const body = weekly
+        ? days === 1
+          ? `${svc.hostname} akan berakhir ${expiry}. VPS mingguan akan dihapus otomatis setelah masa aktif. Perpanjang sekarang agar data tidak hilang.`
+          : `${svc.hostname} berakhir hari ini (${expiry}). VPS mingguan akan dihapus otomatis. Perpanjang sekarang agar data tidak hilang.`
+        : `${svc.hostname} jatuh tempo ${expiry}. Perpanjang agar layanan tidak ditangguhkan.`;
+
       await notifyUserEvent({
         userId: user.id,
-        event: "invoice_reminder",
-        title: "VPS akan jatuh tempo",
-        body: `${svc.hostname} jatuh tempo ${svc.periodEnd.toLocaleDateString("id-ID")}. Perpanjang agar layanan tidak ditangguhkan.`,
+        event: weekly ? "weekly_expiry_reminder" : "invoice_reminder",
+        title,
+        body,
         link: `/dashboard/vps/${svc.id}`,
         emailVars: {
           hostname: svc.hostname,
-          jatuh_tempo: svc.periodEnd.toLocaleDateString("id-ID"),
+          jatuh_tempo: expiry,
           link: `/dashboard/vps/${svc.id}`,
         },
         waPayload: {
           hostname: svc.hostname,
-          jatuh_tempo: svc.periodEnd.toLocaleDateString("id-ID"),
+          jatuh_tempo: expiry,
           link: `/dashboard/vps/${svc.id}`,
         },
       });
@@ -92,12 +129,82 @@ async function reminders(): Promise<number> {
   return sent;
 }
 
+/**
+ * VPS mingguan tidak memakai masa tenggang. Begitu 7 hari selesai (berdasarkan
+ * periodEnd), droplet dihapus otomatis dan layanan ditandai terminated.
+ */
+async function weeklyExpirations(): Promise<{ deleted: number; failed: number }> {
+  const now = new Date();
+  const due = db
+    .select()
+    .from(services)
+    .where(
+      and(
+        eq(services.billingCycle, "weekly"),
+        inArray(services.status, ["active", "suspended"]),
+        lte(services.periodEnd, now),
+      ),
+    )
+    .all();
+
+  let deleted = 0;
+  let failed = 0;
+  for (const svc of due) {
+    try {
+      if (svc.doDropletId) await deleteDroplet(svc.doDropletId, svc.doAccountId);
+      db.update(services)
+        .set({ status: "terminated", terminatedAt: new Date() })
+        .where(eq(services.id, svc.id))
+        .run();
+      const user = db.select().from(users).where(eq(users.id, svc.userId)).get();
+      if (user) {
+        await notifyUserEvent({
+          userId: user.id,
+          event: "service_terminated",
+          title: "VPS mingguan telah dihapus",
+          body: `${svc.hostname} telah dihapus otomatis karena masa aktif 7 hari berakhir pada ${formatDateTime(svc.periodEnd)}.`,
+          link: "/dashboard/vps",
+          emailVars: {
+            hostname: svc.hostname,
+            jatuh_tempo: formatDateTime(svc.periodEnd),
+            link: "/dashboard/vps",
+          },
+          waPayload: {
+            hostname: svc.hostname,
+            jatuh_tempo: formatDateTime(svc.periodEnd),
+            link: "/dashboard/vps",
+          },
+        });
+      }
+      await notifyAdmins({
+        type: "service_terminated",
+        title: "VPS mingguan dihapus otomatis",
+        body: `${svc.hostname} dihapus otomatis setelah masa aktif 7 hari (${formatDateTime(svc.periodEnd)}).`,
+        link: `/admin/services/${svc.id}`,
+        waEvent: "service_terminated",
+        waMessage: `VPS mingguan dihapus otomatis: ${svc.hostname} (${user?.email ?? "—"}).`,
+      });
+      deleted++;
+    } catch (error) {
+      failed++;
+      console.error("[cron] hapus VPS mingguan gagal", svc.id, error);
+    }
+  }
+  return { deleted, failed };
+}
+
 async function renewals(): Promise<{ renewed: number; suspended: number }> {
   const now = new Date();
   const due = db
     .select()
     .from(services)
-    .where(and(eq(services.status, "active"), lte(services.periodEnd, now)))
+    .where(
+      and(
+        eq(services.status, "active"),
+        ne(services.billingCycle, "weekly"),
+        lte(services.periodEnd, now),
+      ),
+    )
     .all();
   let renewed = 0;
   let suspended = 0;
@@ -155,7 +262,13 @@ async function terminations(): Promise<number> {
   const expired = db
     .select()
     .from(services)
-    .where(and(eq(services.status, "suspended"), lte(services.periodEnd, cutoff)))
+    .where(
+      and(
+        eq(services.status, "suspended"),
+        ne(services.billingCycle, "weekly"),
+        lte(services.periodEnd, cutoff),
+      ),
+    )
     .all();
   let count = 0;
   for (const svc of expired) {
@@ -315,6 +428,7 @@ export async function runCron(): Promise<CronSummary> {
     ["refund_failed_provisioning", () => refundFailedProvisioning(10)],
     ["expire_invoices", async () => expireInvoices()],
     ["reminders", reminders],
+    ["weekly_expirations", weeklyExpirations],
     ["renewals", renewals],
     ["terminations", terminations],
     ["sync_droplets", syncDroplets],

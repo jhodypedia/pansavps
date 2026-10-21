@@ -90,6 +90,7 @@ export default async function NewOrderPage({
             diskGb: plan.diskGb,
             transferTb: plan.transferTb,
             priceMonthly: plan.priceMonthly,
+            priceWeekly: plan.priceWeekly,
             promoPriceMonthly: plan.promoPriceMonthly,
             priceQuarterly: plan.priceQuarterly,
             priceYearly: plan.priceYearly,

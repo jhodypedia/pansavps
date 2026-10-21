@@ -53,6 +53,7 @@ const userEvents = [
   ["provisioning_done", "VPS aktif"],
   ["provisioning_failed", "Provisioning gagal"],
   ["invoice_reminder", "Pengingat jatuh tempo"],
+  ["weekly_expiry_reminder", "Pengingat VPS mingguan"],
   ["service_suspended", "Layanan ditangguhkan"],
   ["service_terminated", "Layanan dihentikan"],
   ["service_renewed", "Perpanjangan"],

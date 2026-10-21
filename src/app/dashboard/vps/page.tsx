@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/auth";
 import { listVisibleUserServices } from "@/server/services/services";
 import {
   cycleLabel,
+  cyclePriceUnit,
   formatDate,
   formatIDR,
   serviceStatusLabel,
@@ -119,7 +120,7 @@ export default async function VpsListPage({
                       {service.hostname}
                     </p>
                     <p className="mt-0.5 text-xs text-[#8A9A90]">
-                      {plan?.name ?? "Paket"} · {cycleLabel.monthly}
+                      {plan?.name ?? "Paket"} · {cycleLabel[service.billingCycle]}
                     </p>
                   </div>
                   <StatusBadge
@@ -162,7 +163,13 @@ export default async function VpsListPage({
                 <div className="mt-4 flex items-center justify-between text-xs text-[#5B6B60]">
                   <span className="inline-flex items-center gap-1.5">
                     <ShieldCheck className="size-3.5 text-[#0B3D2E]" />
-                    {service.autoRenew ? "Auto-renew aktif" : "Auto-renew nonaktif"}
+                    {service.billingCycle === "weekly"
+                      ? service.status === "terminated"
+                        ? "Dihapus otomatis"
+                        : "Dihapus otomatis saat berakhir"
+                      : service.autoRenew
+                        ? "Auto-renew aktif"
+                        : "Auto-renew nonaktif"}
                   </span>
                   <span>
                     s/d <strong className="text-[#101613]">{formatDate(service.periodEnd)}</strong>
@@ -172,7 +179,8 @@ export default async function VpsListPage({
                 {plan ? (
                   <div className="mt-2 flex items-center gap-1.5 text-xs text-[#8A9A90]">
                     <Wallet className="size-3.5" />
-                    Perpanjangan {formatIDR(cycleUnitPrice(plan, "monthly"))}/bulan
+                    {service.billingCycle === "weekly" ? "Harga mingguan" : "Perpanjangan"}{" "}
+                    {formatIDR(cycleUnitPrice(plan, service.billingCycle))}/{cyclePriceUnit[service.billingCycle]}
                   </div>
                 ) : null}
 

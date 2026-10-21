@@ -49,14 +49,14 @@ export const SETTING_DEFAULTS: Record<string, string> = {
   smtp_pass: "",
   email_from: "PansaVPS <noreply@pansavps.id>",
   email_templates:
-    "order_created,payment_paid,provisioning_done,provisioning_failed,invoice_reminder,service_suspended,service_terminated,service_renewed,ticket_replied,welcome,verification,password_reset",
+    "order_created,payment_paid,provisioning_done,provisioning_failed,invoice_reminder,weekly_expiry_reminder,service_suspended,service_terminated,service_renewed,ticket_replied,welcome,verification,password_reset",
 
   wa_enabled: "true",
   wa_notify_admin_numbers: "",
   wa_admin_events:
     '["order_created","payment_paid","provisioning_failed","ticket_created","topup_pending","service_terminated"]',
   wa_user_events:
-    '["welcome","order_created","payment_paid","provisioning_done","invoice_reminder","service_suspended","service_terminated","service_renewed","ticket_replied"]',
+    '["welcome","order_created","payment_paid","provisioning_done","invoice_reminder","weekly_expiry_reminder","service_suspended","service_terminated","service_renewed","ticket_replied"]',
 
   invoice_due_reminder_days: "3,1",
   grace_period_days: "3",
@@ -300,6 +300,23 @@ Terjadi kendala saat menyiapkan {hostname}. Tim kami sudah diberi tahu.
 [Cek pesanan]({link})
 
 > Jika kendala berlanjut, hubungi support dan sertakan nomor pesanan kamu.
+
+{brand}`,
+  },
+  weekly_expiry_reminder: {
+    title: "VPS mingguan segera berakhir",
+    subject: "VPS mingguan {hostname} berakhir {jatuh_tempo}",
+    body: `Halo {nama} ⏰
+
+**VPS mingguan kamu segera berakhir**
+VPS {hostname} akan berakhir pada {jatuh_tempo} (WIB). Karena ini paket mingguan, droplet akan **dihapus otomatis** saat masa aktif selesai.
+
+Hostname: {hostname}
+Berakhir: {jatuh_tempo}
+
+[Perpanjang sekarang]({link})
+
+> Data pada droplet yang sudah dihapus tidak dapat dipulihkan. Perpanjang sebelum batas waktu jika masih membutuhkan server.
 
 {brand}`,
   },

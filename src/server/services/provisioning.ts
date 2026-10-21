@@ -22,7 +22,8 @@ import {
 import { getActiveDoAccounts, getDefaultDoAccount } from "@/lib/do-accounts";
 import { decrypt, encrypt, randomPassword } from "@/lib/crypto";
 import { isMockMode } from "@/lib/settings";
-import { formatIDR, uid } from "@/lib/format";
+import { addBillingCycle } from "@/lib/pricing";
+import { formatDate, formatIDR, uid } from "@/lib/format";
 import { notifyAdmins, notifyUserEvent } from "@/lib/notifications";
 import { refundOrder } from "./orders";
 
@@ -354,8 +355,8 @@ async function runProvisionStep(jobId: string): Promise<"pending" | "active" | "
   }
 
   const now = new Date();
-  const months = order?.priceSnapshot.months ?? 1;
-  const periodEnd = svc.periodEnd ?? new Date(now.getTime() + months * 30 * 24 * 3600 * 1000);
+  const cycle = svc.billingCycle ?? order?.billingCycle ?? "monthly";
+  const periodEnd = svc.periodEnd ?? addBillingCycle(now, cycle);
   const passwordEnc = svc.rootPasswordEncrypted ?? encrypt(randomPassword(20));
 
   db.transaction((tx) => {
@@ -410,7 +411,7 @@ async function runProvisionStep(jobId: string): Promise<"pending" | "active" | "
       password,
       region: svc.regionSlug,
       os: svc.osSlug,
-      jatuh_tempo: periodEnd.toLocaleDateString("id-ID"),
+      jatuh_tempo: formatDate(periodEnd),
       link: `/dashboard/vps/${svc.id}`,
     },
     waPayload: {
@@ -420,7 +421,7 @@ async function runProvisionStep(jobId: string): Promise<"pending" | "active" | "
       password,
       region: svc.regionSlug,
       os: svc.osSlug,
-      jatuh_tempo: periodEnd.toLocaleDateString("id-ID"),
+      jatuh_tempo: formatDate(periodEnd),
       link: `/dashboard/vps/${svc.id}`,
       total: formatIDR(order?.priceSnapshot.total ?? 0),
     },

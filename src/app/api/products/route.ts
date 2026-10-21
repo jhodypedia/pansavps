@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { plans } from "@/lib/db/schema";
+import { suggestedWeeklyPrice } from "@/lib/pricing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -38,6 +39,10 @@ export async function GET() {
         pricing: {
           currency: "IDR",
           mode: plan.pricingMode,
+          weekly:
+            plan.priceWeekly && plan.priceWeekly > 0
+              ? plan.priceWeekly
+              : suggestedWeeklyPrice(plan.priceMonthly),
           monthly: plan.priceMonthly,
           quarterly: plan.priceQuarterly ?? plan.priceMonthly * 3,
           yearly: plan.priceYearly ?? plan.priceMonthly * 12,

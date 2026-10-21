@@ -4,7 +4,7 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { db } from "@/lib/db";
 import { invoices, orders, plans, users } from "@/lib/db/schema";
 import { getSessionUser } from "@/lib/auth";
-import { formatDate, formatDateTime, formatIDR, invoiceStatusLabel, invoiceTypeLabel } from "@/lib/format";
+import { cycleLabel, formatDate, formatDateTime, formatIDR, invoiceStatusLabel, invoiceTypeLabel } from "@/lib/format";
 import { getPublicBrand } from "@/lib/settings";
 
 export const runtime = "nodejs";
@@ -79,7 +79,7 @@ export async function GET(
 
   y -= 30;
   const description = plan
-    ? `${plan.name}${order ? ` — ${order.hostname} (${order.billingCycle})` : ""}`
+    ? `${plan.name}${order ? ` — ${order.hostname} (${cycleLabel[order.billingCycle] ?? order.billingCycle})` : ""}`
     : invoiceTypeLabel[invoice.type] ?? "Layanan";
   page.drawText(description.slice(0, 70), { x: 60, y, size: 10, font, color: text });
   page.drawText(formatIDR(invoice.amount), { x: 465, y, size: 10, font, color: text });

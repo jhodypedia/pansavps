@@ -86,6 +86,7 @@ export async function savePlanAction(
     transferTb: formData.get("transferTb"),
     costMonthlyUsd: formData.get("costMonthlyUsd"),
     priceMonthly: pricingAuto ? autoPrice : formData.get("priceMonthly"),
+    priceWeekly: formString(formData, "priceWeekly") || null,
     priceQuarterly: formString(formData, "priceQuarterly") || null,
     priceYearly: formString(formData, "priceYearly") || null,
     promoPriceMonthly: formString(formData, "promoPriceMonthly") || null,
@@ -133,6 +134,7 @@ export async function savePlanAction(
     transferTb: input.transferTb,
     costMonthlyUsd: input.costMonthlyUsd,
     priceMonthly: input.priceMonthly,
+    priceWeekly: input.priceWeekly ?? null,
     priceQuarterly: pricingAuto ? autoCyclePrices(input.priceMonthly).quarterly : input.priceQuarterly,
     priceYearly: pricingAuto ? autoCyclePrices(input.priceMonthly).yearly : input.priceYearly,
     pricingMode: pricingAuto ? ("auto" as const) : ("custom" as const),
@@ -151,6 +153,7 @@ export async function savePlanAction(
         tx.update(plans).set(values).where(eq(plans.id, existing.id)).run();
         for (const key of [
           "priceMonthly",
+          "priceWeekly",
           "priceQuarterly",
           "priceYearly",
           "promoPriceMonthly",

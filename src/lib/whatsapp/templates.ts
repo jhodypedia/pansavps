@@ -10,6 +10,7 @@ export const WA_TEMPLATE_KEYS = [
   "provisioning_done",
   "provisioning_failed",
   "invoice_reminder",
+  "weekly_expiry_reminder",
   "service_suspended",
   "service_terminated",
   "service_renewed",
@@ -153,6 +154,21 @@ Perpanjang sekarang agar layanan tetap aktif:
 {link}
 
 _Data masih tersimpan selama masa tenggang._`,
+  },
+  weekly_expiry_reminder: {
+    title: "VPS mingguan segera berakhir",
+    body: `⏰ *VPS MINGGUAN SEGERA BERAKHIR*
+
+Hai {nama} 👋
+VPS mingguan kamu akan berakhir dan *dihapus otomatis*.
+
+🖥️ Hostname: {hostname}
+📅 Berakhir: {jatuh_tempo}
+
+Perpanjang sekarang sebelum droplet dihapus:
+{link}
+
+_Data pada droplet yang sudah dihapus tidak dapat dipulihkan._`,
   },
   service_suspended: {
     title: "Layanan ditangguhkan",

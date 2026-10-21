@@ -15,7 +15,7 @@ import {
 import { SETTING_DEFAULTS, DEFAULT_EMAIL_TEMPLATES } from "@/lib/settings";
 import { DEFAULT_WA_TEMPLATES } from "@/lib/whatsapp/templates";
 import { randomPassword } from "@/lib/crypto";
-import { roundToNineThousand } from "@/lib/pricing";
+import { roundToNineThousand, suggestedWeeklyPrice } from "@/lib/pricing";
 
 async function seedSettings() {
   const rows = db.select().from(settings).all();
@@ -172,6 +172,7 @@ async function seedPlans() {
         transferTb: p.transferTb,
         costMonthlyUsd: p.costMonthlyUsd,
         priceMonthly: monthly,
+        priceWeekly: suggestedWeeklyPrice(monthly),
         priceQuarterly: Math.round((monthly * 3 * 0.95) / 1000) * 1000,
         priceYearly: Math.round((monthly * 12 * 0.83) / 1000) * 1000,
         promoPriceMonthly: p.promo,

@@ -4,7 +4,7 @@ import nodemailer from "nodemailer";
 import { db } from "@/lib/db";
 import { emailLog } from "@/lib/db/schema";
 import { getSettings, DEFAULT_EMAIL_TEMPLATES } from "@/lib/settings";
-import { uid } from "@/lib/format";
+import { formatDateTime, uid } from "@/lib/format";
 
 export type EmailVars = Record<string, string | number | null | undefined>;
 
@@ -414,5 +414,5 @@ export function getTestEmailBody(siteName: string): string {
 
 Ini email uji dari ${siteName}. Konfigurasi SMTP dan alamat pengirim sudah bekerja.
 
-Waktu pengujian: ${new Date().toLocaleString("id-ID")}.`;
+Waktu pengujian: ${formatDateTime(new Date())}.`;
 }
