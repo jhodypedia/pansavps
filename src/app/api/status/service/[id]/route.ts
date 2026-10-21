@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { services } from "@/lib/db/schema";
 import { getSessionUser } from "@/lib/auth";
+import { getProvisioningProgress } from "@/server/services/provisioning";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,12 +22,19 @@ export async function GET(
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
-  return NextResponse.json({
-    id: service.id,
-    status: service.status,
-    hostname: service.hostname,
-    ipv4: service.ipv4,
-    periodEnd: service.periodEnd,
-    autoRenew: service.autoRenew,
-  });
+  const provisioning =
+    service.status === "provisioning" ? await getProvisioningProgress(service.id) : null;
+
+  return NextResponse.json(
+    {
+      id: service.id,
+      status: service.status,
+      hostname: service.hostname,
+      ipv4: service.ipv4,
+      periodEnd: service.periodEnd,
+      autoRenew: service.autoRenew,
+      provisioning,
+    },
+    { headers: { "Cache-Control": "no-store, max-age=0" } },
+  );
 }

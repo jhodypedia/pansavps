@@ -18,6 +18,7 @@ import {
   DigitalOceanError,
   getDroplet,
   MOCK_SIZES,
+  type DoDroplet,
 } from "@/lib/digitalocean";
 import { getActiveDoAccounts, getDefaultDoAccount } from "@/lib/do-accounts";
 import { decrypt, encrypt, randomPassword } from "@/lib/crypto";
@@ -536,6 +537,173 @@ export function getProvisioningJob(serviceId: string) {
     .where(and(eq(jobs.refId, serviceId), eq(jobs.type, "provision_service")))
     .all()
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
+}
+
+export type ProvisioningProgressPhase =
+  | "queued"
+  | "creating"
+  | "booting"
+  | "finalizing"
+  | "active"
+  | "failed";
+
+export type ProvisioningProgress = {
+  phase: ProvisioningProgressPhase;
+  progress: number;
+  label: string;
+  detail: string;
+  serverStatus: string | null;
+  jobStep: number | null;
+  elapsedSeconds: number;
+  checkedAt: string;
+};
+
+function friendlyServerStatus(status: string | null | undefined) {
+  if (!status) return null;
+  if (status === "new") return "Sedang dinyalakan";
+  if (status === "active") return "Aktif";
+  if (status === "off") return "Nonaktif";
+  if (status === "archive") return "Diarsipkan";
+  return "Diproses";
+}
+
+/**
+ * Progres provisioning untuk ditampilkan ke pengguna. Status droplet diambil
+ * langsung dari penyedia cloud agar alert tidak hanya bergantung pada step job.
+ */
+export async function getProvisioningProgress(
+  serviceId: string,
+): Promise<ProvisioningProgress | null> {
+  const svc = db.select().from(services).where(eq(services.id, serviceId)).get();
+  if (!svc) return null;
+
+  const job = getProvisioningJob(serviceId);
+  const startedAt = job?.createdAt ?? svc.createdAt;
+  const elapsedSeconds = Math.max(0, Math.round((Date.now() - startedAt.getTime()) / 1000));
+  const checkedAt = new Date().toISOString();
+
+  let droplet: DoDroplet | null = null;
+  let dropletCheckFailed = false;
+  if (svc.status === "provisioning" && svc.doDropletId) {
+    try {
+      droplet = await getDroplet(svc.doDropletId, svc.doAccountId);
+    } catch (error) {
+      dropletCheckFailed = true;
+      console.error("[provision] gagal memeriksa status droplet", svc.id, error);
+    }
+  }
+
+  const base = {
+    serverStatus: friendlyServerStatus(droplet?.status),
+    jobStep: job?.step ?? null,
+    elapsedSeconds,
+    checkedAt,
+  };
+
+  if (svc.status === "active") {
+    return {
+      ...base,
+      phase: "active",
+      progress: 100,
+      label: "Server aktif",
+      detail: "Server siap digunakan.",
+    };
+  }
+
+  if (svc.status === "failed" || svc.status === "terminated" || job?.status === "failed") {
+    return {
+      ...base,
+      phase: "failed",
+      progress: 100,
+      label: "Server gagal disiapkan",
+      detail:
+        "Kami tidak dapat menyelesaikan penyiapan server. Cek detail pesanan atau hubungi support untuk bantuan.",
+    };
+  }
+
+  if (!job) {
+    return {
+      ...base,
+      phase: "queued",
+      progress: 10,
+      label: "Menunggu antrean server",
+      detail: "Pesanan sudah diterima. Server akan segera diproses.",
+    };
+  }
+
+  if (job.status === "done") {
+    return {
+      ...base,
+      phase: "finalizing",
+      progress: 95,
+      label: "Menyelesaikan konfigurasi",
+      detail: "Server aktif. Menyimpan akses dan menyiapkan panel.",
+    };
+  }
+
+  if (job.step === 0 && !svc.doDropletId) {
+    return {
+      ...base,
+      phase: "creating",
+      progress: 20,
+      label: "Membuat server",
+      detail: "Permintaan pembuatan server sedang diproses.",
+    };
+  }
+
+  if (svc.doDropletId) {
+    if (dropletCheckFailed) {
+      return {
+        ...base,
+        phase: "booting",
+        progress: 55,
+        label: "Menunggu status server",
+        detail: "Status server belum dapat diperiksa. Kami akan mencoba lagi otomatis.",
+      };
+    }
+    if (!droplet) {
+      return {
+        ...base,
+        phase: "booting",
+        progress: 45,
+        label: "Menunggu server muncul",
+        detail: "Server sudah diminta. Menunggu status terbaru dari penyedia.",
+      };
+    }
+    if (droplet.status === "new") {
+      return {
+        ...base,
+        phase: "booting",
+        progress: 68,
+        label: "Server sedang dinyalakan",
+        detail: "Server sudah dibuat dan sedang dalam proses booting.",
+      };
+    }
+    if (droplet.status === "active") {
+      return {
+        ...base,
+        phase: "finalizing",
+        progress: 90,
+        label: "Server aktif, menyelesaikan konfigurasi",
+        detail: "Menyimpan akses dan mengaktifkan layanan.",
+      };
+    }
+    return {
+      ...base,
+      phase: "booting",
+      progress: 60,
+      label: "Menunggu server siap",
+      detail: `Status server saat ini: ${friendlyServerStatus(droplet.status) ?? "diproses"}.`,
+    };
+  }
+
+  return {
+    ...base,
+    phase: "creating",
+    progress: 35,
+    label: "Membuat server",
+    detail: "Server sedang disiapkan.",
+  };
 }
 
 export function mockSizeSpec(slug: string) {

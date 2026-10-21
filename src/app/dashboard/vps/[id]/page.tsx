@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   Box,
-  Clock,
   Cpu,
   Database,
   Globe2,
@@ -37,13 +36,11 @@ import {
   listSnapshots,
   serviceActionHistory,
 } from "@/server/services/services";
-import { getProvisioningJob } from "@/server/services/provisioning";
-import { provisioningTimeline } from "@/server/services/orders";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { InfoRow, SectionCard } from "@/components/dashboard/section-card";
-import { PollRefresh } from "@/components/dashboard/poll-refresh";
+import { ProvisioningProgress } from "@/components/dashboard/provisioning-progress";
 import { ActionForm } from "@/components/dashboard/action-form";
 import {
   AutoRenewToggle,
@@ -94,7 +91,6 @@ export default async function ServiceDetailPage({
   const allPlans = db.select().from(plans).where(eq(plans.isActive, true)).all();
   const snapshotRows = listSnapshots(service.id);
   const history = serviceActionHistory(service.id);
-  const job = getProvisioningJob(service.id);
   const providers = availableProviders();
   const tripayChannels = await listTripayChannels();
   const pendingInvoices = db
@@ -103,12 +99,10 @@ export default async function ServiceDetailPage({
     .where(and(eq(invoices.serviceId, service.id), eq(invoices.status, "unpaid")))
     .orderBy(desc(invoices.createdAt))
     .all();
-  const timeline = provisioningTimeline(job?.status === "done" ? "active" : service.status, job?.step ?? null, service.status);
   const isProvisioning = service.status === "provisioning";
 
   return (
     <div className="space-y-6">
-      <PollRefresh enabled={isProvisioning} intervalMs={6000} />
       <PageHeader
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
@@ -158,33 +152,7 @@ export default async function ServiceDetailPage({
         />
       ) : null}
 
-      {isProvisioning ? (
-        <div className="rounded-2xl border border-[#FDE68A] bg-[#FFFBEB] p-5">
-          <div className="flex items-center gap-2 text-sm font-bold text-[#92400E]">
-            <Clock className="size-4" /> Server sedang disiapkan
-          </div>
-          <p className="mt-1 text-sm text-[#92400E]/80">
-            Proses biasanya selesai dalam 10–30 detik. Halaman ini menyegarkan otomatis.
-          </p>
-          <div className="mt-4 grid gap-2 sm:grid-cols-4">
-            {timeline.map((step) => (
-              <div
-                key={step.key}
-                className={cn(
-                  "rounded-xl border px-3 py-2 text-xs font-semibold",
-                  step.done
-                    ? "border-[#BFE3CC] bg-[#E7F4EC] text-[#0B3D2E]"
-                    : step.active
-                      ? "border-[#FDE68A] bg-white text-[#92400E]"
-                      : "border-[#E3E8E4] bg-white/60 text-[#8A9A90]",
-                )}
-              >
-                {step.label}
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
+      {isProvisioning ? <ProvisioningProgress serviceId={service.id} /> : null}
 
       {pendingInvoices.length > 0 ? (
         <div className="flex flex-col gap-3 rounded-2xl border border-[#E3E8E4] bg-white p-4 sm:flex-row sm:items-center sm:justify-between">

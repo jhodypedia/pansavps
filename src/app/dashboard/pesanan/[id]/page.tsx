@@ -151,7 +151,12 @@ export default async function OrderDetailPage({
               "Server gagal dibuat. Kamu bisa mencoba lagi atau mengajukan refund ke saldo."}
           </p>
           <div className="mt-4">
-            <OrderActions orderId={order.id} status={order.status} orderNumber={order.orderNumber} />
+            <OrderActions
+              orderId={order.id}
+              status={order.status}
+              orderNumber={order.orderNumber}
+              hasRefund={Boolean(refund)}
+            />
           </div>
         </div>
       ) : null}
@@ -285,8 +290,22 @@ export default async function OrderDetailPage({
           </SectionCard>
 
           <SectionCard title="Aksi pesanan">
-            {["pending_payment", "failed", "cancelled", "expired"].includes(order.status) ? (
-              <OrderActions orderId={order.id} status={order.status} orderNumber={order.orderNumber} />
+            {refund ? (
+              <p className="text-sm text-[#5B6B60]">
+                Pesanan ini sudah direfund ke saldo. Tidak ada aksi lanjutan yang diperlukan.
+              </p>
+            ) : order.status === "failed" ? (
+              <p className="text-sm text-[#5B6B60]">
+                Gunakan tombol <strong className="text-[#101613]">Coba provisioning lagi</strong> atau{" "}
+                <strong className="text-[#101613]">Ajukan refund</strong> pada banner di atas.
+              </p>
+            ) : ["pending_payment", "cancelled", "expired"].includes(order.status) ? (
+              <OrderActions
+                orderId={order.id}
+                status={order.status}
+                orderNumber={order.orderNumber}
+                hasRefund={false}
+              />
             ) : (
               <p className="text-sm text-[#5B6B60]">
                 Pesanan ini sudah diproses. Kelola server dari halaman VPS.

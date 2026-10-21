@@ -27,15 +27,17 @@ export function OrderActions({
   orderId,
   status,
   orderNumber,
+  hasRefund = false,
 }: {
   orderId: string;
   status: string;
   orderNumber: string;
+  hasRefund?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const canCancel = status === "pending_payment";
-  const canRetry = status === "failed";
-  const canRefund = ["failed", "cancelled", "expired"].includes(status);
+  const canRetry = status === "failed" && !hasRefund;
+  const canRefund = ["failed", "cancelled", "expired"].includes(status) && !hasRefund;
 
   return (
     <div className="flex flex-wrap gap-2">

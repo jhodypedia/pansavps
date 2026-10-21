@@ -6,6 +6,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import {
+  balanceTransactions,
   invoices,
   orders,
   payments,
@@ -183,7 +184,12 @@ export async function createOrderAction(
         }
         throw error;
       }
+      revalidatePath(`/dashboard/invoices/${invoice.id}`);
+      revalidatePath("/dashboard/invoices");
+      revalidatePath("/dashboard/saldo");
       revalidatePath("/dashboard");
+      revalidatePath(`/dashboard/pesanan/${result.order.id}`);
+      revalidatePath("/dashboard/pesanan");
       return done("Pesanan dibuat dan dibayar dengan saldo. Server sedang disiapkan.", {
         redirectTo: `/dashboard/pesanan/${result.order.id}?dibayar=1`,
       });
@@ -242,12 +248,17 @@ export async function payInvoiceAction(
   try {
     if (method === "balance") {
       await payInvoiceWithBalance(invoiceId, user.id);
+      revalidatePath(`/dashboard/invoices/${invoiceId}`);
       revalidatePath("/dashboard/invoices");
       revalidatePath("/dashboard/saldo");
       revalidatePath("/dashboard");
       const order = invoice.orderId
         ? db.select().from(orders).where(eq(orders.id, invoice.orderId)).get()
         : null;
+      if (order) {
+        revalidatePath(`/dashboard/pesanan/${order.id}`);
+        revalidatePath("/dashboard/pesanan");
+      }
       return done("Pembayaran dengan saldo berhasil.", {
         redirectTo: order ? `/dashboard/pesanan/${order.id}?dibayar=1` : `/dashboard/invoices/${invoiceId}`,
       });
@@ -339,6 +350,11 @@ export async function renewServiceAction(
         }
         throw error;
       }
+      revalidatePath(`/dashboard/invoices/${invoice.id}`);
+      revalidatePath("/dashboard/invoices");
+      revalidatePath("/dashboard/saldo");
+      revalidatePath(`/dashboard/vps/${parsed.data.serviceId}`);
+      revalidatePath("/dashboard/vps");
       return done("Perpanjangan dibayar dengan saldo.", {
         redirectTo: `/dashboard/vps/${parsed.data.serviceId}?diperpanjang=1`,
       });
@@ -403,6 +419,11 @@ export async function upgradeServiceAction(
         throw error;
       }
       if (result.resize) await resizeServiceForUpgrade(result.resize.serviceId, result.resize.sizeSlug);
+      revalidatePath(`/dashboard/invoices/${invoice.id}`);
+      revalidatePath("/dashboard/invoices");
+      revalidatePath("/dashboard/saldo");
+      revalidatePath(`/dashboard/vps/${parsed.data.serviceId}`);
+      revalidatePath("/dashboard/vps");
       return done("Upgrade berhasil dibayar dengan saldo.", {
         redirectTo: `/dashboard/vps/${parsed.data.serviceId}?upgrade=1`,
       });
@@ -466,6 +487,19 @@ export async function requestRefundAction(orderId: string, reason: string): Prom
     .where(and(eq(orders.id, orderId), eq(orders.userId, user.id)))
     .get();
   if (!order) return fail("Pesanan tidak ditemukan.");
+  const existingRefund = db
+    .select()
+    .from(balanceTransactions)
+    .where(
+      and(
+        eq(balanceTransactions.ref, order.id),
+        eq(balanceTransactions.type, "refund"),
+      ),
+    )
+    .get();
+  if (existingRefund) {
+    return fail("Pesanan ini sudah direfund ke saldo. Tidak perlu mengajukan refund lagi.");
+  }
   if (!["failed", "cancelled", "expired"].includes(order.status)) {
     return fail("Refund hanya dapat diminta untuk pesanan gagal atau batal.");
   }

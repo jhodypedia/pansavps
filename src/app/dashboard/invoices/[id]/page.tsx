@@ -12,6 +12,7 @@ import {
   FileText,
   Info,
   Receipt,
+  RotateCcw,
   Server,
   ShieldCheck,
   XCircle,
@@ -185,6 +186,8 @@ export default async function InvoiceDetailPage({
     (invoice.type === "topup" ? "Top up saldo" : "Layanan VPS");
   const cycle = typeof meta.cycle === "string" ? meta.cycle : snapshot?.cycle;
   const paid = invoice.status === "paid";
+  const refunded = invoice.status === "refunded";
+  const settled = paid || refunded;
   const gateway =
     invoice.paymentProvider === "tripay" ? readGateway(meta.tripay) : null;
   const displaySubtotal =
@@ -194,14 +197,17 @@ export default async function InvoiceDetailPage({
     gateway?.total && gateway.total > 0
       ? Math.max(gateway.total, displaySubtotal + displayFee)
       : displaySubtotal + displayFee;
+  const totalDisplay = refunded ? invoice.amount : displayTotal;
   const paymentLabel =
     gateway?.paymentName ||
     gateway?.method ||
     (invoice.paymentProvider === "manual"
       ? "Transfer manual"
-      : invoice.paymentProvider === "tripay"
-        ? "Pembayaran online"
-        : null);
+      : invoice.paymentProvider === "balance"
+        ? "Saldo akun"
+        : invoice.paymentProvider === "tripay"
+          ? "Pembayaran online"
+          : null);
   const cycleText = cycle && cycleLabel[cycle] ? cycleLabel[cycle] : "Layanan";
   const subtitle =
     invoice.type === "topup"
@@ -212,19 +218,71 @@ export default async function InvoiceDetailPage({
           ? `${snapshot.planName} · ${cycleText}`
           : "Layanan cloud VPS dengan aktivasi otomatis.";
   const paymentStep: "done" | "active" | "failed" =
-    paid ? "done" : invoice.status === "expired" ? "failed" : "active";
+    settled
+      ? "done"
+      : invoice.status === "expired" || invoice.status === "cancelled"
+        ? "failed"
+        : "active";
   const serviceStep: "done" | "active" | "pending" | "failed" =
-    invoice.type === "topup"
+    refunded
+      ? "done"
+      : invoice.type === "topup"
+        ? paid
+          ? "done"
+          : "pending"
+        : service?.status === "active"
+          ? "done"
+          : service?.status === "failed" || service?.status === "terminated"
+            ? "failed"
+            : service?.status === "provisioning" || paid
+              ? "active"
+              : "pending";
+  const paymentStepTitle = settled
+    ? "Pembayaran diterima"
+    : invoice.status === "cancelled"
+      ? "Pembayaran dibatalkan"
+      : invoice.status === "expired"
+        ? "Pembayaran kedaluwarsa"
+        : "Menunggu pembayaran";
+  const paymentStepDescription = paid
+    ? formatDateTime(invoice.paidAt)
+    : refunded
+      ? `Dibayar ${formatDateTime(invoice.paidAt)} · dana dikembalikan ke saldo`
+      : invoice.status === "cancelled"
+        ? "Invoice dibatalkan sebelum pembayaran."
+        : invoice.status === "expired"
+          ? "Buat invoice baru untuk melanjutkan"
+          : `Batas ${formatDateTime(invoice.dueDate)}`;
+  const serviceStepTitle = refunded
+    ? "Dana dikembalikan"
+    : invoice.type === "topup"
       ? paid
-        ? "done"
-        : "pending"
+        ? "Saldo ditambahkan"
+        : "Saldo bertambah otomatis"
       : service?.status === "active"
-        ? "done"
+        ? "Layanan aktif"
         : service?.status === "failed" || service?.status === "terminated"
-          ? "failed"
-          : service?.status === "provisioning" || paid
-            ? "active"
-            : "pending";
+          ? "Layanan perlu tindakan"
+          : service?.status === "provisioning"
+            ? "Server disiapkan"
+            : paid
+              ? "Layanan diproses"
+              : "Layanan disiapkan";
+  const serviceStepDescription = refunded
+    ? "Saldo akun sudah ditambahkan kembali."
+    : invoice.type === "topup"
+      ? paid
+        ? "Saldo siap digunakan."
+        : "Setelah pembayaran terkonfirmasi."
+      : service?.status === "active"
+        ? `${service.hostname} siap digunakan.`
+        : service?.status === "provisioning"
+          ? "Aktivasi otomatis sedang berjalan."
+          : service?.status === "failed" || service?.status === "terminated"
+            ? "Hubungi support untuk bantuan."
+            : paid
+              ? "Aktivasi akan segera dimulai."
+              : "Aktif otomatis setelah pembayaran.";
 
   return (
     <div className="space-y-6">
@@ -248,7 +306,7 @@ export default async function InvoiceDetailPage({
                 <ArrowLeft className="size-4" /> Kembali
               </Link>
             </Button>
-            {paid ? (
+            {settled ? (
               <Button asChild variant="outline" className="border-[#D8E2DB] bg-white">
                 <a href={`/api/invoices/${invoice.id}/pdf`} target="_blank" rel="noreferrer">
                   <Download className="size-4" /> Unduh PDF
@@ -259,7 +317,7 @@ export default async function InvoiceDetailPage({
         }
       />
 
-      {baru && !paid ? (
+      {baru && invoice.status === "unpaid" ? (
         <div className="flex items-start gap-3 rounded-2xl border border-[#BFE3CC] bg-[#F3F9F5] p-4">
           <CheckCircle2 className="mt-0.5 size-5 text-[#16A34A]" />
           <div>
@@ -271,7 +329,7 @@ export default async function InvoiceDetailPage({
         </div>
       ) : null}
 
-      {invoice.status !== "paid" && invoice.status !== "cancelled" ? (
+      {invoice.status === "unpaid" || invoice.status === "expired" ? (
         <InvoiceStatusWatcher invoiceId={invoice.id} status={invoice.status} />
       ) : null}
 
@@ -294,7 +352,7 @@ export default async function InvoiceDetailPage({
               <span
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold",
-                  paid
+                  paid || refunded
                     ? "border-[#86EFAC]/30 bg-[#86EFAC]/15 text-[#BBF7D0]"
                     : invoice.status === "expired"
                       ? "border-[#FCA5A5]/30 bg-[#FCA5A5]/15 text-[#FECACA]"
@@ -303,6 +361,8 @@ export default async function InvoiceDetailPage({
               >
                 {paid ? (
                   <CheckCircle2 className="size-3.5" />
+                ) : refunded ? (
+                  <RotateCcw className="size-3.5" />
                 ) : invoice.status === "expired" ? (
                   <XCircle className="size-3.5" />
                 ) : (
@@ -325,12 +385,20 @@ export default async function InvoiceDetailPage({
 
           <div className="shrink-0 rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm lg:min-w-[280px] lg:text-right">
             <p className="text-[11px] font-semibold tracking-[0.2em] text-[#A7D8BD] uppercase">
-              {paid ? "Total dibayar" : displayFee > 0 ? "Total pembayaran online" : "Total tagihan"}
+              {paid
+                ? "Total dibayar"
+                : refunded
+                  ? "Total dikembalikan"
+                  : displayFee > 0
+                    ? "Total pembayaran online"
+                    : "Total tagihan"}
             </p>
             <p className="mt-1 font-display text-4xl font-bold tracking-tight">
-              {formatIDR(displayTotal)}
+              {formatIDR(totalDisplay)}
             </p>
-            {displayFee > 0 ? (
+            {refunded ? (
+              <p className="mt-1 text-xs text-[#C7E3D4]">Dikembalikan ke saldo akun</p>
+            ) : displayFee > 0 ? (
               <p className="mt-1 text-xs text-[#C7E3D4]">
                 Termasuk biaya layanan {formatIDR(displayFee)}
               </p>
@@ -339,7 +407,7 @@ export default async function InvoiceDetailPage({
             )}
             <div className="mt-4 border-t border-white/10 pt-3">
               <p className="text-[11px] text-[#A7D8BD]">
-                {paid
+                {settled
                   ? `Dibayar ${formatDateTime(invoice.paidAt)}`
                   : `Batas pembayaran ${formatDateTime(invoice.dueDate)}`}
               </p>
@@ -382,53 +450,13 @@ export default async function InvoiceDetailPage({
               />
               <ProgressStep
                 state={paymentStep}
-                title={
-                  paid
-                    ? "Pembayaran diterima"
-                    : invoice.status === "expired"
-                      ? "Pembayaran kedaluwarsa"
-                      : "Menunggu pembayaran"
-                }
-                description={
-                  paid
-                    ? formatDateTime(invoice.paidAt)
-                    : invoice.status === "expired"
-                      ? "Buat invoice baru untuk melanjutkan"
-                      : `Batas ${formatDateTime(invoice.dueDate)}`
-                }
+                title={paymentStepTitle}
+                description={paymentStepDescription}
               />
               <ProgressStep
                 state={serviceStep}
-                title={
-                  invoice.type === "topup"
-                    ? paid
-                      ? "Saldo ditambahkan"
-                      : "Saldo bertambah otomatis"
-                    : service?.status === "active"
-                      ? "Layanan aktif"
-                      : service?.status === "failed" || service?.status === "terminated"
-                        ? "Layanan perlu tindakan"
-                        : service?.status === "provisioning"
-                          ? "Server disiapkan"
-                          : paid
-                            ? "Layanan diproses"
-                            : "Layanan disiapkan"
-                }
-                description={
-                  invoice.type === "topup"
-                    ? paid
-                      ? "Saldo siap digunakan."
-                      : "Setelah pembayaran terkonfirmasi."
-                    : service?.status === "active"
-                      ? `${service.hostname} siap digunakan.`
-                      : service?.status === "provisioning"
-                        ? "Aktivasi otomatis sedang berjalan."
-                        : service?.status === "failed" || service?.status === "terminated"
-                          ? "Hubungi support untuk bantuan."
-                          : paid
-                            ? "Aktivasi akan segera dimulai."
-                            : "Aktif otomatis setelah pembayaran."
-                }
+                title={serviceStepTitle}
+                description={serviceStepDescription}
               />
             </div>
 
@@ -496,7 +524,7 @@ export default async function InvoiceDetailPage({
               <InfoRow label="Jenis" value={invoiceTypeLabel[invoice.type]} />
               <InfoRow label="Dibuat" value={formatDateTime(invoice.createdAt)} />
               <InfoRow label="Jatuh tempo" value={formatDateTime(invoice.dueDate)} />
-              {paid ? <InfoRow label="Dibayar" value={formatDateTime(invoice.paidAt)} /> : null}
+              {settled ? <InfoRow label="Dibayar" value={formatDateTime(invoice.paidAt)} /> : null}
               {invoice.paymentProvider ? (
                 <InfoRow
                   label="Metode"
@@ -534,7 +562,11 @@ export default async function InvoiceDetailPage({
               ) : null}
             </dl>
 
-            {paid ? (
+            {refunded ? (
+              <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#BFE3CC] bg-[#F3F9F5] p-4 text-sm text-[#0B3D2E]">
+                <RotateCcw className="size-4" /> Dana invoice ini sudah dikembalikan ke saldo akun.
+              </div>
+            ) : paid ? (
               <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#BFE3CC] bg-[#F3F9F5] p-4 text-sm text-[#0B3D2E]">
                 <CheckCircle2 className="size-4" /> Invoice sudah lunas. Terima kasih!
               </div>
@@ -560,11 +592,13 @@ export default async function InvoiceDetailPage({
                   const paymentMethod =
                     payment.provider === "manual"
                       ? "Transfer manual"
-                      : paymentGateway?.paymentName ||
-                        paymentGateway?.method ||
-                        (payment.method && payment.method.toLowerCase() !== "tripay"
-                          ? payment.method
-                          : "Pembayaran online");
+                      : payment.provider === "balance"
+                        ? "Saldo akun"
+                        : paymentGateway?.paymentName ||
+                          paymentGateway?.method ||
+                          (payment.method && payment.method.toLowerCase() !== "tripay"
+                            ? payment.method
+                            : "Pembayaran online");
                   return (
                     <li
                       key={payment.id}
