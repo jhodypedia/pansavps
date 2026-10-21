@@ -74,9 +74,6 @@ export function SiteFooter({
           <p>
             © {new Date().getFullYear()} {brandName}. Seluruh hak cipta dilindungi.
           </p>
-          <p className="inline-flex items-center gap-1.5">
-            <ShieldCheck className="size-3.5 text-[#16A34A]" /> Pembayaran diverifikasi manual & gateway resmi
-          </p>
         </div>
       </div>
     </footer>
