@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Check, Globe2, HelpCircle, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, Globe2, HelpCircle, ShieldCheck, Zap } from "lucide-react";
 import { db } from "@/lib/db";
 import { osImages, plans, regions } from "@/lib/db/schema";
 import { getPublicBrand } from "@/lib/settings";
@@ -8,6 +8,7 @@ import { formatIDR } from "@/lib/format";
 import { cycleUnitPrice } from "@/lib/pricing";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Reveal } from "@/components/shared/reveal";
 import { PricingTable } from "@/components/public/pricing-table";
 
 export const metadata: Metadata = {
@@ -22,21 +23,70 @@ export default async function PricingPage() {
   const regionRows = db.select().from(regions).all().filter((r) => r.isActive);
   const osRows = db.select().from(osImages).all().filter((o) => o.isActive);
   const cheapest = items.length ? Math.min(...items.map((p) => cycleUnitPrice(p, "monthly"))) : 0;
+  const weeklyCheapest = items.length ? Math.min(...items.map((p) => cycleUnitPrice(p, "weekly"))) : 0;
 
   return (
     <>
-      <section className="border-b border-[#E3E8E4] bg-[#F7F8F7]">
-        <div className="ws-container py-14 text-center md:py-20">
-          <Badge className="border border-[#CFE6D8] bg-white text-[#0B3D2E] hover:bg-white">
-            Harga {brand.siteName}
-          </Badge>
-          <h1 className="mx-auto mt-4 max-w-3xl font-display text-3xl font-bold tracking-tight text-[#101613] sm:text-4xl md:text-5xl">
-            Harga jelas, spesifikasi nyata
-          </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-[#5B6B60]">
-            Mulai dari {formatIDR(cheapest)} per bulan. Pilih siklus pembayaran yang paling sesuai, tanpa
-            biaya setup tersembunyi.
-          </p>
+      <section className="relative overflow-hidden border-b border-white/10 bg-[#06231A] text-white">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.12]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.22) 1px, transparent 1px)",
+            backgroundSize: "56px 56px",
+            maskImage: "linear-gradient(to bottom, black, transparent 88%)",
+            WebkitMaskImage: "linear-gradient(to bottom, black, transparent 88%)",
+          }}
+          aria-hidden
+        />
+        <div className="ws-container relative py-16 md:py-24">
+          <Reveal className="mx-auto max-w-3xl text-center">
+            <Badge className="border border-white/15 bg-white/5 text-white/80 hover:bg-white/5">
+              Harga {brand.siteName}
+            </Badge>
+            <h1 className="mt-5 font-display text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+              Harga jelas, spesifikasi nyata.
+            </h1>
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-white/70 sm:text-lg">
+              Mulai dari {formatIDR(cheapest)} per bulan
+              {weeklyCheapest > 0 ? (
+                <>
+                  {" "}
+                  atau {formatIDR(weeklyCheapest)} per minggu
+                </>
+              ) : null}
+              . Pilih siklus yang paling sesuai, tanpa biaya setup tersembunyi.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Button asChild size="lg" className="bg-white text-[#0B3D2E] hover:bg-[#E7F4EC]">
+                <Link href="/register">
+                  Mulai dari {formatIDR(cheapest)} <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
+              >
+                <Link href="/fitur">Lihat fitur</Link>
+              </Button>
+            </div>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-white/55">
+              <span className="inline-flex items-center gap-1.5">
+                <Check className="size-3.5 text-[#86EFAC]" /> Tanpa biaya setup
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Check className="size-3.5 text-[#86EFAC]" /> Harga rupiah
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Check className="size-3.5 text-[#86EFAC]" /> Aktivasi otomatis
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Check className="size-3.5 text-[#86EFAC]" /> Support WhatsApp
+              </span>
+            </div>
+          </Reveal>
         </div>
       </section>
 
@@ -50,17 +100,31 @@ export default async function PricingPage() {
             </div>
           )}
 
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
+          <div className="mt-14 grid gap-4 md:grid-cols-3">
             {[
-              { icon: ShieldCheck, title: "Tanpa biaya tersembunyi", body: "Harga yang tampil adalah yang kamu bayar. Pajak mengikuti ketentuan yang berlaku." },
-              { icon: Globe2, title: "Region fleksibel", body: `Tersedia ${regionRows.map((r) => r.name).join(", ")}.` },
-              { icon: Check, title: "Sistem operasi populer", body: `Pilihan image: ${osRows.map((o) => o.distribution).join(", ")}.` },
+              {
+                icon: ShieldCheck,
+                title: "Tanpa biaya tersembunyi",
+                body: "Harga yang tampil adalah yang kamu bayar. Pajak mengikuti ketentuan yang berlaku.",
+              },
+              {
+                icon: Globe2,
+                title: "Region fleksibel",
+                body: `Tersedia ${regionRows.map((r) => r.name).join(", ")}. Pilih region terdekat dengan penggunamu.`,
+              },
+              {
+                icon: Zap,
+                title: "Aktivasi otomatis",
+                body: `Pilihan image: ${osRows.map((o) => o.distribution).join(", ")}. Server aktif otomatis setelah pembayaran terverifikasi.`,
+              },
             ].map((item) => (
-              <div key={item.title} className="rounded-2xl border border-[#E3E8E4] bg-white p-5">
-                <item.icon className="size-5 text-[#0B3D2E]" />
-                <h2 className="mt-3 text-sm font-bold text-[#101613]">{item.title}</h2>
-                <p className="mt-1 text-sm leading-relaxed text-[#5B6B60]">{item.body}</p>
-              </div>
+              <Reveal key={item.title}>
+                <div className="rounded-2xl border border-[#E3E8E4] bg-white p-5">
+                  <item.icon className="size-5 text-[#0B3D2E]" />
+                  <h2 className="mt-3 text-sm font-bold text-[#101613]">{item.title}</h2>
+                  <p className="mt-1 text-sm leading-relaxed text-[#5B6B60]">{item.body}</p>
+                </div>
+              </Reveal>
             ))}
           </div>
 
