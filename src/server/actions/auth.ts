@@ -21,6 +21,7 @@ import { notifyUserEvent } from "@/lib/notifications";
 import { isWhatsAppConnected, queueWhatsApp } from "@/lib/whatsapp/queue";
 import { auditLogin } from "@/lib/audit-login";
 import { rateLimit } from "@/lib/rate-limit";
+import { verifyTurnstile } from "@/lib/turnstile";
 import { uid } from "@/lib/format";
 import {
   forgotPasswordSchema,
@@ -156,6 +157,14 @@ function retryResult(message: string, retryAfterSeconds: number): ActionResult<{
   return { ok: false, message, data: { retryAfterSeconds } };
 }
 
+async function checkCaptcha(formData: FormData, ip: string): Promise<ActionResult | null> {
+  const token = formData.get("cf-turnstile-response")?.toString() ?? null;
+  const ok = await verifyTurnstile(token, ip);
+  return ok
+    ? null
+    : fail("Verifikasi keamanan gagal. Selesaikan Turnstile lalu coba lagi.");
+}
+
 export async function registerAction(
   _prev: ActionResult | undefined,
   formData: FormData,
@@ -174,6 +183,8 @@ export async function registerAction(
   const meta = await clientMeta();
   const limit = rateLimit(`register:${meta.ip}`, 5, 15 * 60 * 1000);
   if (!limit.ok) return fail("Terlalu banyak percobaan. Coba lagi beberapa menit lagi.");
+  const captcha = await checkCaptcha(formData, meta.ip);
+  if (captcha) return captcha;
 
   const existing = db.select().from(users).where(eq(users.email, input.email)).get();
   if (existing) {
@@ -251,6 +262,8 @@ export async function loginAction(
       `Terlalu banyak percobaan masuk. Coba lagi dalam ${Math.ceil(limit.retryAfterSeconds / 60)} menit.`,
     );
   }
+  const captcha = await checkCaptcha(formData, meta.ip);
+  if (captcha) return captcha;
 
   const user = db.select().from(users).where(eq(users.email, parsed.data.email)).get();
   if (!user) return fail("Email atau password salah.");
@@ -288,6 +301,8 @@ export async function forgotPasswordAction(
   const meta = await clientMeta();
   const limit = rateLimit(`forgot:${meta.ip}`, 4, 15 * 60 * 1000);
   if (!limit.ok) return fail("Terlalu banyak permintaan. Coba lagi beberapa menit lagi.");
+  const captcha = await checkCaptcha(formData, meta.ip);
+  if (captcha) return captcha;
 
   const user = db.select().from(users).where(eq(users.email, parsed.data.email)).get();
   if (user && user.status === "active") {
@@ -319,6 +334,12 @@ export async function resetPasswordAction(
     confirmPassword: formData.get("confirmPassword"),
   });
   if (!parsed.success) return fromZod(parsed.error);
+
+  const meta = await clientMeta();
+  const limit = rateLimit(`reset:${meta.ip}`, 6, 15 * 60 * 1000);
+  if (!limit.ok) return fail("Terlalu banyak percobaan. Coba lagi beberapa menit lagi.");
+  const captcha = await checkCaptcha(formData, meta.ip);
+  if (captcha) return captcha;
 
   const tokenHash = sha256(parsed.data.token);
   const row = db

@@ -119,6 +119,9 @@ export function DoServiceSync() {
                           <p className="mt-0.5 text-[10px] text-[#8A9A90]">
                             ID {droplet.id} · {formatDateTime(droplet.createdAt)}
                           </p>
+                          <p className="mt-0.5 text-[10px] font-medium text-[#5B6B60]">
+                            Akun: {droplet.accountName}
+                          </p>
                         </td>
                         <td className="px-3 py-3">
                           <span

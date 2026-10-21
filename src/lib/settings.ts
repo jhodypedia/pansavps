@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/core";
-import { settings } from "@/lib/db/schema";
+import { doAccounts, settings } from "@/lib/db/schema";
 import { decrypt, encrypt, isEncrypted } from "@/lib/crypto";
 
 /** Nilai default — seed menulis ini ke DB agar admin bisa mengubahnya. */
@@ -127,8 +127,15 @@ export function numberSetting(key: string): number {
 }
 
 export function isMockMode(): boolean {
-  const token = getSetting("do_token");
-  return getSetting("do_mock_mode") === "true" || !token;
+  if (getSetting("do_mock_mode") === "true") return true;
+  const account = db
+    .select({ id: doAccounts.id })
+    .from(doAccounts)
+    .where(eq(doAccounts.isActive, true))
+    .get();
+  if (account) return false;
+  // Fallback untuk instalasi lama sebelum token dipindahkan ke tabel akun.
+  return !getSetting("do_token");
 }
 
 export type PublicBrand = {

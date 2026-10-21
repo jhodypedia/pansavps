@@ -284,8 +284,22 @@ export const payments = sqliteTable(
 );
 
 /* ──────────────────────────────────────────────────────────────
-   5. Layanan VPS
+   5. Akun DigitalOcean & layanan VPS
    ────────────────────────────────────────────────────────────── */
+export const doAccounts = sqliteTable(
+  "do_accounts",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    tokenEncrypted: text("token_encrypted").notNull(),
+    isDefault: integer("is_default", { mode: "boolean" }).notNull().default(false),
+    isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("do_accounts_active_idx").on(t.isActive)],
+);
+
 export const services = sqliteTable(
   "services",
   {
@@ -297,6 +311,7 @@ export const services = sqliteTable(
     planId: integer("plan_id")
       .notNull()
       .references(() => plans.id),
+    doAccountId: text("do_account_id"),
     doDropletId: text("do_droplet_id").unique(),
     hostname: text("hostname").notNull(),
     regionSlug: text("region_slug").notNull(),
@@ -316,6 +331,7 @@ export const services = sqliteTable(
   (t) => [
     index("services_user_idx").on(t.userId),
     index("services_status_idx").on(t.status),
+    index("services_account_idx").on(t.doAccountId),
   ],
 );
 
@@ -362,6 +378,7 @@ export const sshKeys = sqliteTable(
     publicKey: text("public_key").notNull(),
     fingerprint: text("fingerprint").notNull(),
     doSshKeyId: text("do_ssh_key_id"),
+    doSshKeyMap: text("do_ssh_key_map", { mode: "json" }).$type<Record<string, string>>(),
     createdAt: createdAt(),
   },
   (t) => [index("ssh_keys_user_idx").on(t.userId)],
@@ -597,6 +614,7 @@ export type OsImage = typeof osImages.$inferSelect;
 export type Order = typeof orders.$inferSelect;
 export type Invoice = typeof invoices.$inferSelect;
 export type Payment = typeof payments.$inferSelect;
+export type DoAccount = typeof doAccounts.$inferSelect;
 export type Service = typeof services.$inferSelect;
 export type Snapshot = typeof snapshots.$inferSelect;
 export type SshKey = typeof sshKeys.$inferSelect;

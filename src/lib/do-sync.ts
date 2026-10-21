@@ -1,5 +1,7 @@
 export type DoServiceDroplet = {
   id: string;
+  accountId: string | null;
+  accountName: string;
   name: string;
   status: string;
   region: string;

@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { plans, regions } from "@/lib/db/schema";
 import type { Plan } from "@/lib/db/schema";
 import { listSizes, type DoSize } from "@/lib/digitalocean";
+import { getDefaultDoAccount } from "@/lib/do-accounts";
 import { getSettings, isMockMode } from "@/lib/settings";
 import { priceFromMarkup } from "@/lib/pricing";
 
@@ -28,7 +29,7 @@ export async function loadDoCatalog(): Promise<{
   );
 
   try {
-    const sizes = await listSizes();
+    const sizes = await listSizes(getDefaultDoAccount()?.id);
     const items = sizes
       .slice()
       .sort((a, b) => a.memory - b.memory || a.vcpus - b.vcpus || a.disk - b.disk)
@@ -127,7 +128,7 @@ export async function syncDoCatalog(): Promise<{
   const settings = getSettings();
   const rate = Number(settings.usd_idr_rate || 16500);
   const markup = Number(settings.default_markup_percent || 30);
-  const sizes = await listSizes();
+  const sizes = await listSizes(getDefaultDoAccount()?.id);
   const regionRows = db.select().from(regions).all();
   const activeRegions = new Set(regionRows.filter((region) => region.isActive).map((region) => region.slug));
   const existing = db.select().from(plans).all();

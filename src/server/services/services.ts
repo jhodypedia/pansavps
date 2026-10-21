@@ -125,36 +125,37 @@ export async function performServiceAction(input: {
   }
 
   const dropletId = service.doDropletId ?? "";
+  const accountId = service.doAccountId;
   let message = "Aksi berhasil dijalankan.";
   let password: string | undefined;
 
   try {
     switch (input.action) {
       case "power_on":
-        await dropletAction(dropletId, "power_on");
+        await dropletAction(dropletId, "power_on", {}, accountId);
         if (service.status === "suspended") {
           db.update(services).set({ status: "active" }).where(eq(services.id, service.id)).run();
         }
         message = "Server dinyalakan.";
         break;
       case "power_off":
-        await dropletAction(dropletId, "power_off");
+        await dropletAction(dropletId, "power_off", {}, accountId);
         message = "Server dimatikan paksa.";
         break;
       case "shutdown":
-        await dropletAction(dropletId, "shutdown");
+        await dropletAction(dropletId, "shutdown", {}, accountId);
         message = "Perintah shutdown dikirim. Server akan berhenti dengan rapi.";
         break;
       case "reboot":
-        await dropletAction(dropletId, "reboot");
+        await dropletAction(dropletId, "reboot", {}, accountId);
         message = "Server sedang di-reboot.";
         break;
       case "power_cycle":
-        await dropletAction(dropletId, "power_cycle");
+        await dropletAction(dropletId, "power_cycle", {}, accountId);
         message = "Power cycle dijalankan.";
         break;
       case "password_reset": {
-        await dropletAction(dropletId, "password_reset");
+        await dropletAction(dropletId, "password_reset", {}, accountId);
         password = randomPassword(20);
         db.update(services)
           .set({ rootPasswordEncrypted: encrypt(password) })
@@ -165,14 +166,14 @@ export async function performServiceAction(input: {
       }
       case "rebuild": {
         if (!input.image) throw new ServiceError("IMAGE_REQUIRED", "Pilih sistem operasi untuk rebuild.");
-        await rebuildDroplet(dropletId, input.image);
+        await rebuildDroplet(dropletId, input.image, accountId);
         db.update(services).set({ osSlug: input.image }).where(eq(services.id, service.id)).run();
         message = "Rebuild dimulai. Semua data lama akan hilang.";
         break;
       }
       case "snapshot": {
         const name = input.name?.trim() || `snap-${service.hostname}-${Date.now()}`;
-        await snapshotDroplet(dropletId, name);
+        await snapshotDroplet(dropletId, name, accountId);
         db.insert(snapshots)
           .values({
             id: uid("snap_", 16),
@@ -192,21 +193,21 @@ export async function performServiceAction(input: {
           .where(and(eq(snapshots.id, input.snapshotId), eq(snapshots.serviceId, service.id)))
           .get();
         if (!snapshot) throw new ServiceError("NOT_FOUND", "Snapshot tidak ditemukan.");
-        await deleteSnapshot(snapshot.doSnapshotId);
+        await deleteSnapshot(snapshot.doSnapshotId, accountId);
         db.delete(snapshots).where(eq(snapshots.id, snapshot.id)).run();
         message = "Snapshot dihapus.";
         break;
       }
       case "enable_ipv6":
-        await dropletAction(dropletId, "enable_ipv6");
+        await dropletAction(dropletId, "enable_ipv6", {}, accountId);
         message = "IPv6 diaktifkan. Alamat akan muncul setelah sinkronisasi.";
         break;
       case "enable_backups":
-        await dropletAction(dropletId, "enable_backups");
+        await dropletAction(dropletId, "enable_backups", {}, accountId);
         message = "Backup otomatis diaktifkan.";
         break;
       case "disable_backups":
-        await dropletAction(dropletId, "disable_backups");
+        await dropletAction(dropletId, "disable_backups", {}, accountId);
         message = "Backup otomatis dimatikan.";
         break;
       case "rename": {
@@ -214,25 +215,25 @@ export async function performServiceAction(input: {
         if (!newName || !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(newName)) {
           throw new ServiceError("INVALID_NAME", "Nama server tidak valid.");
         }
-        await renameDroplet(dropletId, newName);
+        await renameDroplet(dropletId, newName, accountId);
         db.update(services).set({ hostname: newName }).where(eq(services.id, service.id)).run();
         message = `Server diganti nama menjadi ${newName}.`;
         break;
       }
       case "suspend":
         if (!isAdmin) throw new ServiceError("FORBIDDEN", "Hanya admin yang bisa menangguhkan.");
-        await dropletAction(dropletId, "power_off");
+        await dropletAction(dropletId, "power_off", {}, accountId);
         db.update(services).set({ status: "suspended" }).where(eq(services.id, service.id)).run();
         message = "VPS ditangguhkan.";
         break;
       case "unsuspend":
         if (!isAdmin) throw new ServiceError("FORBIDDEN", "Hanya admin yang bisa mengaktifkan.");
-        await dropletAction(dropletId, "power_on");
+        await dropletAction(dropletId, "power_on", {}, accountId);
         db.update(services).set({ status: "active" }).where(eq(services.id, service.id)).run();
         message = "VPS diaktifkan kembali.";
         break;
       case "terminate": {
-        if (dropletId) await deleteDroplet(dropletId);
+        if (dropletId) await deleteDroplet(dropletId, accountId);
         db.update(services)
           .set({ status: "terminated", terminatedAt: new Date() })
           .where(eq(services.id, service.id))
@@ -242,7 +243,7 @@ export async function performServiceAction(input: {
       }
       case "sync": {
         if (!dropletId) throw new ServiceError("NO_DROPLET", "Tidak ada droplet untuk disinkronkan.");
-        const droplet = await getDroplet(dropletId);
+        const droplet = await getDroplet(dropletId, accountId);
         if (!droplet) {
           db.update(services).set({ status: "failed" }).where(eq(services.id, service.id)).run();
           message = "Droplet tidak ditemukan di DigitalOcean. Status ditandai gagal.";
@@ -323,7 +324,7 @@ export async function resizeServiceForUpgrade(serviceId: string, sizeSlug: strin
   const service = getServiceById(serviceId);
   if (!service?.doDropletId) return { ok: false };
   try {
-    await resizeDroplet(service.doDropletId, sizeSlug);
+    await resizeDroplet(service.doDropletId, sizeSlug, service.doAccountId);
     return { ok: true };
   } catch (error) {
     logAction({

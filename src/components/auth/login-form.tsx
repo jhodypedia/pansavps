@@ -11,9 +11,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { PasswordInput } from "@/components/auth/password-input";
+import {
+  scheduleTurnstileReset,
+  TurnstileWidget,
+  type TurnstileWidgetConfig,
+} from "@/components/auth/turnstile-widget";
 import { toastSuccess } from "@/lib/toast";
 
-export function LoginForm({ next }: { next?: string }) {
+export function LoginForm({
+  next,
+  captcha,
+}: {
+  next?: string;
+  captcha: TurnstileWidgetConfig;
+}) {
   const [state, action] = useActionState<ActionResult | undefined, FormData>(loginAction, undefined);
   const router = useRouter();
 
@@ -26,7 +37,7 @@ export function LoginForm({ next }: { next?: string }) {
   }, [state, router]);
 
   return (
-    <form action={action} className="space-y-5">
+    <form action={action} className="space-y-5" onSubmit={() => scheduleTurnstileReset()}>
       {next ? <input type="hidden" name="next" value={next} /> : null}
       {state && !state.ok ? (
         <Alert variant="destructive" className="border-[#FECACA] bg-[#FEE2E2] text-[#991B1B]">
@@ -60,6 +71,8 @@ export function LoginForm({ next }: { next?: string }) {
         </div>
         <PasswordInput name="password" autoComplete="current-password" />
       </div>
+
+      {captcha.enabled ? <TurnstileWidget siteKey={captcha.siteKey} /> : null}
 
       <SubmitButton
         pendingText="Masuk…"

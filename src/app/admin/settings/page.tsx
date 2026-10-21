@@ -6,6 +6,7 @@ import {
   ENCRYPTED_SETTING_KEYS,
   getSettings,
 } from "@/lib/settings";
+import { ensureDoAccountSetup, listDoAccountsSafe } from "@/lib/do-accounts";
 import { PageHeader } from "@/components/shared/page-header";
 import { AdminSettingsTabs } from "@/components/dashboard/settings-forms";
 import { Button } from "@/components/ui/button";
@@ -31,7 +32,9 @@ export default async function AdminSettingsPage({
 }) {
   await requireAdmin();
   const { tab } = await searchParams;
+  ensureDoAccountSetup();
   const settings = getSettings();
+  const doAccounts = listDoAccountsSafe();
   const initialTab = tabs.includes(tab ?? "") ? tab! : "general";
 
   const secrets = Object.fromEntries(
@@ -87,6 +90,7 @@ export default async function AdminSettingsPage({
         userEventValues={parseList(settings.wa_user_events)}
         secrets={secrets}
         appUrl={(process.env.APP_URL || "http://localhost:3000").replace(/\/$/, "")}
+        doAccounts={doAccounts}
       />
     </div>
   );

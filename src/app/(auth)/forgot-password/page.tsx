@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
+import { getTurnstileConfig } from "@/lib/turnstile";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 
 export const metadata: Metadata = { title: "Lupa Password" };
+export const dynamic = "force-dynamic";
 
 export default function ForgotPasswordPage() {
+  const captcha = getTurnstileConfig();
+
   return (
     <div>
       <div className="mb-8">
@@ -13,7 +17,7 @@ export default function ForgotPasswordPage() {
           Masukkan email terdaftar. Kami akan mengirim tautan untuk membuat password baru.
         </p>
       </div>
-      <ForgotPasswordForm />
+      <ForgotPasswordForm captcha={captcha} />
     </div>
   );
 }

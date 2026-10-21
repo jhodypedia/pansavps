@@ -26,6 +26,13 @@ import { marginInfo, priceFromMarkup } from "@/lib/pricing";
 import { getSettings, setSettings, ENCRYPTED_SETTING_KEYS } from "@/lib/settings";
 import { queueWhatsApp } from "@/lib/whatsapp/queue";
 import { testConnection as testDoConnection } from "@/lib/digitalocean";
+import {
+  createDoAccount,
+  deleteDoAccount,
+  getDoAccountById,
+  setDefaultDoAccount,
+  updateDoAccount,
+} from "@/lib/do-accounts";
 import { runCron } from "@/server/services/cron";
 import { syncDigitalOceanServices } from "@/server/services/do-services";
 import type { DoServiceSyncResult } from "@/lib/do-sync";
@@ -35,6 +42,7 @@ import { refundOrder, retryProvisioning } from "@/server/services/orders";
 import {
   adjustBalanceSchema,
   announcementSchema,
+  doAccountSchema,
   doSettingsSchema,
   emailSettingsSchema,
   generalSettingsSchema,
@@ -702,13 +710,18 @@ export async function saveSettingsAction(
         support_email: formData.get("support_email"),
         support_whatsapp: formData.get("support_whatsapp"),
         maintenance_mode: formBool(formData, "maintenance_mode"),
+        captcha_enabled: formBool(formData, "captcha_enabled"),
+        turnstile_site_key: formString(formData, "turnstile_site_key"),
+        turnstile_secret_key: formString(formData, "turnstile_secret_key") || undefined,
       });
       if (!parsed.success) return fromZod(parsed.error);
       setSettings(
-        {
+        keepEncryptedBlank({
           ...parsed.data,
           maintenance_mode: String(parsed.data.maintenance_mode),
-        },
+          captcha_enabled: String(parsed.data.captcha_enabled),
+          turnstile_secret_key: parsed.data.turnstile_secret_key ?? "",
+        }),
         admin.id,
       );
     } else if (section === "announcement") {
@@ -899,15 +912,101 @@ export async function testEmailAction(): Promise<ActionResult> {
   );
 }
 
-export async function testDoConnectionAction(): Promise<ActionResult<{ mock: boolean; email: string }>> {
+export async function saveDoAccountAction(
+  accountId: string | null,
+  _prev: ActionResult | undefined,
+  formData: FormData,
+): Promise<ActionResult> {
+  const admin = await requireAdminAction();
+  if (!admin) return fail("Hanya admin.");
+  const parsed = doAccountSchema.safeParse({
+    name: formData.get("name"),
+    token: formString(formData, "token") || undefined,
+    isDefault: formBool(formData, "isDefault"),
+    isActive: formBool(formData, "isActive"),
+  });
+  if (!parsed.success) return fromZod(parsed.error);
+  if (!accountId && !parsed.data.token) {
+    return fail("Token DigitalOcean wajib diisi untuk akun baru.");
+  }
+  try {
+    if (accountId) {
+      updateDoAccount({
+        id: accountId,
+        name: parsed.data.name,
+        token: parsed.data.token,
+        isDefault: parsed.data.isDefault,
+        isActive: parsed.data.isActive,
+      });
+    } else {
+      createDoAccount({
+        name: parsed.data.name,
+        token: parsed.data.token!,
+        isDefault: parsed.data.isDefault,
+        isActive: parsed.data.isActive,
+      });
+    }
+    await writeAudit({
+      actor: admin,
+      action: accountId ? "update_do_account" : "create_do_account",
+      entity: "digitalocean",
+      entityId: accountId ?? parsed.data.name,
+    });
+    revalidatePath("/admin/settings");
+    return done(accountId ? "Akun DigitalOcean diperbarui." : "Akun DigitalOcean ditambahkan.");
+  } catch (error) {
+    return fail(errorMessage(error));
+  }
+}
+
+export async function deleteDoAccountAction(accountId: string): Promise<ActionResult> {
   const admin = await requireAdminAction();
   if (!admin) return fail("Hanya admin.");
   try {
-    const info = await testDoConnection();
+    deleteDoAccount(accountId);
+    await writeAudit({
+      actor: admin,
+      action: "delete_do_account",
+      entity: "digitalocean",
+      entityId: accountId,
+    });
+    revalidatePath("/admin/settings");
+    return done("Akun DigitalOcean dihapus.");
+  } catch (error) {
+    return fail(errorMessage(error));
+  }
+}
+
+export async function setDefaultDoAccountAction(accountId: string): Promise<ActionResult> {
+  const admin = await requireAdminAction();
+  if (!admin) return fail("Hanya admin.");
+  try {
+    setDefaultDoAccount(accountId);
+    await writeAudit({
+      actor: admin,
+      action: "set_default_do_account",
+      entity: "digitalocean",
+      entityId: accountId,
+    });
+    revalidatePath("/admin/settings");
+    return done("Akun default DigitalOcean diperbarui.");
+  } catch (error) {
+    return fail(errorMessage(error));
+  }
+}
+
+export async function testDoConnectionAction(
+  accountId?: string,
+): Promise<ActionResult<{ mock: boolean; email: string }>> {
+  const admin = await requireAdminAction();
+  if (!admin) return fail("Hanya admin.");
+  try {
+    const info = await testDoConnection(accountId);
+    const label = accountId ? getDoAccountById(accountId)?.name : null;
     return done(
       info.mock
         ? "Mode mock aktif. Koneksi DigitalOcean tidak dipanggil."
-        : `Terhubung ke akun DigitalOcean ${info.account.email}.`,
+        : `Terhubung ke akun DigitalOcean ${info.account.email}${label ? ` (${label})` : ""}.`,
       { data: { mock: info.mock, email: info.account.email } },
     );
   } catch (error) {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
+import { getTurnstileConfig } from "@/lib/turnstile";
 import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = { title: "Masuk" };
@@ -13,6 +14,7 @@ export default async function LoginPage({
   const user = await getSessionUser();
   if (user) redirect(user.role === "admin" ? "/admin" : "/dashboard");
   const params = await searchParams;
+  const captcha = getTurnstileConfig();
 
   return (
     <div>
@@ -23,7 +25,7 @@ export default async function LoginPage({
           Kelola server, invoice, dan saldo dari satu tempat.
         </p>
       </div>
-      <LoginForm next={params.next} />
+      <LoginForm next={params.next} captcha={captcha} />
     </div>
   );
 }

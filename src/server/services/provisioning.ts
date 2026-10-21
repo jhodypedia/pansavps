@@ -12,7 +12,14 @@ import {
   sshKeys,
   users,
 } from "@/lib/db/schema";
-import { createDroplet, createSshKey, getDroplet, MOCK_SIZES } from "@/lib/digitalocean";
+import {
+  createDroplet,
+  createSshKey,
+  DigitalOceanError,
+  getDroplet,
+  MOCK_SIZES,
+} from "@/lib/digitalocean";
+import { getActiveDoAccounts, getDefaultDoAccount } from "@/lib/do-accounts";
 import { decrypt, encrypt, randomPassword } from "@/lib/crypto";
 import { isMockMode } from "@/lib/settings";
 import { formatIDR, uid } from "@/lib/format";
@@ -49,6 +56,41 @@ function logAction(input: {
 
 function isPermanentProvisionError(reason: string): boolean {
   return /exceed your droplet limit|droplet limit|limit.*droplet/i.test(reason);
+}
+
+function shouldTryNextAccount(error: unknown): boolean {
+  if (!(error instanceof DigitalOceanError)) return false;
+  if (/exceed your droplet limit|droplet limit|limit.*droplet/i.test(error.message)) return true;
+  if (error.code === "network" || error.code === "timeout" || error.code === "no_token") return true;
+  return [401, 403, 429, 500, 502, 503, 504].includes(error.status);
+}
+
+async function sshKeyForAccount(
+  key: {
+    id: string;
+    publicKey: string;
+    doSshKeyId: string | null;
+    doSshKeyMap: Record<string, string> | null;
+  },
+  accountId: string,
+  isDefault: boolean,
+): Promise<string> {
+  const map = { ...(key.doSshKeyMap ?? {}) };
+  let sshDoId = map[accountId];
+  if (!sshDoId && isDefault && key.doSshKeyId) sshDoId = key.doSshKeyId;
+  if (!sshDoId) {
+    const created = await createSshKey(`${key.id}-${accountId}`, key.publicKey, accountId);
+    sshDoId = created.id;
+    map[accountId] = sshDoId;
+    db.update(sshKeys)
+      .set({
+        doSshKeyMap: map,
+        doSshKeyId: key.doSshKeyId ?? (isDefault ? sshDoId : null),
+      })
+      .where(eq(sshKeys.id, key.id))
+      .run();
+  }
+  return sshDoId;
 }
 
 async function failJob(jobId: string, serviceId: string, orderId: string | null, reason: string) {
@@ -172,50 +214,97 @@ async function runProvisionStep(jobId: string): Promise<"pending" | "active" | "
     return "failed";
   }
 
-  // Step 0 — buat droplet.
+  // Step 0 — buat droplet pada akun DigitalOcean yang masih punya kapasitas.
   if (job.step === 0) {
     const password = randomPassword(20);
     let dropletId = svc.doDropletId;
     let ipv4 = svc.ipv4;
     let ipv6 = svc.ipv6;
-    let sshDoId: string | number | undefined;
-
-    if (svc.sshKeyId) {
-      const key = db.select().from(sshKeys).where(eq(sshKeys.id, svc.sshKeyId)).get();
-      if (key) {
-        if (!key.doSshKeyId) {
-          const created = await createSshKey(`${user.id}-${key.id}`, key.publicKey);
-          sshDoId = created.id;
-          db.update(sshKeys).set({ doSshKeyId: created.id }).where(eq(sshKeys.id, key.id)).run();
-        } else {
-          sshDoId = key.doSshKeyId;
-        }
-      }
-    }
+    let accountId: string | null = svc.doAccountId ?? null;
+    const sshKey = svc.sshKeyId
+      ? db.select().from(sshKeys).where(eq(sshKeys.id, svc.sshKeyId)).get()
+      : null;
 
     if (!dropletId) {
-      const created = await createDroplet({
-        name: svc.hostname,
-        region: svc.regionSlug,
-        size: plan.doSizeSlug || svc.sizeSlug,
-        image: svc.osSlug,
-        ssh_keys: sshDoId ? [sshDoId] : undefined,
-        tags: ["vps-store", `user-${user.id}`, `service-${svc.id}`],
-        user_data: `#cloud-config\nssh_pwauth: true\nchpasswd:\n  list: |\n    root:${password}\n  expire: false\n`,
-      });
-      dropletId = String(created.id);
-      ipv4 = created.ipv4;
-      ipv6 = created.ipv6;
-      logAction({
-        serviceId: svc.id,
-        action: "create_droplet",
-        message: `Droplet ${dropletId} dibuat di ${svc.regionSlug}.`,
-        payload: { dropletId, region: svc.regionSlug, size: plan.doSizeSlug },
-      });
+      const accounts = getActiveDoAccounts();
+      if (accounts.length === 0) {
+        throw new DigitalOceanError(
+          "Belum ada akun DigitalOcean aktif. Tambahkan akun di Pengaturan → DigitalOcean.",
+          400,
+          "no_account",
+        );
+      }
+
+      let lastError: unknown = null;
+      for (const account of accounts) {
+        try {
+          const sshDoId = sshKey
+            ? await sshKeyForAccount(sshKey, account.id, account.isDefault)
+            : undefined;
+          const created = await createDroplet({
+            name: svc.hostname,
+            region: svc.regionSlug,
+            size: plan.doSizeSlug || svc.sizeSlug,
+            image: svc.osSlug,
+            ssh_keys: sshDoId ? [sshDoId] : undefined,
+            tags: ["vps-store", `user-${user.id}`, `service-${svc.id}`],
+            user_data: `#cloud-config\nssh_pwauth: true\nchpasswd:\n  list: |\n    root:${password}\n  expire: false\n`,
+            accountId: account.id,
+          });
+          dropletId = String(created.id);
+          ipv4 = created.ipv4;
+          ipv6 = created.ipv6;
+          accountId = account.id;
+          lastError = null;
+          logAction({
+            serviceId: svc.id,
+            action: "create_droplet",
+            message: `Droplet ${dropletId} dibuat di ${svc.regionSlug} pada akun ${account.name}.`,
+            payload: {
+              dropletId,
+              region: svc.regionSlug,
+              size: plan.doSizeSlug,
+              accountId: account.id,
+              accountName: account.name,
+            },
+          });
+          break;
+        } catch (error) {
+          lastError = error;
+          if (shouldTryNextAccount(error) && accounts.length > 1) {
+            const message = error instanceof Error ? error.message : "Akun tidak dapat dipakai.";
+            logAction({
+              serviceId: svc.id,
+              action: "create_droplet",
+              message: `Akun ${account.name} dilewati: ${message}`,
+              status: "failed",
+              payload: { accountId: account.id, accountName: account.name, reason: message },
+            });
+            continue;
+          }
+          throw error;
+        }
+      }
+      if (!dropletId) {
+        throw lastError instanceof Error
+          ? lastError
+          : new Error("Gagal membuat droplet di seluruh akun DigitalOcean.");
+      }
+    } else {
+      accountId = accountId ?? getDefaultDoAccount()?.id ?? null;
+    }
+
+    if (!accountId) {
+      throw new DigitalOceanError(
+        "Akun DigitalOcean untuk layanan ini tidak ditemukan.",
+        400,
+        "no_account",
+      );
     }
 
     db.update(services)
       .set({
+        doAccountId: accountId,
         doDropletId: dropletId,
         ipv4,
         ipv6,
@@ -244,7 +333,7 @@ async function runProvisionStep(jobId: string): Promise<"pending" | "active" | "
     return "failed";
   }
 
-  const droplet = await getDroplet(svc.doDropletId);
+  const droplet = await getDroplet(svc.doDropletId, svc.doAccountId);
   const started = job.createdAt?.getTime() ?? Date.now();
   const timedOut = Date.now() - started > 5 * 60 * 1000;
 

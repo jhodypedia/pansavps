@@ -43,6 +43,7 @@ next-env.d.ts
 # database & runtime data
 /data/app.db
 /data/app.db-*
+/data/backups/
 /data/wa-auth/
 /data/uploads/
 

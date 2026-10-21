@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
+import { getTurnstileConfig } from "@/lib/turnstile";
 import { RegisterForm } from "@/components/auth/register-form";
 
 export const metadata: Metadata = { title: "Daftar" };
@@ -13,6 +14,7 @@ export default async function RegisterPage({
   const user = await getSessionUser();
   if (user) redirect(user.role === "admin" ? "/admin" : "/dashboard");
   const params = await searchParams;
+  const captcha = getTurnstileConfig();
 
   return (
     <div>
@@ -23,7 +25,7 @@ export default async function RegisterPage({
           Hanya butuh satu menit. Tanpa kartu kredit sampai kamu memesan server.
         </p>
       </div>
-      <RegisterForm next={params.next} planSlug={params.plan} />
+      <RegisterForm next={params.next} planSlug={params.plan} captcha={captcha} />
     </div>
   );
 }

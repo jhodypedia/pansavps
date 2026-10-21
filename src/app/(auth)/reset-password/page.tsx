@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
+import { getTurnstileConfig } from "@/lib/turnstile";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 
 export const metadata: Metadata = { title: "Reset Password" };
@@ -12,6 +13,7 @@ export default async function ResetPasswordPage({
 }) {
   const params = await searchParams;
   const token = params.token;
+  const captcha = getTurnstileConfig();
 
   if (!token) {
     return (
@@ -42,7 +44,7 @@ export default async function ResetPasswordPage({
           Gunakan password yang kuat dan belum pernah dipakai di layanan lain.
         </p>
       </div>
-      <ResetPasswordForm token={token} />
+      <ResetPasswordForm token={token} captcha={captcha} />
     </div>
   );
 }

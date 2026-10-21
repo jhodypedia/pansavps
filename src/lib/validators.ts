@@ -249,12 +249,22 @@ export const generalSettingsSchema = z.object({
     .transform(normalizePhone)
     .refine(isValidPhone, "Nomor WhatsApp support tidak valid."),
   maintenance_mode: z.boolean().default(false),
+  captcha_enabled: z.boolean().default(false),
+  turnstile_site_key: z.string().trim().max(200).default(""),
+  turnstile_secret_key: z.string().max(500).optional(),
 });
 
 export const doSettingsSchema = z.object({
   do_token: z.string().trim().max(500).optional(),
   do_default_region: z.string().trim().min(2).max(20),
   do_mock_mode: z.boolean().default(true),
+});
+
+export const doAccountSchema = z.object({
+  name: z.string().trim().min(2, "Nama akun minimal 2 karakter.").max(80),
+  token: z.string().trim().max(500).optional(),
+  isDefault: z.boolean().default(false),
+  isActive: z.boolean().default(true),
 });
 
 export const pricingSettingsSchema = z.object({

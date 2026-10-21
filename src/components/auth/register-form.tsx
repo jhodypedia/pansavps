@@ -13,9 +13,22 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { PasswordInput } from "@/components/auth/password-input";
 import { PasswordFeedback, isPasswordReady } from "@/components/auth/password-feedback";
+import {
+  scheduleTurnstileReset,
+  TurnstileWidget,
+  type TurnstileWidgetConfig,
+} from "@/components/auth/turnstile-widget";
 import { toastSuccess } from "@/lib/toast";
 
-export function RegisterForm({ next, planSlug }: { next?: string; planSlug?: string }) {
+export function RegisterForm({
+  next,
+  planSlug,
+  captcha,
+}: {
+  next?: string;
+  planSlug?: string;
+  captcha: TurnstileWidgetConfig;
+}) {
   const [state, action] = useActionState<ActionResult | undefined, FormData>(registerAction, undefined);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -38,7 +51,7 @@ export function RegisterForm({ next, planSlug }: { next?: string; planSlug?: str
   }, [state, router, planSlug]);
 
   return (
-    <form action={action} className="space-y-5">
+    <form action={action} className="space-y-5" onSubmit={() => scheduleTurnstileReset()}>
       {next ? <input type="hidden" name="next" value={next} /> : null}
       {state && !state.ok ? (
         <Alert variant="destructive" className="border-[#FECACA] bg-[#FEE2E2] text-[#991B1B]">
@@ -133,6 +146,8 @@ export function RegisterForm({ next, planSlug }: { next?: string; planSlug?: str
       {state?.fieldErrors?.acceptTerms ? (
         <p className="text-xs text-[#B91C1C]">{state.fieldErrors.acceptTerms[0]}</p>
       ) : null}
+
+      {captcha.enabled ? <TurnstileWidget siteKey={captcha.siteKey} /> : null}
 
       <SubmitButton
         pendingText="Membuat akun…"

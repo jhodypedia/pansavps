@@ -9,15 +9,20 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/shared/submit-button";
+import {
+  scheduleTurnstileReset,
+  TurnstileWidget,
+  type TurnstileWidgetConfig,
+} from "@/components/auth/turnstile-widget";
 
-export function ForgotPasswordForm() {
+export function ForgotPasswordForm({ captcha }: { captcha: TurnstileWidgetConfig }) {
   const [state, action] = useActionState<ActionResult | undefined, FormData>(
     forgotPasswordAction,
     undefined,
   );
 
   return (
-    <form action={action} className="space-y-5">
+    <form action={action} className="space-y-5" onSubmit={() => scheduleTurnstileReset()}>
       {state ? (
         <Alert
           className={
@@ -38,6 +43,8 @@ export function ForgotPasswordForm() {
           <p className="text-xs text-[#B91C1C]">{state.fieldErrors.email[0]}</p>
         ) : null}
       </div>
+
+      {captcha.enabled ? <TurnstileWidget siteKey={captcha.siteKey} /> : null}
 
       <SubmitButton pendingText="Mengirim…" className="h-11 w-full bg-[#0B3D2E] text-white hover:bg-[#0E4D38]">
         <Mail className="size-4" /> Kirim tautan reset

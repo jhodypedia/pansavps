@@ -14,6 +14,7 @@ import {
 } from "@/lib/db/schema";
 import { getSetting, setSetting } from "@/lib/settings";
 import { dropletAction, deleteDroplet, getDroplet, listDropletsByTag } from "@/lib/digitalocean";
+import { getActiveDoAccounts } from "@/lib/do-accounts";
 import { notifyAdmins, notifyUserEvent } from "@/lib/notifications";
 import { uid } from "@/lib/format";
 import { cycleUnitPrice } from "@/lib/pricing";
@@ -129,7 +130,7 @@ async function renewals(): Promise<{ renewed: number; suspended: number }> {
     }
 
     try {
-      if (svc.doDropletId) await dropletAction(svc.doDropletId, "power_off");
+      if (svc.doDropletId) await dropletAction(svc.doDropletId, "power_off", {}, svc.doAccountId);
       db.update(services).set({ status: "suspended" }).where(eq(services.id, svc.id)).run();
       await notifyUserEvent({
         userId: user.id,
@@ -159,7 +160,7 @@ async function terminations(): Promise<number> {
   let count = 0;
   for (const svc of expired) {
     try {
-      if (svc.doDropletId) await deleteDroplet(svc.doDropletId);
+      if (svc.doDropletId) await deleteDroplet(svc.doDropletId, svc.doAccountId);
       db.update(services)
         .set({ status: "terminated", terminatedAt: new Date() })
         .where(eq(services.id, svc.id))
@@ -204,7 +205,7 @@ async function syncDroplets(): Promise<{ synced: number; missing: number }> {
   for (const svc of active) {
     if (!svc.doDropletId) continue;
     try {
-      const droplet = await getDroplet(svc.doDropletId);
+      const droplet = await getDroplet(svc.doDropletId, svc.doAccountId);
       if (!droplet) {
         db.update(services).set({ status: "failed" }).where(eq(services.id, svc.id)).run();
         missing++;
@@ -352,6 +353,11 @@ export function cronHistory(limit = 30) {
 }
 
 export async function reconcileDroplets() {
-  const rows = await listDropletsByTag("vps-store");
-  return rows.length;
+  const accounts = getActiveDoAccounts();
+  let total = 0;
+  for (const account of accounts) {
+    const rows = await listDropletsByTag("vps-store", 1, account.id);
+    total += rows.length;
+  }
+  return total;
 }

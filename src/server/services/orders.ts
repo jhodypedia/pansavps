@@ -347,7 +347,7 @@ export async function refundOrder(
   const svc = db.select().from(services).where(eq(services.orderId, order.id)).get();
   if (svc?.doDropletId && svc.status !== "terminated") {
     try {
-      await deleteDroplet(svc.doDropletId);
+      await deleteDroplet(svc.doDropletId, svc.doAccountId);
     } catch (error) {
       console.error("[refund] gagal menghapus droplet", error);
     }

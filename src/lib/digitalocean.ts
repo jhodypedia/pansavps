@@ -1,6 +1,7 @@
 import "server-only";
 
-import { getSettings, isMockMode } from "@/lib/settings";
+import { getSettings } from "@/lib/settings";
+import { resolveDoAccount } from "@/lib/do-accounts";
 import { uid } from "@/lib/format";
 
 const BASE_URL = "https://api.digitalocean.com/v2";
@@ -108,17 +109,33 @@ export type DropletAction =
 
 type Json = Record<string, unknown>;
 
-function config() {
+function config(accountId?: string | null) {
   const s = getSettings();
-  return { token: s.do_token, mock: isMockMode() };
+  if (s.do_mock_mode === "true") {
+    return { token: "", mock: true, accountId: undefined as string | undefined };
+  }
+  if (accountId) {
+    const account = resolveDoAccount(accountId);
+    if (!account) {
+      throw new DigitalOceanError("Akun DigitalOcean tidak ditemukan.", 400, "no_account");
+    }
+    if (!account.token) {
+      throw new DigitalOceanError("Token akun DigitalOcean belum diatur.", 400, "no_token");
+    }
+    return { token: account.token, mock: false, accountId: account.id };
+  }
+  const account = resolveDoAccount();
+  const token = account?.token ?? s.do_token;
+  return { token, mock: !token, accountId: account?.id };
 }
 
 async function request<T>(
   path: string,
   init: RequestInit = {},
   attempt = 0,
+  accountId?: string | null,
 ): Promise<T> {
-  const { token, mock } = config();
+  const { token, mock } = config(accountId);
   if (mock) throw new Error("MOCK");
   if (!token) throw new DigitalOceanError("Token DigitalOcean belum diatur.", 400, "no_token");
 
@@ -140,7 +157,7 @@ async function request<T>(
       const retryAfter = Number(res.headers.get("retry-after") ?? 0);
       const wait = Math.min(5000, Math.max(500, retryAfter * 1000 || 700 * (attempt + 1)));
       await new Promise((r) => setTimeout(r, wait));
-      return request<T>(path, init, attempt + 1);
+      return request<T>(path, init, attempt + 1, accountId);
     }
 
     if (!res.ok) {
@@ -170,7 +187,7 @@ async function request<T>(
   } catch (error) {
     if (error instanceof DigitalOceanError) throw error;
     if ((error as Error).name === "AbortError") {
-      if (attempt < 2) return request<T>(path, init, attempt + 1);
+      if (attempt < 2) return request<T>(path, init, attempt + 1, accountId);
       throw new DigitalOceanError("Koneksi ke DigitalOcean timeout. Coba lagi.", 504, "timeout");
     }
     throw new DigitalOceanError("Tidak dapat menghubungi DigitalOcean.", 502, "network");
@@ -210,12 +227,12 @@ function sizeFromSlug(slug: string) {
 }
 
 /* ── Fungsi publik ────────────────────────────────────────── */
-export async function testConnection(): Promise<{
+export async function testConnection(accountId?: string | null): Promise<{
   mock: boolean;
   account: DoAccount;
   dropletCount: number;
 }> {
-  const { mock } = config();
+  const { mock } = config(accountId);
   if (mock) {
     return {
       mock: true,
@@ -230,8 +247,13 @@ export async function testConnection(): Promise<{
       dropletCount: mockDroplets.size,
     };
   }
-  const account = await request<{ account: DoAccount }>("/account");
-  const droplets = await request<{ droplets: unknown[]; meta?: { total?: number } }>("/droplets?per_page=1");
+  const account = await request<{ account: DoAccount }>("/account", {}, 0, accountId);
+  const droplets = await request<{ droplets: unknown[]; meta?: { total?: number } }>(
+    "/droplets?per_page=1",
+    {},
+    0,
+    accountId,
+  );
   return {
     mock: false,
     account: account.account,
@@ -239,24 +261,29 @@ export async function testConnection(): Promise<{
   };
 }
 
-export async function listSizes(): Promise<DoSize[]> {
-  const { mock } = config();
+export async function listSizes(accountId?: string | null): Promise<DoSize[]> {
+  const { mock } = config(accountId);
   if (mock) return MOCK_SIZES;
-  const data = await request<{ sizes: DoSize[] }>("/sizes?per_page=200");
+  const data = await request<{ sizes: DoSize[] }>("/sizes?per_page=200", {}, 0, accountId);
   return data.sizes;
 }
 
-export async function listRegions(): Promise<DoRegion[]> {
-  const { mock } = config();
+export async function listRegions(accountId?: string | null): Promise<DoRegion[]> {
+  const { mock } = config(accountId);
   if (mock) return MOCK_REGIONS;
-  const data = await request<{ regions: DoRegion[] }>("/regions?per_page=200");
+  const data = await request<{ regions: DoRegion[] }>("/regions?per_page=200", {}, 0, accountId);
   return data.regions;
 }
 
-export async function listImages(): Promise<DoImage[]> {
-  const { mock } = config();
+export async function listImages(accountId?: string | null): Promise<DoImage[]> {
+  const { mock } = config(accountId);
   if (mock) return MOCK_IMAGES;
-  const data = await request<{ images: DoImage[] }>("/images?type=distribution&per_page=200");
+  const data = await request<{ images: DoImage[] }>(
+    "/images?type=distribution&per_page=200",
+    {},
+    0,
+    accountId,
+  );
   return data.images.filter((i) => i.slug);
 }
 
@@ -268,31 +295,37 @@ export async function createDroplet(input: {
   ssh_keys?: (string | number)[];
   tags: string[];
   user_data?: string;
+  accountId?: string | null;
 }): Promise<DoDroplet> {
-  const { mock } = config();
+  const { mock } = config(input.accountId);
   if (mock) {
     const droplet = mockDroplet(input.name, input.region, input.size, input.image, input.tags);
     mockDroplets.set(String(droplet.id), droplet);
     return droplet;
   }
-  const data = await request<{ droplet: DoDroplet; links?: Json }>("/droplets", {
-    method: "POST",
-    body: JSON.stringify({
-      name: input.name,
-      region: input.region,
-      size: input.size,
-      image: input.image,
-      ssh_keys: input.ssh_keys?.length ? input.ssh_keys : undefined,
-      tags: input.tags,
-      user_data: input.user_data,
-      monitoring: true,
-    }),
-  });
+  const data = await request<{ droplet: DoDroplet; links?: Json }>(
+    "/droplets",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        name: input.name,
+        region: input.region,
+        size: input.size,
+        image: input.image,
+        ssh_keys: input.ssh_keys?.length ? input.ssh_keys : undefined,
+        tags: input.tags,
+        user_data: input.user_data,
+        monitoring: true,
+      }),
+    },
+    0,
+    input.accountId,
+  );
   return data.droplet;
 }
 
-export async function getDroplet(id: string): Promise<DoDroplet | null> {
-  const { mock } = config();
+export async function getDroplet(id: string, accountId?: string | null): Promise<DoDroplet | null> {
+  const { mock } = config(accountId);
   if (mock) {
     return (
       mockDroplets.get(id) ?? {
@@ -302,7 +335,7 @@ export async function getDroplet(id: string): Promise<DoDroplet | null> {
     );
   }
   try {
-    const data = await request<{ droplet: DoDroplet }>(`/droplets/${id}`);
+    const data = await request<{ droplet: DoDroplet }>(`/droplets/${id}`, {}, 0, accountId);
     return data.droplet;
   } catch (error) {
     if (error instanceof DigitalOceanError && error.status === 404) return null;
@@ -310,20 +343,27 @@ export async function getDroplet(id: string): Promise<DoDroplet | null> {
   }
 }
 
-export async function listDropletsByTag(tag: string, page = 1): Promise<DoDroplet[]> {
-  const { mock } = config();
+export async function listDropletsByTag(
+  tag: string,
+  page = 1,
+  accountId?: string | null,
+): Promise<DoDroplet[]> {
+  const { mock } = config(accountId);
   if (mock) {
     return [...mockDroplets.values()].filter((d) => d.tags.includes(tag));
   }
   const data = await request<{ droplets: DoDroplet[]; links?: { pages?: { next?: string } } }>(
     `/droplets?tag_name=${encodeURIComponent(tag)}&per_page=200&page=${page}`,
+    {},
+    0,
+    accountId,
   );
   return data.droplets;
 }
 
-/** Ambil seluruh droplet di akun DigitalOcean (maksimal 10 halaman). */
-export async function listDroplets(): Promise<DoDroplet[]> {
-  const { mock } = config();
+/** Ambil seluruh droplet di satu akun DigitalOcean (maksimal 10 halaman). */
+export async function listDroplets(accountId?: string | null): Promise<DoDroplet[]> {
+  const { mock } = config(accountId);
   if (mock) return [...mockDroplets.values()];
 
   const all: DoDroplet[] = [];
@@ -331,7 +371,7 @@ export async function listDroplets(): Promise<DoDroplet[]> {
     const data = await request<{
       droplets: DoDroplet[];
       links?: { pages?: { next?: string } };
-    }>(`/droplets?per_page=200&page=${page}`);
+    }>(`/droplets?per_page=200&page=${page}`, {}, 0, accountId);
     all.push(...data.droplets);
     if (!data.links?.pages?.next || data.droplets.length === 0) break;
   }
@@ -342,68 +382,81 @@ export async function dropletAction(
   id: string,
   action: DropletAction,
   extra: Record<string, unknown> = {},
+  accountId?: string | null,
 ): Promise<{ id: number; status: string }> {
-  const { mock } = config();
+  const { mock } = config(accountId);
   if (mock) return { id: Number(id) || 1, status: "completed" };
   const data = await request<{ action: { id: number; status: string } }>(
     `/droplets/${id}/actions`,
     { method: "POST", body: JSON.stringify({ type: action, ...extra }) },
+    0,
+    accountId,
   );
   return data.action;
 }
 
-export async function rebuildDroplet(id: string, image: string) {
-  return dropletAction(id, "rebuild" as DropletAction, { image });
+export async function rebuildDroplet(id: string, image: string, accountId?: string | null) {
+  return dropletAction(id, "rebuild" as DropletAction, { image }, accountId);
 }
 
-export async function resizeDroplet(id: string, size: string) {
-  return dropletAction(id, "resize" as DropletAction, { size, disk: true });
+export async function resizeDroplet(id: string, size: string, accountId?: string | null) {
+  return dropletAction(id, "resize" as DropletAction, { size, disk: true }, accountId);
 }
 
-export async function renameDroplet(id: string, name: string) {
-  return dropletAction(id, "rename" as DropletAction, { name });
+export async function renameDroplet(id: string, name: string, accountId?: string | null) {
+  return dropletAction(id, "rename" as DropletAction, { name }, accountId);
 }
 
-export async function snapshotDroplet(id: string, name: string) {
-  return dropletAction(id, "snapshot" as DropletAction, { name });
+export async function snapshotDroplet(id: string, name: string, accountId?: string | null) {
+  return dropletAction(id, "snapshot" as DropletAction, { name }, accountId);
 }
 
-export async function deleteDroplet(id: string): Promise<void> {
-  const { mock } = config();
+export async function deleteDroplet(id: string, accountId?: string | null): Promise<void> {
+  const { mock } = config(accountId);
   if (mock) {
     mockDroplets.delete(id);
     return;
   }
-  await request(`/droplets/${id}`, { method: "DELETE" });
+  await request(`/droplets/${id}`, { method: "DELETE" }, 0, accountId);
 }
 
-export async function listSnapshotsByService(serviceId: string): Promise<
-  { id: string; name: string; created_at: string }[]
-> {
-  const { mock } = config();
+export async function listSnapshotsByService(
+  serviceId: string,
+  accountId?: string | null,
+): Promise<{ id: string; name: string; created_at: string }[]> {
+  const { mock } = config(accountId);
   if (mock) return [];
   const data = await request<{
     snapshots: { id: string | number; name: string; created_at: string; tags?: string[] }[];
-  }>(`/snapshots?resource_type=droplet&per_page=200`);
+  }>("/snapshots?resource_type=droplet&per_page=200", {}, 0, accountId);
   return data.snapshots
     .filter((s) => s.name.includes(serviceId))
     .map((s) => ({ id: String(s.id), name: s.name, created_at: s.created_at }));
 }
 
-export async function deleteSnapshot(id: string): Promise<void> {
-  const { mock } = config();
+export async function deleteSnapshot(id: string, accountId?: string | null): Promise<void> {
+  const { mock } = config(accountId);
   if (mock) return;
-  await request(`/snapshots/${id}`, { method: "DELETE" });
+  await request(`/snapshots/${id}`, { method: "DELETE" }, 0, accountId);
 }
 
 /** Membuat SSH key di akun DO. Di mode mock hanya mengembalikan ID palsu. */
-export async function createSshKey(name: string, publicKey: string): Promise<{ id: string; fingerprint: string }> {
-  const { mock } = config();
+export async function createSshKey(
+  name: string,
+  publicKey: string,
+  accountId?: string | null,
+): Promise<{ id: string; fingerprint: string }> {
+  const { mock } = config(accountId);
   if (mock) return { id: `mock-ssh-${mockIp()}`, fingerprint: "mock:fingerprint" };
-  const data = await request<{ ssh_key: { id: number; fingerprint: string } }>("/account/keys", {
-    method: "POST",
-    body: JSON.stringify({ name, public_key: publicKey }),
-  });
+  const data = await request<{ ssh_key: { id: number; fingerprint: string } }>(
+    "/account/keys",
+    {
+      method: "POST",
+      body: JSON.stringify({ name, public_key: publicKey }),
+    },
+    0,
+    accountId,
+  );
   return { id: String(data.ssh_key.id), fingerprint: data.ssh_key.fingerprint };
 }
 

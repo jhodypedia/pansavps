@@ -11,15 +11,16 @@ import {
   Tags,
 } from "lucide-react";
 import type { SettingsMap } from "@/lib/settings";
+import type { DoAccountView } from "@/lib/do-account-types";
 import type { SettingsSection } from "@/server/actions/admin";
 import {
   saveEmailTemplateAction,
   saveSettingsAction,
-  testDoConnectionAction,
   testEmailAction,
 } from "@/server/actions/admin";
 import { ActionForm } from "@/components/dashboard/action-form";
 import { ActionButton } from "@/components/dashboard/action-button";
+import { DoAccountsManager } from "@/components/admin/do-accounts-manager";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { SectionCard } from "@/components/dashboard/section-card";
 import { Input } from "@/components/ui/input";
@@ -104,6 +105,7 @@ export function AdminSettingsTabs({
   userEventValues,
   secrets,
   appUrl,
+  doAccounts,
 }: {
   settings: SettingsMap;
   initialTab: string;
@@ -112,6 +114,7 @@ export function AdminSettingsTabs({
   userEventValues: string[];
   secrets: Record<string, boolean>;
   appUrl: string;
+  doAccounts: DoAccountView[];
 }) {
   const submitFor = (section: SettingsSection) => saveSettingsAction.bind(null, section);
 
@@ -180,6 +183,52 @@ export function AdminSettingsTabs({
               hint="Toko publik ditutup sementara. Dashboard pelanggan tetap dapat diakses."
               defaultChecked={settings.maintenance_mode === "true"}
             />
+
+            <div className="space-y-4 rounded-xl border border-[#E3E8E4] bg-[#FBFCFB] p-4">
+              <div>
+                <p className="text-sm font-bold text-[#101613]">Cloudflare Turnstile</p>
+                <p className="mt-1 text-xs leading-relaxed text-[#8A9A90]">
+                  Lindungi halaman masuk, daftar, dan reset password dari bot. Buat widget di
+                  dashboard Cloudflare, lalu tempel site key dan secret key di sini.
+                </p>
+                {settings.captcha_enabled === "true" &&
+                (!settings.turnstile_site_key || !secrets.turnstile_secret_key) ? (
+                  <p className="mt-2 rounded-lg border border-[#FDE68A] bg-[#FFFBEB] px-3 py-2 text-xs text-[#92400E]">
+                    Turnstile aktif tetapi kunci belum lengkap. Verifikasi akan dilewati sampai
+                    site key dan secret key diisi.
+                  </p>
+                ) : null}
+              </div>
+              <CheckField
+                name="captcha_enabled"
+                label="Aktifkan Turnstile"
+                hint="Jika aktif dan kunci lengkap, pengguna wajib menyelesaikan verifikasi."
+                defaultChecked={settings.captcha_enabled === "true"}
+              />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="turnstile_site_key">Site key</Label>
+                  <Input
+                    id="turnstile_site_key"
+                    name="turnstile_site_key"
+                    defaultValue={settings.turnstile_site_key}
+                    placeholder="0x4AAAAAAA…"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="turnstile_secret_key">Secret key</Label>
+                  <Input
+                    id="turnstile_secret_key"
+                    name="turnstile_secret_key"
+                    type="password"
+                    autoComplete="off"
+                    placeholder={secrets.turnstile_secret_key ? "•••••••• (tersimpan)" : "0x4AAAAAAA…"}
+                  />
+                  <SecretHint configured={secrets.turnstile_secret_key} />
+                </div>
+              </div>
+            </div>
+
             <SaveButton />
           </ActionForm>
         </SectionCard>
@@ -223,41 +272,33 @@ export function AdminSettingsTabs({
       </TabsContent>
 
       <TabsContent value="digitalocean">
-        <SectionCard title="Koneksi DigitalOcean" description="Token API disimpan terenkripsi AES-256-GCM.">
-          <ActionForm action={submitFor("digitalocean")} inlineError>
-            <div className="space-y-2">
-              <Label htmlFor="do_token">Personal access token</Label>
-              <Input
-                id="do_token"
-                name="do_token"
-                type="password"
-                autoComplete="off"
-                placeholder={secrets.do_token ? "•••••••• (tersimpan)" : "dop_v1_…"}
+        <div className="space-y-6">
+          <DoAccountsManager accounts={doAccounts} />
+          <SectionCard
+            title="Preferensi provisioning"
+            description="Region default dan mode mock. Token akun dikelola di daftar akun di atas."
+          >
+            <ActionForm action={submitFor("digitalocean")} inlineError>
+              <div className="space-y-2">
+                <Label htmlFor="do_default_region">Region default</Label>
+                <Input
+                  id="do_default_region"
+                  name="do_default_region"
+                  required
+                  defaultValue={settings.do_default_region}
+                  placeholder="sgp1"
+                />
+              </div>
+              <CheckField
+                name="do_mock_mode"
+                label="Mode mock"
+                hint="Buat VPS palsu untuk pengembangan tanpa memanggil API DigitalOcean."
+                defaultChecked={settings.do_mock_mode === "true"}
               />
-              <SecretHint configured={secrets.do_token} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="do_default_region">Region default</Label>
-              <Input id="do_default_region" name="do_default_region" required defaultValue={settings.do_default_region} placeholder="sgp1" />
-            </div>
-            <CheckField
-              name="do_mock_mode"
-              label="Mode mock"
-              hint="Buat VPS palsu untuk pengembangan tanpa memanggil API DigitalOcean."
-              defaultChecked={settings.do_mock_mode === "true"}
-            />
-            <div className="flex flex-wrap items-center gap-2">
               <SaveButton />
-              <ActionButton
-                action={() => testDoConnectionAction()}
-                className="border-[#BFE3CC] bg-white text-[#0B3D2E]"
-                pendingText="Menguji…"
-              >
-                Uji koneksi
-              </ActionButton>
-            </div>
-          </ActionForm>
-        </SectionCard>
+            </ActionForm>
+          </SectionCard>
+        </div>
       </TabsContent>
 
       <TabsContent value="pricing">
