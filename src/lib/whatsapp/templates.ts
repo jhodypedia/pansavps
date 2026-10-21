@@ -189,7 +189,7 @@ Segera perpanjang sebelum data dihapus.`,
     body: `🗑️ *LAYANAN DIHENTIKAN*
 
 Hai {nama},
-VPS {hostname} telah dihentikan dan droplet dihapus karena melewati masa tenggang.
+VPS {hostname} telah dihentikan dan droplet dihapus. Paket mingguan dihapus otomatis setelah 7 hari; paket lainnya setelah masa tenggang.
 
 Data pada droplet yang sudah dihapus tidak dapat dipulihkan.
 

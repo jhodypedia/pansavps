@@ -309,7 +309,7 @@ Terjadi kendala saat menyiapkan {hostname}. Tim kami sudah diberi tahu.
     body: `Halo {nama} ⏰
 
 **VPS mingguan kamu segera berakhir**
-VPS {hostname} akan berakhir pada {jatuh_tempo} (WIB). Karena ini paket mingguan, droplet akan **dihapus otomatis** saat masa aktif selesai.
+VPS {hostname} akan berakhir pada {jatuh_tempo}. Karena ini paket mingguan, droplet akan **dihapus otomatis** saat masa aktif selesai.
 
 Hostname: {hostname}
 Berakhir: {jatuh_tempo}
@@ -360,7 +360,7 @@ Status: Ditangguhkan
     body: `Halo {nama},
 
 **Layanan VPS telah dihentikan**
-VPS {hostname} telah dihentikan dan droplet dihapus karena melewati masa tenggang.
+VPS {hostname} telah dihentikan dan droplet dihapus. Paket mingguan dihapus otomatis setelah 7 hari; paket lainnya setelah masa tenggang.
 
 Hostname: {hostname}
 Status: Dihentikan
