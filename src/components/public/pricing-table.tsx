@@ -53,22 +53,30 @@ export function PricingTable({ items }: { items: Plan[] }) {
   return (
     <div className="space-y-10">
       <div className="flex flex-col items-center gap-3">
-        <div className="inline-flex rounded-2xl border border-[#D8E2DB] bg-[#F7F8F7] p-1">
+        <p className="text-xs font-semibold tracking-wide text-[#8A9A90] uppercase">
+          Pilih siklus pembayaran
+        </p>
+        <div className="grid w-full max-w-2xl grid-cols-2 gap-2 sm:grid-cols-4">
           {cycles.map((item) => (
             <button
               key={item}
               type="button"
               onClick={() => setCycle(item)}
               className={cn(
-                "rounded-xl px-4 py-2.5 text-sm font-semibold transition-all",
+                "rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all",
                 cycle === item
-                  ? "bg-[#0B3D2E] text-white shadow-sm"
-                  : "text-[#5B6B60] hover:text-[#101613]",
+                  ? "border-[#0B3D2E] bg-[#0B3D2E] text-white shadow-sm"
+                  : "border-[#D8E2DB] bg-white text-[#5B6B60] hover:border-[#A9C8B3] hover:text-[#101613]",
               )}
             >
-              {cycleLabel[item]}
+              <span className="block">{cycleLabel[item]}</span>
               {item === "yearly" ? (
-                <span className="ml-1.5 rounded-full bg-[#16A34A]/15 px-1.5 py-0.5 text-[10px] font-bold text-[#15803D]">
+                <span
+                  className={cn(
+                    "mt-1 block text-[10px] font-bold",
+                    cycle === item ? "text-[#86EFAC]" : "text-[#15803D]",
+                  )}
+                >
                   Hemat
                 </span>
               ) : null}
@@ -86,7 +94,7 @@ export function PricingTable({ items }: { items: Plan[] }) {
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {items.map((plan, index) => {
           const price = cycleUnitPrice(plan, cycle);
           const discount = cycleDiscountPercent(plan, cycle);
@@ -101,7 +109,7 @@ export function PricingTable({ items }: { items: Plan[] }) {
             <Reveal key={plan.id} delay={index * 0.03} className="h-full">
               <article
                 className={cn(
-                  "group relative flex h-full flex-col rounded-3xl border p-6 transition-all duration-300",
+                  "group relative flex h-full flex-col rounded-3xl border p-5 transition-all duration-300 sm:p-6",
                   plan.isFeatured
                     ? "border-[#0B3D2E] bg-white shadow-[0_24px_70px_-34px_rgba(11,61,46,0.7)] ring-1 ring-[#0B3D2E]/10"
                     : "border-[#E3E8E4] bg-white hover:-translate-y-1 hover:border-[#A9C8B3] hover:shadow-[0_20px_55px_-34px_rgba(11,61,46,0.45)]",
@@ -210,8 +218,8 @@ export function PricingTable({ items }: { items: Plan[] }) {
             {items.length} paket aktif
           </Badge>
         </div>
-        <div className="mt-5 overflow-x-auto">
-          <table className="w-full min-w-[760px] text-sm">
+        <div className="mt-5 overflow-x-auto rounded-xl border border-[#EDF1EE]">
+          <table className="w-full min-w-[680px] text-sm">
             <thead>
               <tr className="border-b border-[#E3E8E4] bg-[#F7F8F7] text-left text-xs font-semibold tracking-wide text-[#5B6B60] uppercase">
                 <th className="px-5 py-3">Paket</th>
