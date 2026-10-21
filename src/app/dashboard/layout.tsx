@@ -5,7 +5,6 @@ import { isUserVerified, requireUser } from "@/lib/auth";
 import { getPublicBrand } from "@/lib/settings";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { AccountVerifyBanner } from "@/components/dashboard/account-verify-banner";
-import { Toaster } from "@/components/ui/sonner";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
@@ -46,7 +45,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
     >
       {!isUserVerified(user) ? <AccountVerifyBanner /> : null}
       {children}
-      <Toaster position="top-right" closeButton />
     </DashboardShell>
   );
 }

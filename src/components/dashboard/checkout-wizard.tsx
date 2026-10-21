@@ -23,9 +23,11 @@ import type { BillingCycle } from "@/lib/db/schema";
 import { createOrderAction, validatePromoAction } from "@/server/actions/orders";
 import { ActionForm } from "@/components/dashboard/action-form";
 import { TripayChannelPicker } from "@/components/dashboard/tripay-channels";
-import { SubmitButton } from "@/components/shared/submit-button";
+
 import type { TripayChannel } from "@/lib/payments/types";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { suggestedWeeklyPrice } from "@/lib/pricing";
@@ -56,7 +58,7 @@ type Provider = { id: string; label: string; description: string };
 type KeyView = { id: string; name: string; fingerprint: string };
 
 const cycles: { key: BillingCycle; label: string; hint: string }[] = [
-  { key: "weekly", label: "Mingguan", hint: "Aktif 7 hari, lalu dihapus otomatis" },
+  { key: "weekly", label: "Mingguan", hint: "Aktif 7 hari, pengingat H-1" },
   { key: "monthly", label: "Bulanan", hint: "Fleksibel, bayar per bulan" },
   { key: "quarterly", label: "3 Bulan", hint: "Hemat dibanding bulanan" },
   { key: "yearly", label: "Tahunan", hint: "Harga terbaik" },
@@ -142,6 +144,9 @@ export function CheckoutWizard({
   const [promoPending, startPromo] = useTransition();
   const checkoutTopRef = useRef<HTMLDivElement>(null);
   const previousStepRef = useRef(step);
+  const submitRef = useRef<HTMLButtonElement>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   useEffect(() => {
     if (previousStepRef.current === step) return;
@@ -166,6 +171,10 @@ export function CheckoutWizard({
       ? Math.round(subtotal * (30 / 7))
       : Math.round(subtotal / (cycle === "monthly" ? 1 : cycle === "quarterly" ? 3 : 12));
   const canAfford = total <= balance;
+  const paymentMethodLabel =
+    paymentMethod === "balance"
+      ? "Saldo akun"
+      : providers.find((provider) => provider.id === paymentMethod)?.label ?? "Pembayaran";
 
   function applyPromo() {
     if (!plan) return;
@@ -205,6 +214,15 @@ export function CheckoutWizard({
       }
     }
     setStep((value) => Math.min(4, value + 1));
+  }
+
+  function confirmOrder() {
+    if (!termsAccepted) {
+      toastError("Centang persetujuan Syarat & Ketentuan terlebih dahulu.");
+      return;
+    }
+    setConfirmOpen(false);
+    submitRef.current?.click();
   }
 
   if (!plan) {
@@ -287,6 +305,7 @@ export function CheckoutWizard({
             <input type="hidden" name="newSshKeyName" value={newSshKeyName} />
             <input type="hidden" name="newSshKeyPublic" value={newSshKeyPublic} />
             <input type="hidden" name="promoCode" value={promo?.code ?? ""} />
+            <button ref={submitRef} type="submit" className="hidden" tabIndex={-1} aria-hidden="true" />
 
             <div key={step} className="checkout-step p-4 sm:p-6">
           {step === 1 ? (
@@ -377,8 +396,8 @@ export function CheckoutWizard({
                 </div>
                 {cycle === "weekly" ? (
                   <div className="mt-3 rounded-xl border border-[#FDE68A] bg-[#FFFBEB] p-3 text-xs leading-relaxed text-[#92400E]">
-                    <strong>VPS mingguan aktif 7 hari.</strong> Droplet akan dihapus otomatis saat masa aktif
-                    berakhir (WIB). Kamu akan mendapat pengingat H-1 untuk memperpanjang sebelum data hilang.
+                    <strong>VPS mingguan aktif 7 hari.</strong> Kamu akan mendapat pengingat H-1 untuk
+                    memperpanjang sebelum masa aktif berakhir (WIB).
                   </div>
                 ) : null}
               </div>
@@ -687,11 +706,8 @@ export function CheckoutWizard({
               </div>
 
               <div className="rounded-xl border border-[#EDF1EE] bg-[#FBFCFB] p-4 text-xs leading-relaxed text-[#5B6B60]">
-                Dengan melanjutkan, kamu menyetujui{" "}
-                <a href="/syarat-ketentuan" target="_blank" className="font-semibold text-[#0B3D2E] underline">
-                  syarat & ketentuan
-                </a>{" "}
-                serta kebijakan refund. Pastikan data server sudah benar.
+                Pastikan data server sudah benar. Konfirmasi persetujuan Syarat & Ketentuan akan
+                diminta sebelum pesanan dibuat.
               </div>
             </section>
           ) : null}
@@ -716,17 +732,96 @@ export function CheckoutWizard({
                   Lanjut <ArrowRight className="size-4" />
                 </Button>
               ) : (
-                <SubmitButton
-                  pendingText="Membuat pesanan…"
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setTermsAccepted(false);
+                    setConfirmOpen(true);
+                  }}
                   disabled={paymentMethod === "balance" && !canAfford}
                   className="h-11 w-full bg-[#0B3D2E] text-white hover:bg-[#0E4D38] sm:w-auto"
                 >
                   <Check className="size-4" /> Buat pesanan · {idr(total)}
-                </SubmitButton>
+                </Button>
               )}
             </div>
           </div>
         </ActionForm>
+
+        <AlertDialog open={confirmOpen} onOpenChange={(open) => {
+          setConfirmOpen(open);
+          if (!open) setTermsAccepted(false);
+        }}>
+          <AlertDialogContent className="sm:max-w-md">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Konfirmasi pesanan</AlertDialogTitle>
+              <AlertDialogDescription>
+                Pastikan paket, siklus, region, sistem operasi, dan metode pembayaran sudah benar. Pesanan
+                yang sudah dibuat akan langsung diproses.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="space-y-3">
+              <div className="rounded-xl border border-[#EDF1EE] bg-[#FBFCFB] p-4 text-xs leading-relaxed text-[#5B6B60]">
+                <div className="flex items-center justify-between gap-3">
+                  <span>Paket</span>
+                  <span className="font-semibold text-[#101613]">{plan.name}</span>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-3">
+                  <span>Siklus</span>
+                  <span className="font-semibold text-[#101613]">
+                    {cycles.find((item) => item.key === cycle)?.label ?? cycle}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-3">
+                  <span>Pembayaran</span>
+                  <span className="font-semibold text-[#101613]">{paymentMethodLabel}</span>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-3 border-t border-[#EDF1EE] pt-2">
+                  <span className="font-semibold text-[#101613]">Total</span>
+                  <span className="font-display font-bold text-[#0B3D2E]">{idr(total)}</span>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 rounded-xl border border-[#EDF1EE] bg-white p-3">
+                <Checkbox
+                  id="checkout-terms"
+                  checked={termsAccepted}
+                  onCheckedChange={(checked) => setTermsAccepted(checked === true)}
+                  className="mt-0.5"
+                />
+                <div className="space-y-1">
+                  <Label htmlFor="checkout-terms" className="cursor-pointer text-xs font-semibold text-[#101613]">
+                    Saya telah membaca dan menyetujui ketentuan berikut
+                  </Label>
+                  <p className="text-xs leading-relaxed text-[#5B6B60]">
+                    <a href="/syarat-ketentuan" target="_blank" rel="noreferrer" className="font-semibold text-[#0B3D2E] underline">
+                      Syarat & Ketentuan
+                    </a>
+                    {", "}
+                    <a href="/kebijakan-refund" target="_blank" rel="noreferrer" className="font-semibold text-[#0B3D2E] underline">
+                      Kebijakan Refund
+                    </a>
+                    {", dan "}
+                    <a href="/kebijakan-privasi" target="_blank" rel="noreferrer" className="font-semibold text-[#0B3D2E] underline">
+                      Kebijakan Privasi
+                    </a>
+                    .
+                  </p>
+                </div>
+              </div>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Batal</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={!termsAccepted}
+                onClick={confirmOrder}
+                className="bg-[#0B3D2E] text-white hover:bg-[#0E4D38]"
+              >
+                Ya, buat pesanan
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
       </div>
 
       <aside className="lg:sticky lg:top-24 lg:self-start">
@@ -759,8 +854,7 @@ export function CheckoutWizard({
             </div>
             {cycle === "weekly" ? (
               <div className="rounded-lg border border-[#FDE68A] bg-[#FFFBEB] p-3 text-xs text-[#92400E]">
-                VPS mingguan dihapus otomatis setelah 7 hari. Pengingat H-1 dikirim melalui notifikasi, email,
-                dan WhatsApp.
+                VPS mingguan aktif 7 hari. Pengingat H-1 dikirim melalui notifikasi, email, dan WhatsApp.
               </div>
             ) : null}
             <div className="flex items-end justify-between border-t border-[#EDF1EE] pt-3">

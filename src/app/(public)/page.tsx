@@ -131,11 +131,11 @@ const faqs = [
   },
   {
     q: "Apa yang terjadi jika masa aktif berakhir?",
-    a: "Layanan ditangguhkan setelah jatuh tempo, lalu dihapus otomatis setelah masa tenggang berakhir. Kamu akan menerima pengingat melalui email dan WhatsApp sebelum jatuh tempo.",
+    a: "Layanan ditangguhkan setelah jatuh tempo. Kamu akan menerima pengingat melalui email dan WhatsApp sebelum jatuh tempo.",
   },
   {
     q: "Apakah tersedia paket mingguan?",
-    a: "Ya. Paket mingguan aktif selama 7 hari dan droplet dihapus otomatis saat masa aktif selesai. Kamu akan menerima pengingat H-1 untuk memperpanjang jika masih membutuhkan server.",
+    a: "Ya. Paket mingguan aktif selama 7 hari. Kamu akan menerima pengingat H-1 untuk memperpanjang jika masih membutuhkan server.",
   },
   {
     q: "Metode pembayaran apa saja yang didukung?",

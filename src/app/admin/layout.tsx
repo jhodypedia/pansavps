@@ -4,7 +4,6 @@ import { notifications } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth";
 import { getPublicBrand } from "@/lib/settings";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { Toaster } from "@/components/ui/sonner";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await requireAdmin();
@@ -44,7 +43,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       variant="admin"
     >
       {children}
-      <Toaster position="top-right" closeButton />
     </DashboardShell>
   );
 }

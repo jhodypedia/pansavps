@@ -68,7 +68,7 @@ export function HomePlanPreview({ plans }: { plans: Plan[] }) {
         </div>
         <p className="text-center text-xs leading-relaxed text-[#8A9A90]">
           {cycle === "weekly"
-            ? "VPS mingguan aktif 7 hari, lalu dihapus otomatis. Pengingat H-1 dikirim via email dan WhatsApp."
+            ? "VPS mingguan aktif 7 hari. Pengingat H-1 dikirim via email dan WhatsApp."
             : "Bayar per bulan dan aktifkan perpanjangan otomatis agar layanan tidak terputus."}
         </p>
       </div>
@@ -157,7 +157,7 @@ export function HomePlanPreview({ plans }: { plans: Plan[] }) {
                   {cycle === "weekly" ? (
                     <>
                       <span className="inline-flex items-center gap-1 rounded-full bg-[#FFFBEB] px-2 py-0.5 font-semibold text-[#92400E]">
-                        <ShieldCheck className="size-3" /> Hapus otomatis
+                        <ShieldCheck className="size-3" /> Aktif 7 hari
                       </span>
                       <span className={featured ? "text-white/45" : "text-[#8A9A90]"}>aktif 7 hari</span>
                     </>
