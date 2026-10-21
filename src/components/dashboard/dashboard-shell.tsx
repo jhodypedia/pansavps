@@ -44,6 +44,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CommandMenu, type SearchItem } from "@/components/dashboard/command-menu";
+import {
+  NotificationBell,
+  type NotificationPreview,
+} from "@/components/dashboard/notification-bell";
 
 type NavItem = { label: string; href: string; icon: typeof Home; exact?: boolean };
 
@@ -153,6 +157,7 @@ export function DashboardShell({
   brandName,
   logoUrl,
   unread,
+  notifications,
   variant,
   children,
 }: {
@@ -160,6 +165,7 @@ export function DashboardShell({
   brandName: string;
   logoUrl?: string | null;
   unread: number;
+  notifications: NotificationPreview[];
   variant: "user" | "admin";
   children: React.ReactNode;
 }) {
@@ -304,17 +310,11 @@ export function DashboardShell({
             </div>
 
             <div className="ml-auto flex items-center gap-2">
-              <Button asChild variant="ghost" size="icon" className="relative text-[#5B6B60] hover:bg-[#F3F9F5]">
-                <Link href={variant === "admin" ? "/admin/logs" : "/dashboard/notifikasi"} aria-label="Notifikasi">
-                  <Bell className="size-5" />
-                  {unread > 0 ? (
-                    <span className="absolute top-1.5 right-1.5 flex size-2">
-                      <span className="absolute inline-flex size-2 animate-ping rounded-full bg-[#16A34A] opacity-60" />
-                      <span className="relative inline-flex size-2 rounded-full bg-[#16A34A]" />
-                    </span>
-                  ) : null}
-                </Link>
-              </Button>
+              <NotificationBell
+                items={notifications}
+                unread={unread}
+                allHref="/dashboard/notifikasi"
+              />
 
               {variant === "admin" ? (
                 <Button asChild variant="outline" size="sm" className="hidden border-[#D8E2DB] sm:inline-flex">

@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { notifications } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth";
@@ -14,6 +14,25 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .from(notifications)
     .where(and(eq(notifications.userId, user.id), eq(notifications.isRead, false)))
     .all().length;
+  const recent = db
+    .select({
+      id: notifications.id,
+      type: notifications.type,
+      title: notifications.title,
+      body: notifications.body,
+      link: notifications.link,
+      isRead: notifications.isRead,
+      createdAt: notifications.createdAt,
+    })
+    .from(notifications)
+    .where(eq(notifications.userId, user.id))
+    .orderBy(desc(notifications.createdAt))
+    .limit(6)
+    .all()
+    .map(({ createdAt, ...item }) => ({
+      ...item,
+      createdAt: createdAt.toISOString(),
+    }));
 
   return (
     <DashboardShell
@@ -21,6 +40,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       brandName={brand.siteName}
       logoUrl={brand.logoUrl}
       unread={unread}
+      notifications={recent}
       variant="admin"
     >
       {children}
