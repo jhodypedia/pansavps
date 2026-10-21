@@ -172,7 +172,7 @@ export async function syncDoCatalog(): Promise<{
         .values({
           name: planName(size),
           slug,
-          description: `DigitalOcean ${size.slug} dengan ${size.vcpus} vCPU, ${size.memory / 1024} GB RAM, dan ${size.disk} GB SSD.`,
+          description: `VPS ${size.slug} dengan ${size.vcpus} vCPU, ${size.memory / 1024} GB RAM, dan ${size.disk} GB SSD.`,
           doSizeSlug: size.slug,
           vcpus: size.vcpus,
           ramMb: size.memory,
