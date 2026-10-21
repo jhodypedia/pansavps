@@ -37,7 +37,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { CountUp } from "@/components/shared/count-up";
 import { Reveal } from "@/components/shared/reveal";
+import { ScrollProgress } from "@/components/shared/scroll-progress";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { HomePlanPreview } from "@/components/public/home-plan-preview";
 
@@ -225,6 +227,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <ScrollProgress />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
@@ -232,12 +235,19 @@ export default async function HomePage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-white/10 bg-[#06231A] text-white">
+        <div className="hero-aurora pointer-events-none absolute inset-0" aria-hidden />
+        <div className="hero-grid pointer-events-none absolute inset-0 opacity-40" aria-hidden />
         <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(circle at 16% 8%, rgba(22,163,74,0.28), transparent 42%), radial-gradient(circle at 88% 0%, rgba(74,222,128,0.14), transparent 38%)",
-          }}
+          className="floating-orb pointer-events-none absolute -left-16 top-24 size-44 bg-[#22C55E]/25"
+          aria-hidden
+        />
+        <div
+          className="floating-orb floating-orb-delay pointer-events-none absolute right-10 top-16 size-28 bg-[#86EFAC]/20"
+          aria-hidden
+        />
+        <div
+          className="floating-orb pointer-events-none absolute bottom-10 right-1/3 size-36 bg-[#16A34A]/20"
+          style={{ animationDelay: "0.7s" }}
           aria-hidden
         />
         <div
@@ -264,7 +274,8 @@ export default async function HomePage() {
             </div>
 
             <h1 className="mt-6 max-w-2xl font-display text-4xl leading-[1.06] font-bold tracking-tight text-white sm:text-5xl lg:text-[58px]">
-              VPS cepat untuk ide yang <span className="text-[#86EFAC]">tidak bisa menunggu.</span>
+              VPS cepat untuk ide yang{" "}
+              <span className="gradient-text">tidak bisa menunggu.</span>
             </h1>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
               {brand.tagline} Pilih paket, bayar, dan server siap dipakai. Panel kontrol lengkap, support
@@ -272,7 +283,7 @@ export default async function HomePage() {
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg" className="bg-white text-[#0B3D2E] hover:bg-[#E7F4EC]">
+              <Button asChild size="lg" className="shimmer-btn bg-white text-[#0B3D2E] hover:bg-[#E7F4EC]">
                 <Link href="/register">
                   Mulai dari {formatIDR(cheapest)} <ArrowRight className="size-4" />
                 </Link>
@@ -310,7 +321,18 @@ export default async function HomePage() {
               ].map((item) => (
                 <div key={item.k}>
                   <dt className="text-[10px] font-semibold tracking-[0.14em] text-white/45 uppercase">{item.k}</dt>
-                  <dd className="mt-1 font-display text-base font-bold text-white">{item.v}</dd>
+                  <dd className="mt-1 font-display text-base font-bold text-white">
+                    {item.k === "Region" ? (
+                      <CountUp value={regionRows.length} suffix=" wilayah" />
+                    ) : item.k === "Aktivasi" ? (
+                      <>
+                        {"< "}
+                        <CountUp value={2} suffix=" menit" />
+                      </>
+                    ) : (
+                      item.v
+                    )}
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -393,24 +415,38 @@ export default async function HomePage() {
       </section>
 
       {/* Trust strip */}
-      <section className="border-b border-[#E3E8E4] bg-white">
-        <div className="ws-container grid gap-3 py-5 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="overflow-hidden border-b border-[#E3E8E4] bg-white">
+        <div className="marquee-track gap-3 py-5">
           {[
             { icon: Clock, title: "Aktivasi otomatis", body: "Tanpa antrean manual" },
             { icon: Lock, title: "Pembayaran aman", body: "Gateway & verifikasi manual" },
             { icon: RefreshCw, title: "Perpanjangan otomatis", body: "Dari saldo akun" },
             { icon: KeyRound, title: "Root access", body: "SSH key atau password" },
-          ].map((item) => (
-            <div key={item.title} className="flex items-center gap-3 rounded-xl px-1 py-2">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#F3F9F5] text-[#0B3D2E]">
-                <item.icon className="size-4" />
-              </span>
-              <span>
-                <span className="block text-sm font-semibold text-[#101613]">{item.title}</span>
-                <span className="block text-xs text-[#8A9A90]">{item.body}</span>
-              </span>
-            </div>
-          ))}
+            { icon: ShieldCheck, title: "Snapshot", body: "Backup sebelum rilis" },
+            { icon: Globe2, title: "Multi-region", body: "SGP, NYC, FRA" },
+          ]
+            .concat([
+              { icon: Clock, title: "Aktivasi otomatis", body: "Tanpa antrean manual" },
+              { icon: Lock, title: "Pembayaran aman", body: "Gateway & verifikasi manual" },
+              { icon: RefreshCw, title: "Perpanjangan otomatis", body: "Dari saldo akun" },
+              { icon: KeyRound, title: "Root access", body: "SSH key atau password" },
+              { icon: ShieldCheck, title: "Snapshot", body: "Backup sebelum rilis" },
+              { icon: Globe2, title: "Multi-region", body: "SGP, NYC, FRA" },
+            ])
+            .map((item, index) => (
+              <div
+                key={`${item.title}-${index}`}
+                className="flex min-w-[250px] items-center gap-3 rounded-xl border border-[#E8EEEA] bg-[#FBFCFB] px-4 py-2.5"
+              >
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#F3F9F5] text-[#0B3D2E]">
+                  <item.icon className="size-4" />
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold text-[#101613]">{item.title}</span>
+                  <span className="block text-xs text-[#8A9A90]">{item.body}</span>
+                </span>
+              </div>
+            ))}
         </div>
       </section>
 
@@ -422,7 +458,7 @@ export default async function HomePage() {
               Harga transparan
             </Badge>
             <h2 className="mt-4 font-display text-3xl font-bold tracking-tight text-[#101613] sm:text-4xl">
-              Pilih ukuran, bukan kompromi.
+              <span className="gradient-text">Pilih ukuran</span>, bukan kompromi.
             </h2>
             <p className="mt-3 text-base leading-relaxed text-[#5B6B60]">
               Mulai dari <strong className="text-[#101613]">{formatIDR(cheapest)}/bulan</strong>
@@ -509,7 +545,7 @@ export default async function HomePage() {
             <div className="grid gap-4 sm:grid-cols-2">
               {features.map((feature, index) => (
                 <Reveal key={feature.title} delay={index * 0.04}>
-                  <div className="card-lift h-full rounded-2xl border border-[#E3E8E4] bg-white p-5">
+                  <div className="card-lift glow-card h-full rounded-2xl border border-[#E3E8E4] bg-white p-5">
                     <div className="flex items-center justify-between gap-3">
                       <span className="flex size-10 items-center justify-center rounded-xl bg-[#E7F4EC] text-[#0B3D2E]">
                         <feature.icon className="size-5" />
@@ -589,7 +625,7 @@ export default async function HomePage() {
           <div className="mt-12 grid gap-5 md:grid-cols-3">
             {useCases.map((item, index) => (
               <Reveal key={item.title} delay={index * 0.06}>
-                <div className="card-lift h-full rounded-2xl border border-[#E3E8E4] bg-white p-6">
+                <div className="card-lift glow-card h-full rounded-2xl border border-[#E3E8E4] bg-white p-6">
                   <span className="flex size-11 items-center justify-center rounded-2xl bg-[#E7F4EC] text-[#0B3D2E]">
                     <item.icon className="size-5" />
                   </span>
@@ -650,7 +686,7 @@ export default async function HomePage() {
               ))}
             </ul>
             <div className="mt-7 flex flex-wrap gap-3">
-              <Button asChild className="bg-white text-[#0B3D2E] hover:bg-[#E7F4EC]">
+              <Button asChild className="shimmer-btn bg-white text-[#0B3D2E] hover:bg-[#E7F4EC]">
                 <Link href="/fitur">
                   Jelajahi fitur <ArrowRight className="size-4" />
                 </Link>
@@ -792,7 +828,7 @@ export default async function HomePage() {
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button asChild size="lg" className="bg-white text-[#0B3D2E] hover:bg-[#E7F4EC]">
+            <Button asChild size="lg" className="shimmer-btn bg-white text-[#0B3D2E] hover:bg-[#E7F4EC]">
               <Link href="/register">
                 Mulai dari {formatIDR(cheapest)} <ArrowRight className="size-4" />
               </Link>
