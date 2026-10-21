@@ -1,13 +1,15 @@
 import "server-only";
 
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull, ne, or } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
+  orders,
   plans,
   serviceActionsLog,
   services,
   snapshots,
 } from "@/lib/db/schema";
+import type { OrderStatus, ServiceStatus } from "@/lib/db/schema";
 import {
   deleteDroplet,
   deleteSnapshot,
@@ -38,6 +40,60 @@ export function getServiceForUser(serviceId: string, userId: string) {
     .from(services)
     .where(and(eq(services.id, serviceId), eq(services.userId, userId)))
     .get();
+}
+
+/**
+ * Layanan yang gagal dibuat tidak ditampilkan ke pengguna. Refund otomatis
+ * menandai order sebagai cancelled dan layanan sebagai terminated, jadi dua
+ * kondisi itu juga diperlakukan sebagai provisioning yang tidak berhasil.
+ */
+export function isServiceVisible(
+  status: ServiceStatus,
+  orderStatus?: OrderStatus | null,
+) {
+  if (status === "failed") return false;
+  if (
+    status === "terminated" &&
+    (orderStatus === "cancelled" || orderStatus === "failed")
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function visibleServiceWhere(userId: string) {
+  return and(
+    eq(services.userId, userId),
+    ne(services.status, "failed"),
+    or(
+      ne(services.status, "terminated"),
+      isNull(services.orderId),
+      isNull(orders.id),
+      and(ne(orders.status, "cancelled"), ne(orders.status, "failed")),
+    ),
+  );
+}
+
+export function listVisibleUserServices(userId: string) {
+  return db
+    .select({ service: services })
+    .from(services)
+    .leftJoin(orders, eq(orders.id, services.orderId))
+    .where(visibleServiceWhere(userId))
+    .orderBy(desc(services.createdAt))
+    .all()
+    .map((row) => row.service);
+}
+
+export function getVisibleServiceForUser(serviceId: string, userId: string) {
+  const row = db
+    .select({ service: services, orderStatus: orders.status })
+    .from(services)
+    .leftJoin(orders, eq(orders.id, services.orderId))
+    .where(and(eq(services.id, serviceId), eq(services.userId, userId)))
+    .get();
+  if (!row || !isServiceVisible(row.service.status, row.orderStatus)) return null;
+  return row.service;
 }
 
 export function getServiceById(serviceId: string) {
@@ -348,7 +404,7 @@ export function serviceActionHistory(serviceId: string) {
 }
 
 export function userServiceCounts(userId: string) {
-  const rows = listUserServices(userId);
+  const rows = listVisibleUserServices(userId);
   return {
     total: rows.length,
     active: rows.filter((s) => s.status === "active").length,

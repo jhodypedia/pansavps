@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Cpu, Globe2, HardDrive, Network, Plus, Server, ShieldCheck, Wallet } from "lucide-react";
-import { desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { plans, regions, services } from "@/lib/db/schema";
+import { plans, regions } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth";
+import { listVisibleUserServices } from "@/server/services/services";
 import {
   cycleLabel,
   formatDate,
@@ -36,12 +36,7 @@ export default async function VpsListPage({
   const params = await searchParams;
   const filter = filters.some((item) => item.key === params.status) ? params.status! : "all";
 
-  const all = db
-    .select()
-    .from(services)
-    .where(eq(services.userId, user.id))
-    .orderBy(desc(services.createdAt))
-    .all();
+  const all = listVisibleUserServices(user.id);
   const planRows = db.select().from(plans).all();
   const planMap = new Map(planRows.map((plan) => [plan.id, plan]));
   const regionRows = db.select().from(regions).all();

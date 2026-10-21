@@ -32,7 +32,7 @@ import { availableProviders } from "@/lib/payments";
 import { listTripayChannels } from "@/lib/payments/tripay";
 import { serviceActionAction } from "@/server/actions/services";
 import {
-  getServiceForUser,
+  getVisibleServiceForUser,
   listSnapshots,
   serviceActionHistory,
 } from "@/server/services/services";
@@ -83,7 +83,7 @@ export default async function ServiceDetailPage({
   const tab = tabs.some((item) => item.key === tabParam) ? tabParam! : "ringkasan";
   const verified = isUserVerified(user);
 
-  const service = getServiceForUser(id, user.id);
+  const service = getVisibleServiceForUser(id, user.id);
   if (!service) notFound();
 
   const plan = db.select().from(plans).where(eq(plans.id, service.planId)).get();

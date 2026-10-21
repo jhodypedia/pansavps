@@ -37,6 +37,7 @@ import {
   getOrderForUser,
   provisioningTimeline,
 } from "@/server/services/orders";
+import { isServiceVisible } from "@/server/services/services";
 import { getProvisioningJob } from "@/server/services/provisioning";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -81,6 +82,8 @@ export default async function OrderDetailPage({
       ),
     )
     .get();
+  const visibleService =
+    service && isServiceVisible(service.status, order.status) ? service : null;
   const job = service ? getProvisioningJob(service.id) : null;
   const timeline = provisioningTimeline(
     order.status,
@@ -113,9 +116,9 @@ export default async function OrderDetailPage({
                 <ArrowLeft className="size-4" /> Kembali
               </Link>
             </Button>
-            {service ? (
+            {visibleService ? (
               <Button asChild className="bg-[#0B3D2E] text-white hover:bg-[#0E4D38]">
-                <Link href={`/dashboard/vps/${service.id}`}>
+                <Link href={`/dashboard/vps/${visibleService.id}`}>
                   <Server className="size-4" /> Kelola VPS
                 </Link>
               </Button>
@@ -228,13 +231,13 @@ export default async function OrderDetailPage({
             </dl>
           </SectionCard>
 
-          {service ? (
+          {visibleService ? (
             <SectionCard
               title="Layanan terkait"
               description="VPS yang dibuat dari pesanan ini."
               action={
                 <Button asChild variant="ghost" size="sm" className="text-[#0B3D2E] hover:bg-[#F3F9F5]">
-                  <Link href={`/dashboard/vps/${service.id}`}>
+                  <Link href={`/dashboard/vps/${visibleService.id}`}>
                     Buka VPS <ArrowRight className="size-3.5" />
                   </Link>
                 </Button>
@@ -242,12 +245,12 @@ export default async function OrderDetailPage({
             >
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#EDF1EE] bg-[#FBFCFB] p-4">
                 <div>
-                  <p className="font-mono text-sm font-bold text-[#101613]">{service.hostname}</p>
+                  <p className="font-mono text-sm font-bold text-[#101613]">{visibleService.hostname}</p>
                   <p className="text-xs text-[#5B6B60]">
-                    {service.ipv4 ?? "IP menyusul"} · aktif s/d {formatDateTime(service.periodEnd)}
+                    {visibleService.ipv4 ?? "IP menyusul"} · aktif s/d {formatDateTime(visibleService.periodEnd)}
                   </p>
                 </div>
-                <StatusBadge status={service.status} label={service.status} />
+                <StatusBadge status={visibleService.status} label={visibleService.status} />
               </div>
             </SectionCard>
           ) : null}

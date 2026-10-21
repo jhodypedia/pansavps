@@ -21,10 +21,10 @@ import {
   orders,
   plans,
   regions,
-  services,
   tickets,
 } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth";
+import { listVisibleUserServices } from "@/server/services/services";
 import { getPublicBrand } from "@/lib/settings";
 import {
   cycleLabel,
@@ -49,12 +49,7 @@ export default async function DashboardPage() {
   const user = await requireUser();
   const brand = getPublicBrand();
 
-  const myServices = db
-    .select()
-    .from(services)
-    .where(eq(services.userId, user.id))
-    .orderBy(desc(services.createdAt))
-    .all();
+  const myServices = listVisibleUserServices(user.id);
   const planRows = db.select().from(plans).all();
   const planMap = new Map(planRows.map((plan) => [plan.id, plan]));
   const regionRows = db.select().from(regions).all();
