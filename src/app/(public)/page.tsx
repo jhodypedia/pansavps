@@ -281,7 +281,7 @@ export default async function HomePage() {
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg" className="bg-white text-[#0B3D2E] hover:bg-[#E7F4EC]">
+              <Button asChild size="lg" className="shimmer-btn bg-white text-[#0B3D2E] hover:bg-[#E7F4EC]">
                 <Link href="/register">
                   Mulai dari {formatIDR(cheapest)} <ArrowRight className="size-4" />
                 </Link>
@@ -670,7 +670,7 @@ export default async function HomePage() {
               ))}
             </ul>
             <div className="mt-7 flex flex-wrap gap-3">
-              <Button asChild className="bg-white text-[#0B3D2E] hover:bg-[#E7F4EC]">
+              <Button asChild className="shimmer-btn bg-white text-[#0B3D2E] hover:bg-[#E7F4EC]">
                 <Link href="/fitur">
                   Jelajahi fitur <ArrowRight className="size-4" />
                 </Link>
@@ -812,7 +812,7 @@ export default async function HomePage() {
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button asChild size="lg" className="bg-white text-[#0B3D2E] hover:bg-[#E7F4EC]">
+            <Button asChild size="lg" className="shimmer-btn bg-white text-[#0B3D2E] hover:bg-[#E7F4EC]">
               <Link href="/register">
                 Mulai dari {formatIDR(cheapest)} <ArrowRight className="size-4" />
               </Link>
