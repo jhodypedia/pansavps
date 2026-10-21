@@ -46,33 +46,33 @@ import { HomePlanPreview } from "@/components/public/home-plan-preview";
 const features = [
   {
     icon: Zap,
-    title: "Aktivasi otomatis",
-    body: "Setelah pembayaran terverifikasi, server langsung dibuat dan dikonfigurasi tanpa menunggu admin.",
+    title: "Langsung nyala",
+    body: "Bayar masuk, server langsung dibuat. Nggak perlu nunggu admin online.",
   },
   {
     icon: LayoutDashboard,
-    title: "Panel kontrol lengkap",
-    body: "Nyalakan, reboot, reset password, rebuild OS, snapshot, dan pantau spesifikasi dari satu dashboard.",
+    title: "Kontrol penuh",
+    body: "Nyalain, reboot, reset password, rebuild OS, snapshot—semua dari satu dashboard.",
   },
   {
     icon: ShieldCheck,
     title: "Pembayaran aman",
-    body: "Transfer manual terverifikasi dan Tripay. Setiap transaksi tercatat dan idempoten.",
+    body: "Transfer manual diverifikasi, Tripay siap pakai. Semua transaksi tercatat rapi.",
   },
   {
     icon: Wallet,
-    title: "Saldo & perpanjangan",
-    body: "Top up saldo, bayar instan, dan aktifkan perpanjangan otomatis agar layanan tidak terputus.",
+    title: "Saldo & auto-renew",
+    body: "Top up saldo, bayar instan, aktifkan auto-renew biar layanan nggak putus.",
   },
   {
     icon: Globe2,
     title: "Region pilihan",
-    body: "Singapore untuk latensi rendah di Indonesia, plus New York dan Frankfurt untuk jangkauan global.",
+    body: "Singapore buat latensi rendah, plus New York dan Frankfurt untuk jangkauan global.",
   },
   {
     icon: Headphones,
     title: "Support WhatsApp",
-    body: "Tiket di dashboard dan notifikasi WhatsApp untuk setiap perubahan status layanan.",
+    body: "Tiket di dashboard, notifikasi WhatsApp tiap status berubah.",
   },
 ];
 
@@ -81,19 +81,19 @@ const steps = [
     icon: MousePointerClick,
     tag: "Pilih",
     title: "Pilih paket & region",
-    body: "Tentukan RAM, CPU, storage, region, dan sistem operasi. Harga tampil transparan tanpa biaya tersembunyi.",
+    body: "Atur RAM, CPU, storage, region, dan OS. Harga tampil apa adanya.",
   },
   {
     icon: CreditCard,
     tag: "Bayar",
-    title: "Bayar dengan cara favoritmu",
-    body: "Saldo, transfer bank, atau Tripay. Invoice dan status pembayaran langsung terlihat di dashboard.",
+    title: "Bayar sesuai gayamu",
+    body: "Saldo, transfer bank, atau Tripay. Status pembayaran langsung kelihatan di dashboard.",
   },
   {
     icon: Rocket,
     tag: "Aktif",
-    title: "Server aktif otomatis",
-    body: "Kredensial root dikirim ke email dan WhatsApp. Kelola server kapan saja dari panel kontrol.",
+    title: "Server langsung jalan",
+    body: "Kredensial root masuk ke email dan WhatsApp. Kelola kapan saja dari panel.",
   },
 ];
 
@@ -101,51 +101,51 @@ const useCases = [
   {
     icon: Code2,
     title: "Developer & startup",
-    body: "Deploy aplikasi, API, dan environment staging tanpa mengurus server fisik.",
+    body: "Deploy app, API, staging environment tanpa ngurus server fisik.",
     points: ["Akses root penuh", "SSH key atau password", "Snapshot sebelum rilis"],
   },
   {
     icon: Store,
     title: "UMKM & toko online",
-    body: "Website, katalog, dan bot operasional tetap ringan dengan resource yang pas.",
+    body: "Website, katalog, bot operasional tetap ringan dengan resource yang pas.",
     points: ["Aktivasi cepat", "Harga rupiah transparan", "Pengingat masa aktif"],
   },
   {
     icon: Briefcase,
     title: "Agency & freelancer",
-    body: "Kelola server beberapa klien dari satu dashboard yang rapi dan tercatat.",
+    body: "Kelola server beberapa klien dari satu dashboard yang rapi.",
     points: ["Beberapa region", "Riwayat aksi", "Support via WhatsApp"],
   },
 ];
 
 const faqs = [
   {
-    q: "Berapa lama VPS aktif setelah pembayaran?",
-    a: "Pembayaran saldo dan gateway yang terkonfirmasi otomatis akan memicu provisioning segera. Umumnya server aktif dalam hitungan detik hingga beberapa menit, tergantung region dan sistem operasi. Transfer manual menunggu verifikasi admin maksimal 1x24 jam pada hari kerja.",
+    q: "Berapa cepat VPS aktif setelah bayar?",
+    a: "Bayar masuk, provisioning langsung jalan. Umumnya aktif dalam hitungan detik sampai beberapa menit, tergantung region dan OS. Transfer manual diverifikasi admin maksimal 1x24 jam.",
   },
   {
-    q: "Apakah saya mendapatkan akses root?",
-    a: "Ya. Setiap VPS memberikan akses root penuh. Kamu bisa memilih login dengan password yang dibuat sistem atau menggunakan SSH key milikmu sendiri.",
+    q: "Dapat akses root nggak?",
+    a: "Dapat. Semua VPS kasih akses root penuh. Pilih login password dari sistem atau SSH key milikmu.",
   },
   {
-    q: "Bisakah upgrade paket tanpa kehilangan data?",
-    a: "Upgrade dilakukan dengan resize droplet sehingga data tetap tersimpan. Biaya upgrade dihitung prorata berdasarkan sisa masa aktif. Tetap lakukan backup penting sebelum perubahan besar.",
+    q: "Bisa upgrade tanpa kehilangan data?",
+    a: "Bisa. Upgrade pakai resize droplet, data tetap aman. Biaya dihitung prorata dari sisa masa aktif. Tetap backup data penting sebelum perubahan besar.",
   },
   {
-    q: "Apa yang terjadi jika masa aktif berakhir?",
-    a: "Layanan ditangguhkan setelah jatuh tempo. Kamu akan menerima pengingat melalui email dan WhatsApp sebelum jatuh tempo.",
+    q: "Kalau masa aktif habis, gimana?",
+    a: "Layanan ditangguhkan setelah jatuh tempo. Pengingat dikirim via email dan WhatsApp sebelum jatuh tempo.",
   },
   {
-    q: "Apakah tersedia paket mingguan?",
-    a: "Ya. Paket mingguan aktif selama 7 hari. Kamu akan menerima pengingat H-1 untuk memperpanjang jika masih membutuhkan server.",
+    q: "Ada paket mingguan?",
+    a: "Ada. Aktif 7 hari, dengan pengingat H-1 untuk perpanjang kalau masih butuh server.",
   },
   {
-    q: "Metode pembayaran apa saja yang didukung?",
-    a: "Transfer bank manual dan Tripay (QRIS & virtual account). Ketersediaan metode mengikuti pengaturan admin dan akan tampil otomatis saat checkout.",
+    q: "Bisa bayar pakai apa?",
+    a: "Transfer bank manual dan Tripay (QRIS & VA). Metode yang tersedia mengikuti pengaturan admin dan tampil otomatis saat checkout.",
   },
   {
-    q: "Apakah ada garansi uang kembali?",
-    a: "Jika provisioning gagal karena masalah di sisi kami, dana dapat dikembalikan sebagai saldo akun. Lihat kebijakan refund untuk ketentuan lengkapnya.",
+    q: "Ada refund nggak?",
+    a: "Kalau provisioning gagal karena masalah di sisi kami, dana bisa dikembalikan sebagai saldo akun. Lihat kebijakan refund untuk detailnya.",
   },
 ];
 
@@ -266,18 +266,17 @@ export default async function HomePage() {
             <div className="inline-flex flex-wrap items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-xs font-medium text-white/75 backdrop-blur">
               <span className="flex items-center gap-1.5">
                 <span className="size-1.5 rounded-full bg-[#4ADE80] shadow-[0_0_0_4px_rgba(74,222,128,0.12)]" />
-                Aktivasi otomatis
+                Langsung aktif
               </span>
               <span className="h-3 w-px bg-white/20" />
               <span className="text-[#86EFAC]">VPS mingguan tersedia</span>
             </div>
 
             <h1 className="mt-6 max-w-2xl font-display text-4xl leading-[1.06] font-bold tracking-tight text-white sm:text-5xl lg:text-[58px]">
-              VPS cepat untuk ide yang <span className="text-[#86EFAC]">tidak bisa menunggu.</span>
+              VPS cepat buat ide yang <span className="text-[#86EFAC]">nggak bisa nunggu.</span>
             </h1>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
-              {brand.tagline} Pilih paket, bayar, dan server siap dipakai. Panel kontrol lengkap, support
-              WhatsApp, dan harga transparan dalam rupiah.
+              {brand.tagline} Pilih paket, bayar, server langsung jalan. Panel kontrol lengkap, support WhatsApp, harga jelas dalam rupiah.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -303,10 +302,10 @@ export default async function HomePage() {
                 <Check className="size-3.5 text-[#86EFAC]" /> Tanpa biaya setup
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Check className="size-3.5 text-[#86EFAC]" /> Tanpa kontrak jangka panjang
+                <Check className="size-3.5 text-[#86EFAC]" /> Tanpa kontrak
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Check className="size-3.5 text-[#86EFAC]" /> Bayar dalam rupiah
+                <Check className="size-3.5 text-[#86EFAC]" /> Bayar pakai rupiah
               </span>
             </div>
 
@@ -314,7 +313,7 @@ export default async function HomePage() {
               {[
                 { k: "Mulai dari", v: formatIDR(cheapest) },
                 { k: "Region", v: `${regionRows.length} wilayah` },
-                { k: "Aktivasi", v: "< 2 menit" },
+                { k: "Aktif", v: "< 2 menit" },
                 { k: "Support", v: "24/7" },
               ].map((item) => (
                 <div key={item.k}>
@@ -359,7 +358,7 @@ export default async function HomePage() {
                       <span className="text-[#4ADE80]">✓</span> Pembayaran terverifikasi
                     </p>
                     <p>
-                      <span className="text-[#4ADE80]">✓</span> Droplet dibuat · sgp1
+                      <span className="text-[#4ADE80]">✓</span> Server dibuat · sgp1
                     </p>
                     <p>
                       <span className="text-[#4ADE80]">✓</span> Kredensial dikirim ke WhatsApp
@@ -442,7 +441,7 @@ export default async function HomePage() {
               Harga transparan
             </Badge>
             <h2 className="mt-4 font-display text-3xl font-bold tracking-tight text-[#101613] sm:text-4xl">
-              Pilih ukuran, bukan kompromi.
+              Pilih ukuran yang pas, tanpa drama.
             </h2>
             <p className="mt-3 text-base leading-relaxed text-[#5B6B60]">
               Mulai dari <strong className="text-[#101613]">{formatIDR(cheapest)}/bulan</strong>
@@ -452,7 +451,7 @@ export default async function HomePage() {
                   atau <strong className="text-[#101613]">{formatIDR(weeklyCheapest)}/minggu</strong>
                 </>
               ) : null}
-              . Semua paket sudah termasuk akses root, IPv4, dan panel kontrol.
+              . Semua paket sudah dapat akses root, IPv4, dan panel kontrol.
             </p>
           </Reveal>
 
@@ -483,8 +482,7 @@ export default async function HomePage() {
                 Kontrol penuh, tanpa ribet.
               </h2>
               <p className="mt-3 text-base leading-relaxed text-[#5B6B60]">
-                Dari deployment pertama sampai operasional harian. Kontrol penuh tanpa harus menyentuh
-                panel pihak ketiga.
+                Dari deploy pertama sampai operasional harian. Semua kontrol tetap di tanganmu.
               </p>
 
               <div className="mt-7 rounded-2xl border border-[#D8E2DB] bg-white p-5">
@@ -492,8 +490,7 @@ export default async function HomePage() {
                   <Cloud className="size-4 text-[#0B3D2E]" /> Infrastruktur cloud
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-[#5B6B60]">
-                  Droplet di region pilihan dengan monitoring aktif. Mode mock tersedia untuk pengujian
-                  alur tanpa memakai kredit cloud.
+                  Server di region pilihan dengan monitoring aktif. Mode mock tersedia untuk uji coba tanpa kredit cloud.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {regionRows.map((region) => (
@@ -559,7 +556,7 @@ export default async function HomePage() {
               Tiga langkah, server siap.
             </h2>
             <p className="mt-3 text-base leading-relaxed text-[#5B6B60]">
-              Alur yang singkat dan transparan. Kamu selalu tahu di mana posisi pesananmu.
+              Alur singkat dan jelas. Kamu selalu tahu posisi pesananmu.
             </p>
           </Reveal>
 
@@ -602,7 +599,7 @@ export default async function HomePage() {
               Satu platform, banyak cara pakai.
             </h2>
             <p className="mt-3 text-base leading-relaxed text-[#5B6B60]">
-              Dari eksperimen pertama sampai operasional bisnis, resource bisa menyesuaikan kebutuhan.
+              Dari eksperimen pertama sampai operasional bisnis, resource bisa menyesuaikan kebutuhanmu.
             </p>
           </Reveal>
 
@@ -651,13 +648,12 @@ export default async function HomePage() {
               Semua server, satu dashboard.
             </h2>
             <p className="mt-3 max-w-xl text-base leading-relaxed text-white/65">
-              Status server, kredensial, snapshot, dan riwayat aksi tersedia dalam satu tempat. Semua aksi
-              tercatat untuk keamanan.
+              Status server, kredensial, snapshot, dan riwayat aksi dalam satu tempat. Semua aksi tercatat untuk keamanan.
             </p>
             <ul className="mt-6 flex flex-col gap-3">
               {[
-                "Reset password root dengan sekali klik",
-                "Rebuild OS dan snapshot on-demand",
+                "Reset password root sekali klik",
+                "Rebuild OS dan snapshot kapan saja",
                 "Lihat IP, spesifikasi, dan masa aktif",
                 "Riwayat aksi lengkap dengan status",
               ].map((item) => (
@@ -750,17 +746,17 @@ export default async function HomePage() {
           <Reveal>
             <Badge className="border border-[#CFE6D8] bg-[#E7F4EC] text-[#0B3D2E] hover:bg-[#E7F4EC]">FAQ</Badge>
             <h2 className="mt-4 font-display text-3xl font-bold tracking-tight text-[#101613] sm:text-4xl">
-              Pertanyaan yang sering diajukan.
+              Pertanyaan yang sering ditanyakan.
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-[#5B6B60]">
-              Tidak menemukan jawaban? Hubungi support melalui WhatsApp atau buka tiket di dashboard.
+              Nggak nemu jawaban? Hubungi support via WhatsApp atau buka tiket di dashboard.
             </p>
             <div className="mt-6 rounded-2xl border border-[#D8E2DB] bg-[#F7F8F7] p-5">
               <div className="flex items-center gap-2 text-sm font-bold text-[#101613]">
                 <Headphones className="size-4 text-[#0B3D2E]" /> Butuh jawaban cepat?
               </div>
               <p className="mt-2 text-sm leading-relaxed text-[#5B6B60]">
-                Tim support siap membantu memilih paket atau menyelesaikan kendala teknis.
+                Tim support siap bantu pilih paket atau selesaikan kendala teknis.
               </p>
               <Button asChild variant="outline" className="mt-4 border-[#D8E2DB] bg-white text-[#0B3D2E]">
                 <Link href="/kontak">
@@ -807,8 +803,7 @@ export default async function HomePage() {
               Dari ide ke server dalam hitungan menit.
             </h2>
             <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/65">
-              Daftar gratis, pilih paket, dan bayar dengan metode yang paling nyaman. Tanpa kontrak jangka
-              panjang, tanpa biaya setup.
+              Daftar gratis, pilih paket, bayar dengan cara paling nyaman. Tanpa kontrak panjang, tanpa biaya setup.
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Mail, MessageCircle, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
+import { Mail, MessageCircle } from "lucide-react";
 
 export function SiteFooter({
   brandName,

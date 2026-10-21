@@ -68,7 +68,7 @@ export function HomePlanPreview({ plans }: { plans: Plan[] }) {
         </div>
         <p className="text-center text-xs leading-relaxed text-[#8A9A90]">
           {cycle === "weekly"
-            ? "VPS mingguan aktif 7 hari. Pengingat H-1 dikirim via email dan WhatsApp."
+            ? "VPS mingguan aktif 7 hari. Pengingat H-1 masuk via email dan WhatsApp."
             : "Bayar per bulan dan aktifkan perpanjangan otomatis agar layanan tidak terputus."}
         </p>
       </div>
