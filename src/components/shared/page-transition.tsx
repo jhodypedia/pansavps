@@ -158,12 +158,15 @@ export function PageTransitionProvider({
               initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.22, delay: 0.05 }}
-              className="flex items-center gap-3 text-white"
+              className="flex flex-col items-center gap-3 text-center text-white"
             >
-              <span className="flex size-11 items-center justify-center rounded-xl bg-[#0E4D38] ring-1 ring-white/15">
-                <Server className="size-6" />
-              </span>
-              <span className="font-display text-2xl font-bold tracking-tight">{brandName}</span>
+              <div className="flex items-center gap-3">
+                <span className="flex size-11 items-center justify-center rounded-xl bg-[#0E4D38] ring-1 ring-white/15">
+                  <Server className="size-6" />
+                </span>
+                <span className="font-display text-2xl font-bold tracking-tight">{brandName}</span>
+              </div>
+              <p className="text-sm font-medium text-white/65">Memuat halaman…</p>
             </motion.div>
             <div className="absolute inset-x-0 top-0 h-[3px] bg-white/10">
               <div className="top-progress-bar h-full bg-[#16A34A]" />
