@@ -1,0 +1,1 @@
+ALTER TABLE `plans` ADD `pricing_mode` text DEFAULT 'auto' NOT NULL;

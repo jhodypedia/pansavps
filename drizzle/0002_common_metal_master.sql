@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `phone_verified_at` integer;
