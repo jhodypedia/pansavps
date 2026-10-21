@@ -302,7 +302,7 @@ export async function performServiceAction(input: {
         const droplet = await getDroplet(dropletId, accountId);
         if (!droplet) {
           db.update(services).set({ status: "failed" }).where(eq(services.id, service.id)).run();
-          message = "Droplet tidak ditemukan di DigitalOcean. Status ditandai gagal.";
+          message = "Droplet tidak ditemukan pada penyedia cloud. Status ditandai gagal.";
         } else {
           db.update(services)
             .set({
@@ -313,7 +313,7 @@ export async function performServiceAction(input: {
             })
             .where(eq(services.id, service.id))
             .run();
-          message = "Data VPS disinkronkan dari DigitalOcean.";
+          message = "Data VPS berhasil disinkronkan.";
         }
         break;
       }

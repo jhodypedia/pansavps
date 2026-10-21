@@ -231,7 +231,7 @@ async function runProvisionStep(jobId: string): Promise<"pending" | "active" | "
       const accounts = getActiveDoAccounts();
       if (accounts.length === 0) {
         throw new DigitalOceanError(
-          "Belum ada akun DigitalOcean aktif. Tambahkan akun di Pengaturan → DigitalOcean.",
+          "Belum ada akun cloud aktif. Tambahkan akun di Pengaturan.",
           400,
           "no_account",
         );
@@ -290,7 +290,7 @@ async function runProvisionStep(jobId: string): Promise<"pending" | "active" | "
       if (!dropletId) {
         throw lastError instanceof Error
           ? lastError
-          : new Error("Gagal membuat droplet di seluruh akun DigitalOcean.");
+          : new Error("Gagal membuat droplet di seluruh akun cloud.");
       }
     } else {
       accountId = accountId ?? getDefaultDoAccount()?.id ?? null;
@@ -298,7 +298,7 @@ async function runProvisionStep(jobId: string): Promise<"pending" | "active" | "
 
     if (!accountId) {
       throw new DigitalOceanError(
-        "Akun DigitalOcean untuk layanan ini tidak ditemukan.",
+        "Akun cloud untuk layanan ini tidak ditemukan.",
         400,
         "no_account",
       );
@@ -340,7 +340,7 @@ async function runProvisionStep(jobId: string): Promise<"pending" | "active" | "
   const timedOut = Date.now() - started > 5 * 60 * 1000;
 
   if (!droplet) {
-    await failJob(job.id, svc.id, order?.id ?? null, "Droplet tidak ditemukan di DigitalOcean.");
+    await failJob(job.id, svc.id, order?.id ?? null, "Droplet tidak ditemukan pada penyedia cloud.");
     return "failed";
   }
   if (droplet.status !== "active" && !isMockMode()) {
@@ -459,9 +459,11 @@ export async function processDueJobs(limit = 10): Promise<ProvisionSummary> {
       else summary.pending++;
     } catch (error) {
       const message =
-        error instanceof Error && error.message
-          ? error.message.slice(0, 300)
-          : "Kesalahan tidak diketahui saat provisioning.";
+        error instanceof DigitalOceanError
+          ? "Provisioning gagal pada penyedia cloud. Coba lagi beberapa saat."
+          : error instanceof Error && error.message
+            ? error.message.slice(0, 300)
+            : "Kesalahan tidak diketahui saat provisioning.";
       try {
         await failJob(job.id, job.refId, null, message);
       } catch (inner) {

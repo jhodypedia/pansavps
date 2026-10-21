@@ -257,7 +257,7 @@ export default async function HomePage() {
             <div className="inline-flex flex-wrap items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-xs font-medium text-white/75 backdrop-blur">
               <span className="flex items-center gap-1.5">
                 <span className="size-1.5 rounded-full bg-[#4ADE80] shadow-[0_0_0_4px_rgba(74,222,128,0.12)]" />
-                DigitalOcean · Aktivasi otomatis
+                Aktivasi otomatis
               </span>
               <span className="h-3 w-px bg-white/20" />
               <span className="text-[#86EFAC]">VPS mingguan tersedia</span>
@@ -469,7 +469,7 @@ export default async function HomePage() {
 
               <div className="mt-7 rounded-2xl border border-[#D8E2DB] bg-white p-5">
                 <div className="flex items-center gap-2 text-sm font-bold text-[#101613]">
-                  <Cloud className="size-4 text-[#0B3D2E]" /> Infrastruktur DigitalOcean
+                  <Cloud className="size-4 text-[#0B3D2E]" /> Infrastruktur cloud
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-[#5B6B60]">
                   Droplet di region pilihan dengan monitoring aktif. Mode mock tersedia untuk pengujian

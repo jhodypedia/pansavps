@@ -31,7 +31,7 @@ export default function PrivacyPage() {
         {
           heading: "Berbagi data dengan pihak ketiga",
           body: [
-            "Kami dapat membagikan data yang diperlukan kepada penyedia infrastruktur (DigitalOcean), penyedia pembayaran (Tripay), penyedia layanan email (SMTP), dan penyedia pesan (WhatsApp) semata-mata untuk menjalankan layanan.",
+            "Kami dapat membagikan data yang diperlukan kepada penyedia infrastruktur cloud, penyedia pembayaran (Tripay), penyedia layanan email (SMTP), dan penyedia pesan (WhatsApp) semata-mata untuk menjalankan layanan.",
             "Kami tidak menjual data pribadi kepada pihak ketiga.",
           ],
         },

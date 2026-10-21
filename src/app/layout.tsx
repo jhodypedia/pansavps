@@ -29,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: brand.description,
     applicationName: brand.siteName,
-    keywords: ["VPS", "cloud VPS", "VPS murah", "DigitalOcean", "server Indonesia", brand.siteName],
+    keywords: ["VPS", "cloud VPS", "VPS murah", "server Indonesia", brand.siteName],
     authors: [{ name: brand.siteName }],
     openGraph: {
       type: "website",

@@ -324,7 +324,7 @@ async function syncDroplets(): Promise<{ synced: number; missing: number }> {
         missing++;
         await notifyAdmins({
           type: "service_missing",
-          title: "Droplet hilang dari DigitalOcean",
+          title: "Droplet hilang dari server cloud",
           body: `${svc.hostname} (${svc.doDropletId}) tidak ditemukan saat sinkronisasi.`,
           link: `/admin/services/${svc.id}`,
           waEvent: "provisioning_failed",

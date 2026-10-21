@@ -33,7 +33,7 @@ const groups = [
     title: "Provisioning & infrastruktur",
     items: [
       { icon: Zap, title: "Aktivasi otomatis", body: "Pembayaran terkonfirmasi langsung memicu pembuatan droplet. Tanpa menunggu jam kerja." },
-      { icon: Cloud, title: "DigitalOcean", body: "Droplet di region pilihan dengan monitoring dan tag per layanan untuk sinkronisasi." },
+      { icon: Cloud, title: "Infrastruktur cloud", body: "Server di region pilihan dengan monitoring dan tag per layanan untuk sinkronisasi." },
       { icon: Globe2, title: "Multi-region", body: "Singapore, New York, dan Frankfurt. Pilih region terdekat dengan penggunamu." },
       { icon: Database, title: "Snapshot", body: "Buat dan hapus snapshot kapan saja dari panel, sebelum perubahan besar." },
     ],

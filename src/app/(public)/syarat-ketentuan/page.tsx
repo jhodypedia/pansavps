@@ -15,7 +15,7 @@ export default function TermsPage() {
         {
           heading: "Definisi layanan",
           body: [
-            `${brand.siteName} menyediakan layanan virtual private server berbasis infrastruktur DigitalOcean, termasuk provisioning, panel kontrol, pemantauan status, dan dukungan pelanggan.`,
+            `${brand.siteName} menyediakan layanan virtual private server berbasis infrastruktur cloud, termasuk provisioning, panel kontrol, pemantauan status, dan dukungan pelanggan.`,
             "Layanan diberikan dalam bentuk langganan dengan periode tertentu sesuai siklus pembayaran yang dipilih. Spesifikasi mengikuti paket yang tercantum pada halaman harga saat pemesanan.",
           ],
         },
