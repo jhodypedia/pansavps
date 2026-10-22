@@ -289,7 +289,7 @@ export function TopupQuickAmounts({
   const [amount, setAmount] = useState(100000);
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {[50000, 100000, 250000, 500000, 1000000, 2000000].map((value) => (
           <Button
             key={value}
