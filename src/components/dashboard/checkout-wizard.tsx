@@ -11,6 +11,7 @@ import {
   Globe2,
   HardDrive,
   KeyRound,
+  Landmark,
   Loader2,
   Lock,
   RefreshCw,
@@ -171,10 +172,16 @@ export function CheckoutWizard({
       ? Math.round(subtotal * (30 / 7))
       : Math.round(subtotal / (cycle === "monthly" ? 1 : cycle === "quarterly" ? 3 : 12));
   const canAfford = total <= balance;
+  const onlineEnabled =
+    providers.some((provider) => provider.id === "tripay") && tripayChannels.length > 0;
+  const selectedChannel =
+    tripayChannels.find((channel) => channel.code === paymentChannel) ?? null;
   const paymentMethodLabel =
     paymentMethod === "balance"
       ? "Saldo akun"
-      : providers.find((provider) => provider.id === paymentMethod)?.label ?? "Pembayaran";
+      : paymentMethod === "tripay"
+        ? selectedChannel?.name ?? "Pembayaran online"
+        : providers.find((provider) => provider.id === paymentMethod)?.label ?? "Pembayaran";
 
   function applyPromo() {
     if (!plan) return;
@@ -299,7 +306,6 @@ export function CheckoutWizard({
             <input type="hidden" name="osSlug" value={os} />
             <input type="hidden" name="hostname" value={hostname} />
             <input type="hidden" name="paymentMethod" value={paymentMethod} />
-            <input type="hidden" name="paymentChannel" value={paymentChannel} />
             <input type="hidden" name="sshMode" value={sshMode} />
             <input type="hidden" name="sshKeyId" value={sshMode === "existing" ? sshKeyId : ""} />
             <input type="hidden" name="newSshKeyName" value={newSshKeyName} />
@@ -594,76 +600,93 @@ export function CheckoutWizard({
 
               <div>
                 <Label className="mb-2 block">Metode pembayaran</Label>
-                <div className="space-y-2">
+                <div className="grid gap-2 sm:grid-cols-2">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("balance")}
                     disabled={!canAfford}
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-xl border p-3.5 text-left disabled:cursor-not-allowed disabled:opacity-50",
+                      "flex w-full items-start gap-3 rounded-xl border p-3.5 text-left disabled:cursor-not-allowed disabled:opacity-50",
                       paymentMethod === "balance"
                         ? "border-[#0B3D2E] bg-[#F3F9F5]"
                         : "border-[#E3E8E4] bg-white hover:border-[#BFE3CC]",
                     )}
                     aria-pressed={paymentMethod === "balance"}
                   >
-                    <Wallet className="size-4 text-[#0B3D2E]" />
+                    <Wallet className="mt-0.5 size-4 shrink-0 text-[#0B3D2E]" />
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold text-[#101613]">Saldo akun (opsional)</span>
+                      <span className="block text-sm font-semibold text-[#101613]">Saldo akun</span>
                       <span className="block text-xs text-[#5B6B60]">
                         Tersedia {idr(balance)}
-                        {!canAfford ? " · tidak cukup, pilih pembayaran langsung" : ""}
+                        {!canAfford ? " · tidak cukup" : ""}
                       </span>
                     </span>
-                    {paymentMethod === "balance" ? <CheckCircle2 className="size-4 text-[#0B3D2E]" /> : null}
+                    {paymentMethod === "balance" ? (
+                      <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[#0B3D2E]" />
+                    ) : null}
                   </button>
-                  {providers.map((provider) => (
-                    <button
-                      key={provider.id}
-                      type="button"
-                      onClick={() => {
-                        setPaymentMethod(provider.id);
-                        if (provider.id === "tripay" && !paymentChannel) {
-                          setPaymentChannel(tripayChannels[0]?.code ?? "");
-                        }
-                      }}
-                      className={cn(
-                        "flex w-full items-center gap-3 rounded-xl border p-3.5 text-left",
-                        paymentMethod === provider.id
-                          ? "border-[#0B3D2E] bg-[#F3F9F5]"
-                          : "border-[#E3E8E4] bg-white hover:border-[#BFE3CC]",
-                      )}
-                      aria-pressed={paymentMethod === provider.id}
-                    >
-                      <ShieldCheck className="size-4 text-[#0B3D2E]" />
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-semibold text-[#101613]">{provider.label}</span>
-                        <span className="block text-xs text-[#5B6B60]">
-                          {provider.id === "tripay"
-                            ? "Pilih channel pembayaran di bawah (QRIS, VA, Alfamart, dll)."
-                            : provider.description}
+                  {providers
+                    .filter((provider) => provider.id !== "tripay")
+                    .map((provider) => (
+                      <button
+                        key={provider.id}
+                        type="button"
+                        onClick={() => setPaymentMethod(provider.id)}
+                        className={cn(
+                          "flex w-full items-start gap-3 rounded-xl border p-3.5 text-left",
+                          paymentMethod === provider.id
+                            ? "border-[#0B3D2E] bg-[#F3F9F5]"
+                            : "border-[#E3E8E4] bg-white hover:border-[#BFE3CC]",
+                        )}
+                        aria-pressed={paymentMethod === provider.id}
+                      >
+                        {provider.id === "manual" ? (
+                          <Landmark className="mt-0.5 size-4 shrink-0 text-[#0B3D2E]" />
+                        ) : (
+                          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-[#0B3D2E]" />
+                        )}
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-[#101613]">
+                            {provider.label}
+                          </span>
+                          <span className="block text-xs text-[#5B6B60]">
+                            {provider.description}
+                          </span>
                         </span>
-                      </span>
-                      {paymentMethod === provider.id ? <CheckCircle2 className="size-4 text-[#0B3D2E]" /> : null}
-                    </button>
-                  ))}
+                        {paymentMethod === provider.id ? (
+                          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[#0B3D2E]" />
+                        ) : null}
+                      </button>
+                    ))}
                 </div>
-                {paymentMethod === "tripay" ? (
-                  <div className="mt-3 rounded-xl border border-[#CFE6D8] bg-[#F9FCFA] p-3">
-                    <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-xs font-semibold tracking-wide text-[#0B3D2E] uppercase">
-                        Channel pembayaran
-                      </p>
-                      <span className="text-[10px] font-medium text-[#8A9A90]">Pilih salah satu</span>
-                    </div>
-                    <TripayChannelPicker
-                      channels={tripayChannels}
-                      value={paymentChannel}
-                      onChange={setPaymentChannel}
-                    />
-                  </div>
-                ) : null}
               </div>
+
+              {onlineEnabled ? (
+                <div className="rounded-2xl border border-[#CFE6D8] bg-[#F9FCFA] p-4">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-[#101613]">Pembayaran online</p>
+                      <p className="text-xs text-[#5B6B60]">
+                        QRIS, virtual account, e-wallet, dan gerai retail.
+                      </p>
+                    </div>
+                    {paymentMethod === "tripay" && selectedChannel ? (
+                      <span className="inline-flex w-fit items-center rounded-full border border-[#BFE3CC] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#0B3D2E]">
+                        {selectedChannel.name}
+                      </span>
+                    ) : null}
+                  </div>
+                  <TripayChannelPicker
+                    channels={tripayChannels}
+                    value={paymentMethod === "tripay" ? paymentChannel : ""}
+                    onChange={(code) => {
+                      setPaymentMethod("tripay");
+                      setPaymentChannel(code);
+                    }}
+                    className="mt-3"
+                  />
+                </div>
+              ) : null}
 
               <div className="space-y-2">
                 <Label htmlFor="promo">Kode promo (opsional)</Label>

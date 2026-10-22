@@ -62,6 +62,8 @@ export function InvoicePaymentPanel({
           : "tripay",
   );
   const [tripayChannel, setTripayChannel] = useState(tripayChannels[0]?.code ?? "");
+  const selectedChannel =
+    tripayChannels.find((channel) => channel.code === tripayChannel) ?? null;
   const [onlineError, setOnlineError] = useState<string | null>(null);
   const [onlinePending, startOnlineTransition] = useTransition();
   const router = useRouter();
@@ -131,38 +133,10 @@ export function InvoicePaymentPanel({
         </div>
       ) : null}
 
-      {onlineEnabled ? (
-        <div className="rounded-xl border border-[#CFE6D8] bg-[#F9FCFA] p-3">
-          <div className="mb-2">
-            <p className="text-sm font-semibold text-[#101613]">Pembayaran online</p>
-            <p className="text-xs text-[#5B6B60]">
-              Pilih QRIS, virtual account, atau gerai retail di bawah.
-            </p>
-          </div>
-          <TripayChannelPicker
-            channels={tripayChannels}
-            value={method === "tripay" ? tripayChannel : ""}
-            onChange={chooseOnlineChannel}
-            showGroups={false}
-          />
-          <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-[#D8E2DB] bg-white px-3 py-2 text-xs">
-            <span className="text-[#5B6B60]">Total di gateway</span>
-            <span className="text-right font-bold text-[#0B3D2E]">
-              {formatIDR(gatewayTotal ?? amount)}
-              {gatewayFee > 0 ? (
-                <span className="block text-[10px] font-medium text-[#8A9A90]">
-                  termasuk biaya layanan {formatIDR(gatewayFee)}
-                </span>
-              ) : null}
-            </span>
-          </div>
-        </div>
-      ) : null}
-
       {type !== "topup" || manualEnabled ? (
         <div className="space-y-2">
           <p className="text-[11px] font-semibold tracking-wide text-[#8A9A90] uppercase">
-            {onlineEnabled ? "Atau metode lain" : "Metode pembayaran"}
+            Metode pembayaran
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
             {type !== "topup" ? (
@@ -180,10 +154,10 @@ export function InvoicePaymentPanel({
               >
                 <Wallet className="mt-0.5 size-4 text-[#0B3D2E]" />
                 <span>
-                  <span className="block text-sm font-semibold text-[#101613]">Saldo akun (opsional)</span>
+                  <span className="block text-sm font-semibold text-[#101613]">Saldo akun</span>
                   <span className="block text-xs text-[#5B6B60]">
                     Tersedia {formatIDR(balance)}
-                    {!canBalance ? " · tidak cukup, pilih pembayaran langsung" : ""}
+                    {!canBalance ? " · tidak cukup" : ""}
                   </span>
                 </span>
               </button>
@@ -207,6 +181,41 @@ export function InvoicePaymentPanel({
                 </span>
               </button>
             ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      {onlineEnabled ? (
+        <div className="rounded-xl border border-[#CFE6D8] bg-[#F9FCFA] p-3">
+          <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-[#101613]">Pembayaran online</p>
+              <p className="text-xs text-[#5B6B60]">
+                QRIS, virtual account, e-wallet, dan gerai retail.
+              </p>
+            </div>
+            {method === "tripay" && selectedChannel ? (
+              <span className="inline-flex w-fit items-center rounded-full border border-[#BFE3CC] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#0B3D2E]">
+                {selectedChannel.name}
+              </span>
+            ) : null}
+          </div>
+          <TripayChannelPicker
+            channels={tripayChannels}
+            value={method === "tripay" ? tripayChannel : ""}
+            onChange={chooseOnlineChannel}
+            showGroups={false}
+          />
+          <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-[#D8E2DB] bg-white px-3 py-2 text-xs">
+            <span className="text-[#5B6B60]">Total di gateway</span>
+            <span className="text-right font-bold text-[#0B3D2E]">
+              {formatIDR(gatewayTotal ?? amount)}
+              {gatewayFee > 0 ? (
+                <span className="block text-[10px] font-medium text-[#8A9A90]">
+                  termasuk biaya layanan {formatIDR(gatewayFee)}
+                </span>
+              ) : null}
+            </span>
           </div>
         </div>
       ) : null}
