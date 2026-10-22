@@ -2,10 +2,8 @@ import Link from "next/link";
 import {
   ArrowDownLeft,
   ArrowRight,
-  ArrowUpRight,
   CheckCircle2,
   CreditCard,
-  History,
   Plus,
   Receipt,
   ShieldCheck,
@@ -19,20 +17,13 @@ import { listTripayChannels } from "@/lib/payments/tripay";
 import { formatDateTime, formatIDR } from "@/lib/format";
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/dashboard/section-card";
+import { BalanceHistory } from "@/components/dashboard/balance-history";
 import { TopupQuickAmounts } from "@/components/dashboard/invoice-payment";
 import { VerificationRequired } from "@/components/dashboard/verification-required";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 
 export const metadata = { title: "Saldo" };
-
-const typeLabels: Record<string, string> = {
-  topup: "Top up saldo",
-  payment: "Pembayaran VPS",
-  refund: "Refund ke saldo",
-  adjustment: "Penyesuaian saldo",
-};
 
 export default async function BalancePage() {
   const user = await requireUser();
@@ -78,6 +69,15 @@ export default async function BalancePage() {
     )
     .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
   const pendingTopupTotal = pendingTopups.reduce((sum, invoice) => sum + invoice.amount, 0);
+  const historyItems = transactions.map((tx) => ({
+    id: tx.id,
+    type: tx.type,
+    amount: tx.amount,
+    balanceAfter: tx.balanceAfter,
+    ref: tx.ref,
+    note: tx.note,
+    createdAt: tx.createdAt.toISOString(),
+  }));
 
   return (
     <div className="space-y-6">
@@ -226,75 +226,8 @@ export default async function BalancePage() {
           title="Riwayat transaksi"
           description="Semua mutasi saldo, termasuk top up, pembayaran, dan refund."
           bodyClassName="p-0"
-          action={
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F7F8F7] px-2.5 py-1 text-[11px] font-semibold text-[#5B6B60]">
-              <History className="size-3" /> {transactions.length} transaksi
-            </span>
-          }
         >
-          {transactions.length === 0 ? (
-            <div className="px-5 py-12 text-center">
-              <span className="mx-auto flex size-11 items-center justify-center rounded-2xl bg-[#E7F4EC] text-[#0B3D2E]">
-                <History className="size-5" />
-              </span>
-              <p className="mt-3 text-sm font-semibold text-[#101613]">Belum ada transaksi</p>
-              <p className="mt-1 text-xs text-[#5B6B60]">
-                Saldo akan muncul setelah top up atau refund.
-              </p>
-            </div>
-          ) : (
-            <ul className="max-h-[680px] divide-y divide-[#EDF1EE] overflow-y-auto">
-              {transactions.map((tx) => {
-                const positive = tx.amount > 0;
-                return (
-                  <li key={tx.id} className="flex items-start gap-3 px-5 py-4">
-                    <span
-                      className={cn(
-                        "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl",
-                        positive ? "bg-[#E7F4EC] text-[#15803D]" : "bg-[#FEF3C7] text-[#92400E]",
-                      )}
-                    >
-                      {positive ? (
-                        <ArrowDownLeft className="size-4" />
-                      ) : (
-                        <ArrowUpRight className="size-4" />
-                      )}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-semibold text-[#101613]">
-                            {typeLabels[tx.type] ?? tx.type}
-                          </p>
-                          {tx.type === "refund" ? (
-                            <span className="rounded-full bg-[#E7F4EC] px-2 py-0.5 text-[10px] font-bold text-[#0B3D2E]">
-                              Dana kembali
-                            </span>
-                          ) : null}
-                        </div>
-                        <p
-                          className={cn(
-                            "text-sm font-bold whitespace-nowrap",
-                            positive ? "text-[#15803D]" : "text-[#991B1B]",
-                          )}
-                        >
-                          {positive ? "+" : ""}
-                          {formatIDR(tx.amount)}
-                        </p>
-                      </div>
-                      <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[#5B6B60]">
-                        {tx.note ?? tx.ref ?? "—"}
-                      </p>
-                      <p className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-[#8A9A90]">
-                        <span>{formatDateTime(tx.createdAt)}</span>
-                        <span>Saldo akhir {formatIDR(tx.balanceAfter)}</span>
-                      </p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+          <BalanceHistory items={historyItems} />
         </SectionCard>
       </div>
     </div>
