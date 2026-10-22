@@ -394,7 +394,7 @@ export async function refundOrder(
     const reason = options.reason?.trim();
     await notifyUserEvent({
       userId: user.id,
-      event: "payment_paid",
+      event: "refund_processed",
       title: "Refund ke saldo",
       body: `Dana ${formatIDR(amount)} untuk pesanan ${order.orderNumber} sudah dikembalikan ke saldo.${
         reason ? ` Alasan: ${reason}` : ""
@@ -403,6 +403,15 @@ export async function refundOrder(
       emailVars: {
         order_number: order.orderNumber,
         total: formatIDR(amount),
+        saldo: formatIDR(newBalance),
+        alasan: reason || "Refund pesanan",
+        link: "/dashboard/saldo",
+      },
+      waPayload: {
+        order_number: order.orderNumber,
+        total: formatIDR(amount),
+        saldo: formatIDR(newBalance),
+        alasan: reason || "Refund pesanan",
         link: "/dashboard/saldo",
       },
     });

@@ -48,8 +48,13 @@ const adminEvents = [
 
 const userEvents = [
   ["welcome", "Pendaftaran"],
-  ["order_created", "Pesanan dibuat"],
-  ["payment_paid", "Pembayaran diterima"],
+  ["invoice_created", "Invoice dibuat"],
+  ["order_created", "Pesanan VPS dibuat"],
+  ["topup_success", "Top up berhasil"],
+  ["payment_paid", "Pembayaran VPS diterima"],
+  ["payment_rejected", "Pembayaran ditolak"],
+  ["refund_processed", "Refund ke saldo"],
+  ["balance_adjusted", "Saldo disesuaikan"],
   ["provisioning_done", "VPS aktif"],
   ["provisioning_failed", "Provisioning gagal"],
   ["invoice_reminder", "Pengingat jatuh tempo"],
@@ -57,7 +62,9 @@ const userEvents = [
   ["service_suspended", "Layanan ditangguhkan"],
   ["service_terminated", "Layanan dihentikan"],
   ["service_renewed", "Perpanjangan"],
+  ["upgrade_success", "Upgrade VPS"],
   ["ticket_replied", "Balasan tiket"],
+  ["password_reset", "Password diubah"],
 ] as const;
 
 function CheckField({

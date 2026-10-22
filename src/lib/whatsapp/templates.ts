@@ -5,8 +5,13 @@ import { eq } from "drizzle-orm";
 export const WA_TEMPLATE_KEYS = [
   "verification",
   "welcome",
+  "invoice_created",
   "order_created",
+  "topup_success",
   "payment_paid",
+  "payment_rejected",
+  "refund_processed",
+  "balance_adjusted",
   "provisioning_done",
   "provisioning_failed",
   "invoice_reminder",
@@ -14,7 +19,9 @@ export const WA_TEMPLATE_KEYS = [
   "service_suspended",
   "service_terminated",
   "service_renewed",
+  "upgrade_success",
   "ticket_replied",
+  "password_reset",
 ] as const;
 
 export type WaTemplateKey = (typeof WA_TEMPLATE_KEYS)[number] | string;
@@ -24,6 +31,7 @@ export const WA_PLACEHOLDERS = [
   "code",
   "order_number",
   "invoice_number",
+  "jenis_invoice",
   "nama_paket",
   "ip",
   "hostname",
@@ -31,11 +39,14 @@ export const WA_PLACEHOLDERS = [
   "os",
   "jatuh_tempo",
   "total",
+  "saldo",
   "link",
   "password",
   "ticket_number",
   "subject",
   "alasan",
+  "catatan",
+  "refund_info",
 ];
 
 export const DEFAULT_WA_TEMPLATES: Record<
@@ -73,12 +84,28 @@ Masuk ke dashboard:
 
 Butuh bantuan? Balas pesan ini.`,
   },
-  order_created: {
-    title: "Pesanan dibuat",
-    body: `🧾 *PESANAN DIBUAT*
+  invoice_created: {
+    title: "Invoice dibuat",
+    body: `🧾 *INVOICE BARU DIBUAT*
 
 Hai {nama} 👋
-Pesanan kamu sudah dibuat dan menunggu pembayaran.
+Invoice {jenis_invoice} kamu sudah dibuat dan menunggu pembayaran.
+
+🔖 Invoice: {invoice_number}
+💰 Total: {total}
+⏰ Bayar sebelum: {jatuh_tempo}
+
+👉 Bayar sekarang:
+{link}
+
+_Setelah pembayaran terverifikasi, pesanan atau saldo akan diproses otomatis._`,
+  },
+  order_created: {
+    title: "Pesanan dibuat",
+    body: `🛒 *PESANAN VPS DIBUAT*
+
+Hai {nama} 👋
+Pesanan VPS kamu sudah dibuat dan menunggu pembayaran.
 
 📦 Paket: {nama_paket}
 🔖 Order: {order_number}
@@ -90,12 +117,28 @@ Pesanan kamu sudah dibuat dan menunggu pembayaran.
 
 _Pesanan otomatis kedaluwarsa jika belum dibayar._`,
   },
-  payment_paid: {
-    title: "Pembayaran diterima",
-    body: `✅ *PEMBAYARAN DITERIMA*
+  topup_success: {
+    title: "Top up saldo berhasil",
+    body: `💰 *TOP UP SALDO BERHASIL*
 
 Hai {nama} 👋
-Pembayaran kamu sudah kami terima.
+Saldo akun kamu sudah bertambah.
+
+🔖 Invoice: {invoice_number}
+➕ Nominal: {total}
+💳 Saldo sekarang: {saldo}
+
+Saldo bisa langsung dipakai untuk pesanan baru, perpanjangan, atau upgrade.
+
+Lihat saldo:
+{link}`,
+  },
+  payment_paid: {
+    title: "Pembayaran diterima",
+    body: `✅ *PEMBAYARAN VPS DITERIMA*
+
+Hai {nama} 👋
+Pembayaran pesanan VPS kamu sudah kami terima.
 
 🔖 Order: {order_number}
 💰 Total: {total}
@@ -103,6 +146,50 @@ Pembayaran kamu sudah kami terima.
 Server sedang disiapkan. Kami akan mengirim detail akses setelah VPS aktif.
 
 Lihat status:
+{link}`,
+  },
+  payment_rejected: {
+    title: "Pembayaran ditolak",
+    body: `⚠️ *BUKTI PEMBAYARAN DITOLAK*
+
+Hai {nama},
+Bukti pembayaran untuk invoice {invoice_number} belum dapat kami verifikasi.
+
+📝 Alasan: {alasan}
+
+Silakan unggah ulang bukti pembayaran atau hubungi support dari dashboard.
+
+Cek invoice:
+{link}`,
+  },
+  refund_processed: {
+    title: "Refund ke saldo",
+    body: `↩️ *REFUND KE SALDO*
+
+Hai {nama} 👋
+Dana untuk pesanan {order_number} sudah dikembalikan ke saldo akun.
+
+💰 Nominal: {total}
+💳 Saldo sekarang: {saldo}
+📝 Catatan: {alasan}
+
+Lihat saldo dan riwayat:
+{link}
+
+_Refund tercatat di riwayat dan tidak dihitung sebagai pemakaian saldo._`,
+  },
+  balance_adjusted: {
+    title: "Saldo disesuaikan",
+    body: `⚖️ *PENYESUAIAN SALDO*
+
+Hai {nama} 👋
+Saldo akun kamu telah disesuaikan oleh tim {brand}.
+
+💰 Perubahan: {total}
+💳 Saldo sekarang: {saldo}
+📝 Catatan: {catatan}
+
+Lihat saldo:
 {link}`,
   },
   provisioning_done: {
@@ -210,6 +297,21 @@ Lihat detail:
 
 Terima kasih sudah mempercayakan layanan kamu kepada {brand}.`,
   },
+  upgrade_success: {
+    title: "Upgrade VPS berhasil",
+    body: `⬆️ *UPGRADE VPS BERHASIL*
+
+Hai {nama} 👋
+VPS kamu sudah ditingkatkan ke paket {nama_paket}.
+
+🖥️ Hostname: {hostname}
+📅 Berlaku sampai: {jatuh_tempo}
+
+Lihat detail VPS:
+{link}
+
+_Terima kasih sudah mempercayakan layanan kamu kepada {brand}._`,
+  },
   ticket_replied: {
     title: "Tiket dibalas",
     body: `💬 *TIKET KAMU SUDAH DIBALAS*
@@ -224,6 +326,17 @@ Lihat balasan:
 {link}
 
 Balas tiket di dashboard jika masih butuh bantuan.`,
+  },
+  password_reset: {
+    title: "Password diubah",
+    body: `🔐 *PASSWORD AKUN DIUBAH*
+
+Hai {nama},
+Password akun {brand} kamu baru saja diubah. Semua sesi lain sudah dikeluarkan.
+
+Jika ini bukan kamu, segera hubungi support.
+
+{link}`,
   },
 };
 

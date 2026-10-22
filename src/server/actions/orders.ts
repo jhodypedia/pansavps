@@ -17,8 +17,7 @@ import {
 } from "@/lib/db/schema";
 import { getSessionUser, isUserVerified } from "@/lib/auth";
 import { writeAudit } from "@/lib/audit";
-import { uid, ticketNumber } from "@/lib/format";
-import { formatIDR } from "@/lib/format";
+import { formatDateTime, formatIDR, uid, ticketNumber } from "@/lib/format";
 import {
   createOrder,
   validatePromoPreview,
@@ -34,7 +33,7 @@ import {
 import { createGatewayPayment } from "@/lib/payments";
 import { isProviderEnabled } from "@/lib/payments";
 import { resizeServiceForUpgrade } from "@/server/services/services";
-import { notifyAdmins } from "@/lib/notifications";
+import { notifyAdmins, notifyUserEvent } from "@/lib/notifications";
 import { rateLimit } from "@/lib/rate-limit";
 import {
   manualProofSchema,
@@ -47,6 +46,39 @@ import type { ActionResult } from "./types";
 import { done, errorMessage, fail, fromZod } from "./utils";
 
 type GatewayMethod = "tripay";
+
+async function notifyInvoiceCreated(
+  userId: string,
+  invoice: Invoice,
+  jenisInvoice: string,
+  extra: Record<string, string | number | null | undefined> = {},
+) {
+  const due = formatDateTime(invoice.dueDate);
+  const link = `/dashboard/invoices/${invoice.id}`;
+  await notifyUserEvent({
+    userId,
+    event: "invoice_created",
+    title: `Invoice ${jenisInvoice.toLowerCase()} dibuat`,
+    body: `Invoice ${invoice.invoiceNumber} sebesar ${formatIDR(invoice.amount)} menunggu pembayaran sebelum ${due}.`,
+    link,
+    emailVars: {
+      invoice_number: invoice.invoiceNumber,
+      jenis_invoice: jenisInvoice,
+      total: formatIDR(invoice.amount),
+      jatuh_tempo: due,
+      link,
+      ...extra,
+    },
+    waPayload: {
+      invoice_number: invoice.invoiceNumber,
+      jenis_invoice: jenisInvoice,
+      total: formatIDR(invoice.amount),
+      jatuh_tempo: due,
+      link,
+      ...extra,
+    },
+  });
+}
 
 const VERIFICATION_REQUIRED =
   "Verifikasi akun diperlukan sebelum melakukan pembelian. Verifikasi via kode WhatsApp atau tautan email terlebih dahulu.";
@@ -290,6 +322,7 @@ export async function createTopupAction(
       amount: parsed.data.amount,
       method: parsed.data.method,
     });
+    await notifyInvoiceCreated(user.id, invoice, "Top up saldo");
     if (parsed.data.method === "manual") {
       return done("Invoice top up dibuat. Selesaikan transfer.", {
         redirectTo: `/dashboard/invoices/${invoice.id}?baru=1`,
@@ -343,6 +376,7 @@ export async function renewServiceAction(
         await payInvoiceWithBalance(invoice.id, user.id);
       } catch (error) {
         if (isInsufficientBalance(error)) {
+          await notifyInvoiceCreated(user.id, invoice, "Perpanjangan VPS");
           return done(
             "Saldo tidak cukup. Invoice perpanjangan sudah dibuat, silakan bayar langsung tanpa top up.",
             { redirectTo: `/dashboard/invoices/${invoice.id}?baru=1` },
@@ -359,6 +393,7 @@ export async function renewServiceAction(
         redirectTo: `/dashboard/vps/${parsed.data.serviceId}?diperpanjang=1`,
       });
     }
+    await notifyInvoiceCreated(user.id, invoice, "Perpanjangan VPS");
     if (parsed.data.paymentMethod === "manual") {
       return done("Invoice perpanjangan dibuat.", {
         redirectTo: `/dashboard/invoices/${invoice.id}?baru=1`,
@@ -411,6 +446,7 @@ export async function upgradeServiceAction(
         result = await payInvoiceWithBalance(invoice.id, user.id);
       } catch (error) {
         if (isInsufficientBalance(error)) {
+          await notifyInvoiceCreated(user.id, invoice, "Upgrade VPS");
           return done(
             "Saldo tidak cukup. Invoice upgrade sudah dibuat, silakan bayar langsung tanpa top up.",
             { redirectTo: `/dashboard/invoices/${invoice.id}?baru=1` },
@@ -428,6 +464,7 @@ export async function upgradeServiceAction(
         redirectTo: `/dashboard/vps/${parsed.data.serviceId}?upgrade=1`,
       });
     }
+    await notifyInvoiceCreated(user.id, invoice, "Upgrade VPS");
     return done("Invoice upgrade dibuat.", {
       redirectTo: `/dashboard/invoices/${invoice.id}?baru=1`,
     });

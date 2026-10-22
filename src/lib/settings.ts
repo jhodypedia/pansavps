@@ -49,14 +49,14 @@ export const SETTING_DEFAULTS: Record<string, string> = {
   smtp_pass: "",
   email_from: "PansaVPS <noreply@pansavps.id>",
   email_templates:
-    "order_created,payment_paid,provisioning_done,provisioning_failed,invoice_reminder,weekly_expiry_reminder,service_suspended,service_terminated,service_renewed,ticket_replied,welcome,verification,password_reset",
+    "invoice_created,order_created,topup_success,payment_paid,payment_rejected,refund_processed,balance_adjusted,provisioning_done,provisioning_failed,invoice_reminder,weekly_expiry_reminder,service_suspended,service_terminated,service_renewed,upgrade_success,ticket_replied,welcome,verification,password_reset",
 
   wa_enabled: "true",
   wa_notify_admin_numbers: "",
   wa_admin_events:
     '["order_created","payment_paid","provisioning_failed","ticket_created","topup_pending","service_terminated"]',
   wa_user_events:
-    '["welcome","order_created","payment_paid","provisioning_done","invoice_reminder","weekly_expiry_reminder","service_suspended","service_terminated","service_renewed","ticket_replied"]',
+    '["welcome","invoice_created","order_created","topup_success","payment_paid","payment_rejected","refund_processed","balance_adjusted","provisioning_done","invoice_reminder","weekly_expiry_reminder","service_suspended","service_terminated","service_renewed","upgrade_success","ticket_replied","password_reset"]',
 
   invoice_due_reminder_days: "3,1",
   grace_period_days: "3",
@@ -247,6 +247,92 @@ Batas pembayaran: {jatuh_tempo}
 
 {brand}`,
   },
+  invoice_created: {
+    title: "Invoice dibuat",
+    subject: "Invoice {invoice_number} menunggu pembayaran",
+    body: `Halo {nama} 👋
+
+**Invoice baru sudah dibuat**
+Invoice {jenis_invoice} kamu menunggu pembayaran.
+
+Invoice: {invoice_number}
+Total: {total}
+Batas pembayaran: {jatuh_tempo}
+
+[Bayar sekarang]({link})
+
+> Setelah pembayaran terverifikasi, pesanan atau saldo akan diproses otomatis.
+
+{brand}`,
+  },
+  topup_success: {
+    title: "Top up berhasil",
+    subject: "Top up saldo {total} berhasil 💰",
+    body: `Halo {nama} 👋
+
+**Top up saldo berhasil**
+Saldo akun kamu sudah bertambah.
+
+Invoice: {invoice_number}
+Nominal: {total}
+Saldo sekarang: {saldo}
+
+Saldo bisa langsung dipakai untuk pesanan baru, perpanjangan, atau upgrade.
+
+[Lihat saldo]({link})
+
+{brand}`,
+  },
+  payment_rejected: {
+    title: "Pembayaran ditolak",
+    subject: "Bukti pembayaran {invoice_number} ditolak",
+    body: `Halo {nama},
+
+**Bukti pembayaran belum dapat diverifikasi**
+Bukti pembayaran untuk invoice {invoice_number} ditolak.
+
+Alasan: {alasan}
+
+Silakan unggah ulang bukti pembayaran atau hubungi support dari dashboard.
+
+[Lihat invoice]({link})
+
+{brand}`,
+  },
+  refund_processed: {
+    title: "Refund ke saldo",
+    subject: "Refund {order_number} sudah masuk ke saldo",
+    body: `Halo {nama} 👋
+
+**Refund sudah masuk ke saldo**
+Dana untuk pesanan {order_number} sudah dikembalikan ke saldo akun.
+
+Nominal: {total}
+Saldo sekarang: {saldo}
+Catatan: {alasan}
+
+[Lihat saldo dan riwayat]({link})
+
+> Refund tercatat di riwayat dan tidak dihitung sebagai pemakaian saldo.
+
+{brand}`,
+  },
+  balance_adjusted: {
+    title: "Saldo disesuaikan",
+    subject: "Penyesuaian saldo akun kamu",
+    body: `Halo {nama} 👋
+
+**Saldo akun disesuaikan**
+Tim {brand} melakukan penyesuaian saldo pada akun kamu.
+
+Perubahan: {total}
+Saldo sekarang: {saldo}
+Catatan: {catatan}
+
+[Lihat saldo]({link})
+
+{brand}`,
+  },
   payment_paid: {
     title: "Pembayaran diterima",
     subject: "Pembayaran {order_number} diterima ✅",
@@ -385,6 +471,23 @@ Berlaku sampai: {jatuh_tempo}
 [Lihat detail VPS]({link})
 
 > Terima kasih sudah mempercayakan infrastruktur kamu kepada {brand}.
+
+{brand}`,
+  },
+  upgrade_success: {
+    title: "Upgrade VPS berhasil",
+    subject: "VPS {hostname} berhasil di-upgrade ⬆️",
+    body: `Halo {nama} 👋
+
+**Upgrade VPS berhasil**
+VPS kamu sudah ditingkatkan ke paket {nama_paket}.
+
+Hostname: {hostname}
+Berlaku sampai: {jatuh_tempo}
+
+[Lihat detail VPS]({link})
+
+> Terima kasih sudah mempercayakan layanan kamu kepada {brand}.
 
 {brand}`,
   },

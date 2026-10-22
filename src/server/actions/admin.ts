@@ -527,11 +527,22 @@ export async function adjustBalanceAction(
   });
   await notifyUserEvent({
     userId: user.id,
-    event: "payment_paid",
+    event: "balance_adjusted",
     title: "Saldo disesuaikan",
     body: `Saldo kamu ${parsed.data.amount > 0 ? "bertambah" : "berkurang"} ${formatIDR(Math.abs(parsed.data.amount))}. Saldo sekarang ${formatIDR(newBalance)}.`,
     link: "/dashboard/saldo",
-    emailVars: { total: formatIDR(Math.abs(parsed.data.amount)), link: "/dashboard/saldo" },
+    emailVars: {
+      total: formatIDR(Math.abs(parsed.data.amount)),
+      saldo: formatIDR(newBalance),
+      catatan: parsed.data.note,
+      link: "/dashboard/saldo",
+    },
+    waPayload: {
+      total: formatIDR(Math.abs(parsed.data.amount)),
+      saldo: formatIDR(newBalance),
+      catatan: parsed.data.note,
+      link: "/dashboard/saldo",
+    },
   });
   revalidatePath(`/admin/users/${user.id}`);
   revalidatePath("/admin/users");
@@ -582,6 +593,11 @@ export async function verifyManualPaymentAction(
         body: `Bukti untuk ${invoice.invoiceNumber} ditolak: ${parsed.data.reason}`,
         link: `/dashboard/invoices/${invoice.id}`,
         notifyEmail: false,
+        waPayload: {
+          invoice_number: invoice.invoiceNumber,
+          alasan: parsed.data.reason,
+          link: `/dashboard/invoices/${invoice.id}`,
+        },
       });
     }
     revalidatePath("/admin/payments");

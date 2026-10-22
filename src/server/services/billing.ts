@@ -320,18 +320,20 @@ async function afterSettlement(result: SettleResult) {
     if (inv.type === "topup") {
       await notifyUserEvent({
         userId: result.user.id,
-        event: "payment_paid",
+        event: "topup_success",
         title: "Top up saldo berhasil",
         body: `Saldo kamu bertambah ${formatIDR(inv.amount)}. Saldo saat ini ${formatIDR(result.user.balance)}.`,
         link: "/dashboard/saldo",
         emailVars: {
-          order_number: inv.invoiceNumber,
+          invoice_number: inv.invoiceNumber,
           total: formatIDR(inv.amount),
+          saldo: formatIDR(result.user.balance),
           link: "/dashboard/saldo",
         },
         waPayload: {
-          order_number: inv.invoiceNumber,
+          invoice_number: inv.invoiceNumber,
           total: formatIDR(inv.amount),
+          saldo: formatIDR(result.user.balance),
           link: "/dashboard/saldo",
         },
       });
@@ -391,11 +393,22 @@ async function afterSettlement(result: SettleResult) {
     if (inv.type === "upgrade" && result.service) {
       await notifyUserEvent({
         userId: result.user.id,
-        event: "service_renewed",
+        event: "upgrade_success",
         title: "Upgrade VPS berhasil",
         body: `VPS ${result.service.hostname} sekarang memakai paket ${result.planName ?? "baru"}.`,
         link: `/dashboard/vps/${result.service.id}`,
-        emailVars: { hostname: result.service.hostname, link: `/dashboard/vps/${result.service.id}` },
+        emailVars: {
+          nama_paket: result.planName ?? "paket baru",
+          hostname: result.service.hostname,
+          jatuh_tempo: formatDate(result.service.periodEnd),
+          link: `/dashboard/vps/${result.service.id}`,
+        },
+        waPayload: {
+          nama_paket: result.planName ?? "paket baru",
+          hostname: result.service.hostname,
+          jatuh_tempo: formatDate(result.service.periodEnd),
+          link: `/dashboard/vps/${result.service.id}`,
+        },
       });
     }
   } catch (error) {
