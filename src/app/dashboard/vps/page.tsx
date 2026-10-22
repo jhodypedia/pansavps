@@ -48,7 +48,7 @@ export default async function VpsListPage({
     <div className="space-y-6">
       <PageHeader
         title="VPS saya"
-        description="Kelola semua server: nyalakan, reboot, reset password, rebuild, hingga snapshot."
+        description="Atur semua server di sini: nyalakan, reboot, ganti password, pasang ulang OS, sampai buat snapshot."
         actions={
           <Button asChild className="bg-[#0B3D2E] text-white hover:bg-[#0E4D38]">
             <Link href="/dashboard/pesanan/baru">
@@ -95,7 +95,7 @@ export default async function VpsListPage({
         <EmptyState
           icon={Server}
           title={filter === "all" ? "Belum ada VPS" : "Tidak ada VPS dengan status ini"}
-          description="Pesan VPS baru dan server akan aktif otomatis setelah pembayaran terkonfirmasi. Semua kredensial dikirim ke email dan WhatsApp."
+          description="Pesan VPS baru, lalu bayar. Setelah pembayaran masuk, server langsung dibuat dan data aksesnya dikirim ke email serta WhatsApp."
           action={
             <Button asChild className="bg-[#0B3D2E] text-white hover:bg-[#0E4D38]">
               <Link href="/dashboard/pesanan/baru">
@@ -168,8 +168,8 @@ export default async function VpsListPage({
                         ? "Dihapus otomatis"
                         : "Dihapus otomatis saat berakhir"
                       : service.autoRenew
-                        ? "Auto-renew aktif"
-                        : "Auto-renew nonaktif"}
+                        ? "Perpanjangan otomatis aktif"
+                        : "Perpanjangan otomatis nonaktif"}
                   </span>
                   <span>
                     s/d <strong className="text-[#101613]">{formatDate(service.periodEnd)}</strong>

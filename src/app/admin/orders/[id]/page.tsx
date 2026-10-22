@@ -80,7 +80,7 @@ export default async function AdminOrderDetailPage({
         <div className="flex items-start gap-3 rounded-2xl border border-[#FECACA] bg-[#FEF2F2] p-4">
           <CircleAlert className="mt-0.5 size-5 text-[#DC2626]" />
           <div>
-            <p className="text-sm font-bold text-[#991B1B]">Error provisioning</p>
+            <p className="text-sm font-bold text-[#991B1B]">Error saat membuat server</p>
             <p className="text-sm text-[#991B1B]/80">{order.errorMessage}</p>
           </div>
         </div>
@@ -149,7 +149,7 @@ export default async function AdminOrderDetailPage({
           <SectionCard title="Aksi admin">
             <AdminOrderActions orderId={order.id} status={order.status} />
             <p className="mt-3 text-xs text-[#8A9A90]">
-              Refund memindahkan dana ke saldo pengguna dan mencatat audit. Retry membuat job provisioning baru.
+              Refund memindahkan dana ke saldo pengguna dan mencatat audit. Retry membuat proses pembuatan server baru.
             </p>
           </SectionCard>
         </div>

@@ -149,7 +149,7 @@ export default async function SettingsPage({
                   ) : null}
                 </div>
                 <p className="text-xs text-[#8A9A90]">
-                  Wajib diisi untuk verifikasi WhatsApp (prioritas). Format 08xx atau 628xx.
+                  Isi nomor WhatsApp buat verifikasi. Format 08xx atau 628xx.
                 </p>
               </div>
               <SubmitButton pendingText="Menyimpan…" className="bg-[#0B3D2E] text-white hover:bg-[#0E4D38]">
@@ -226,7 +226,7 @@ export default async function SettingsPage({
           <div className="space-y-6">
             <SectionCard title="Sesi lain">
               <p className="text-sm leading-relaxed text-[#5B6B60]">
-                Keluar dari semua perangkat lain yang masih masuk ke akun ini. Sesi saat ini tetap aktif.
+                Keluarkan semua perangkat lain yang masih masuk ke akun ini. Sesi yang sekarang tetap aktif.
               </p>
               <ActionButton
                 action={revokeOtherSessionsAction}

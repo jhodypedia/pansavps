@@ -34,7 +34,7 @@ export function notificationTypeLabel(type: string): string {
   if (type.includes("suspended")) return "Penangguhan";
   if (type.includes("renewed")) return "Perpanjangan";
   if (type.includes("paid") || type.includes("topup")) return "Pembayaran";
-  if (type.includes("provisioning")) return "Provisioning";
+  if (type.includes("provisioning")) return "Pembuatan server";
   if (type.includes("invoice")) return "Invoice";
   if (type.includes("ticket")) return "Tiket";
   if (type.includes("order")) return "Pesanan";

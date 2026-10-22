@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, CreditCard } from "lucide-react";
 import type { TripayChannel } from "@/lib/payments/types";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,7 @@ export function TripayChannelPicker({
   value,
   onChange,
   showGroups = true,
+  autoFetch = true,
   className,
 }: {
   channels: TripayChannel[];
@@ -18,11 +19,45 @@ export function TripayChannelPicker({
   value?: string;
   onChange?: (code: string) => void;
   showGroups?: boolean;
+  autoFetch?: boolean;
   className?: string;
 }) {
   const [internal, setInternal] = useState(value ?? channels[0]?.code ?? "");
+  const [liveChannels, setLiveChannels] = useState<TripayChannel[] | null>(null);
+  const items = liveChannels ?? channels;
   const selected = value ?? internal;
-  const groups = Array.from(new Set(channels.map((channel) => channel.group)));
+
+  useEffect(() => {
+    if (!autoFetch) return;
+    const fallbackOnly =
+      channels.length === 0 ||
+      (channels.length === 1 && channels[0]?.code === "QRIS" && channels[0]?.group === "Lainnya");
+    let cancelled = false;
+    fetch(`/api/payments/tripay/channels${fallbackOnly ? "?force=1" : ""}`, {
+      cache: "no-store",
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload: { channels?: TripayChannel[] } | null) => {
+        if (cancelled || !Array.isArray(payload?.channels) || payload.channels.length === 0) {
+          return;
+        }
+        setLiveChannels(payload.channels);
+      })
+      .catch(() => {
+        // Daftar awal dari server tetap dipakai kalau refresh gagal.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [autoFetch, channels]);
+
+  useEffect(() => {
+    if (!value || items.some((channel) => channel.code === value)) return;
+    const next = items[0]?.code;
+    if (next) onChange?.(next);
+  }, [items, onChange, value]);
+
+  const groups = Array.from(new Set(items.map((channel) => channel.group)));
 
   function choose(code: string) {
     setInternal(code);
@@ -69,7 +104,7 @@ export function TripayChannelPicker({
     );
   }
 
-  if (channels.length === 0) {
+  if (items.length === 0) {
     return (
       <p className={cn("rounded-xl border border-[#FDE68A] bg-[#FFFBEB] p-3 text-xs text-[#92400E]", className)}>
         Metode pembayaran online belum tersedia.
@@ -85,13 +120,13 @@ export function TripayChannelPicker({
           <div key={group} className="space-y-2">
             <p className="text-[11px] font-semibold tracking-wide text-[#8A9A90] uppercase">{group}</p>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {channels.filter((channel) => channel.group === group).map(renderChannel)}
+              {items.filter((channel) => channel.group === group).map(renderChannel)}
             </div>
           </div>
         ))
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {channels.map(renderChannel)}
+          {items.map(renderChannel)}
         </div>
       )}
     </div>

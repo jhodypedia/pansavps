@@ -118,7 +118,7 @@ export function InvoiceStatusWatcher({
           <p className="mt-0.5 text-xs leading-relaxed text-[#5B6B60]">
             {status === "expired"
               ? "Invoice sudah kedaluwarsa, tetapi pembayaran yang sudah masuk tetap kami proses otomatis."
-              : "Kami memeriksa status ke gateway setiap 10 detik. Tidak perlu refresh manual."}
+              : "Kami cek status pembayaran tiap 10 detik. Kamu nggak perlu refresh manual."}
           </p>
           <p className="mt-1 text-[11px] text-[#8A9A90]" aria-live="polite">
             {lastChecked ? `Terakhir diperiksa ${formatTime(lastChecked)}` : "Memeriksa status pembayaran…"}

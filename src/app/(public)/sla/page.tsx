@@ -10,41 +10,41 @@ export default function SlaPage() {
     <LegalPage
       title="Service Level Agreement (SLA)"
       updated="20 Oktober 2026"
-      intro={`Dokumen ini menjelaskan target ketersediaan dan dukungan untuk layanan VPS ${brand.siteName}. SLA ini merupakan target operasional, bukan jaminan tanpa pengecualian.`}
+      intro={`Di sini kami jelaskan seberapa stabil layanan VPS ${brand.siteName} yang kami targetkan dan bantuan seperti apa yang bisa kamu dapat. Ini target operasional, bukan janji tanpa pengecualian.`}
       sections={[
         {
           heading: "Target ketersediaan",
           body: [
-            "Target ketersediaan jaringan dan infrastruktur adalah 99,9% per bulan kalender, tidak termasuk pemeliharaan terjadwal dan gangguan di luar kendali kami.",
-            "Ketersediaan diukur berdasarkan kemampuan server untuk dijangkau melalui jaringan. Gangguan akibat konfigurasi pengguna, aplikasi, atau serangan terhadap server tidak termasuk dalam perhitungan.",
+            "Kami menargetkan jaringan dan infrastruktur tersedia 99,9% per bulan. Angka ini belum menghitung pemeliharaan terjadwal dan gangguan yang di luar kendali kami.",
+            "Ketersediaan dihitung dari apakah server bisa dijangkau lewat jaringan. Gangguan karena konfigurasi pengguna, aplikasi, atau serangan ke server tidak masuk hitungan.",
           ],
         },
         {
           heading: "Pemeliharaan",
           body: [
-            "Pemeliharaan terjadwal akan diupayakan dilakukan pada jam sepi dan diinformasikan sebelumnya melalui kanal resmi bila memungkinkan.",
-            "Pemeliharaan darurat untuk alasan keamanan dapat dilakukan tanpa pemberitahuan awal.",
+            "Kalau memungkinkan, pemeliharaan terjadwal kami lakukan di jam sepi dan infokan lebih dulu lewat kanal resmi.",
+            "Pemeliharaan darurat untuk alasan keamanan bisa dilakukan tanpa pemberitahuan awal.",
           ],
         },
         {
           heading: "Dukungan",
           body: [
-            "Dukungan tersedia melalui tiket dashboard dan WhatsApp. Tiket dengan prioritas urgent ditangani lebih dahulu.",
-            "Verifikasi pembayaran manual diproses maksimal 1x24 jam pada hari kerja. Provisioning otomatis berjalan tanpa menunggu jam kerja.",
+            "Bantuan tersedia lewat tiket dashboard dan WhatsApp. Tiket urgent kami tangani lebih dulu.",
+            "Verifikasi transfer bank maksimal 1x24 jam di hari kerja. Pembuatan server otomatis tetap jalan tanpa nunggu jam kerja.",
           ],
         },
         {
           heading: "Kompensasi",
           body: [
-            "Jika target ketersediaan tidak terpenuhi akibat kesalahan di sisi kami, kompensasi dapat diberikan dalam bentuk kredit saldo setelah peninjauan.",
-            "Besaran kompensasi ditentukan berdasarkan durasi gangguan dan dampak terhadap layanan, dengan nilai maksimal sebesar biaya layanan bulan berjalan.",
+            "Kalau target ketersediaan meleset karena kesalahan di sisi kami, kami bisa memberi kompensasi berupa kredit saldo setelah ditinjau.",
+            "Besarnya kompensasi melihat durasi gangguan dan dampaknya ke layanan, maksimal sebesar biaya layanan bulan berjalan.",
           ],
         },
         {
           heading: "Pengecualian",
           body: [
-            "Gangguan akibat force majeure, bencana alam, kebijakan penyedia infrastruktur, serangan DDoS berskala besar, atau tindakan pengguna tidak termasuk dalam SLA.",
-            "Pengguna wajib menjaga backup mandiri dan konfigurasi keamanan server.",
+            "Gangguan karena force majeure, bencana alam, kebijakan penyedia infrastruktur, serangan DDoS besar, atau tindakan pengguna tidak termasuk SLA.",
+            "Kamu tetap perlu menyiapkan backup sendiri dan menjaga konfigurasi keamanan server.",
           ],
         },
       ]}

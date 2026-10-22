@@ -669,7 +669,7 @@ export async function adminOrderAction(
     if (action === "retry") {
       await retryProvisioning(orderId);
       revalidatePath(`/admin/orders/${orderId}`);
-      return done("Provisioning dijadwalkan ulang.");
+      return done("Pembuatan server dijadwalkan ulang.");
     }
     if (action === "refund") {
       const result = await refundOrder(orderId, admin.id, note?.trim() || "Refund oleh admin");

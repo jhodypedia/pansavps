@@ -514,7 +514,7 @@ export async function retryProvisioningAction(orderId: string): Promise<ActionRe
   try {
     await retryProvisioning(order.id);
     revalidatePath(`/dashboard/pesanan/${order.id}`);
-    return done("Provisioning dijadwalkan ulang. Server akan disiapkan kembali.");
+    return done("Pembuatan server dijadwalkan ulang. Server akan disiapkan kembali.");
   } catch (error) {
     return fail(errorMessage(error));
   }
@@ -605,7 +605,7 @@ export async function uploadPaymentProofAction(
   if (!invoice) return fail("Invoice tidak ditemukan.");
   if (invoice.status !== "unpaid") return fail("Invoice ini sudah tidak dapat dibayar.");
   if (invoice.type === "topup" && invoice.paymentProvider !== "manual") {
-    return fail("Invoice top up ini bukan transfer manual.");
+    return fail("Invoice top up ini bukan transfer bank.");
   }
 
   const file = formData.get("proof");

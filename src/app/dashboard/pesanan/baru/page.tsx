@@ -69,7 +69,7 @@ export default async function NewOrderPage({
             <div>
               <p className="text-sm font-bold text-[#92400E]">Nomor WhatsApp belum diisi</p>
               <p className="text-xs text-[#92400E]/80">
-                Nomor WhatsApp wajib ada untuk menerima kode verifikasi dan kredensial layanan.
+                Nomor WhatsApp wajib diisi untuk menerima kode verifikasi dan data akses layanan.
               </p>
             </div>
           </div>

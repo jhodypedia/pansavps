@@ -52,17 +52,17 @@ const features = [
   {
     icon: LayoutDashboard,
     title: "Kontrol penuh",
-    body: "Nyalain, reboot, reset password, rebuild OS, snapshot—semua dari satu dashboard.",
+    body: "Nyalakan, reboot, ganti password, pasang ulang OS, atau buat snapshot—semua dari satu dashboard.",
   },
   {
     icon: ShieldCheck,
     title: "Pembayaran aman",
-    body: "Transfer manual diverifikasi, Tripay siap pakai. Semua transaksi tercatat rapi.",
+    body: "Transfer bank dicek admin, pembayaran online lewat Tripay. Semua transaksi tercatat.",
   },
   {
     icon: Wallet,
-    title: "Saldo & auto-renew",
-    body: "Top up saldo, bayar instan, aktifkan auto-renew biar layanan nggak putus.",
+    title: "Saldo & perpanjangan otomatis",
+    body: "Top up saldo, bayar instan, aktifkan perpanjangan otomatis biar layanan nggak putus.",
   },
   {
     icon: Globe2,
@@ -87,13 +87,13 @@ const steps = [
     icon: CreditCard,
     tag: "Bayar",
     title: "Bayar sesuai gayamu",
-    body: "Saldo, transfer bank, atau Tripay. Status pembayaran langsung kelihatan di dashboard.",
+    body: "Saldo, transfer bank, atau QRIS/VA. Status pembayaran langsung kelihatan di dashboard.",
   },
   {
     icon: Rocket,
     tag: "Aktif",
     title: "Server langsung jalan",
-    body: "Kredensial root masuk ke email dan WhatsApp. Kelola kapan saja dari panel.",
+    body: "Akses root dikirim ke email dan WhatsApp. Kelola kapan saja dari panel.",
   },
 ];
 
@@ -101,7 +101,7 @@ const useCases = [
   {
     icon: Code2,
     title: "Developer & startup",
-    body: "Deploy app, API, staging environment tanpa ngurus server fisik.",
+    body: "Jalankan aplikasi, API, atau server staging tanpa ngurus server fisik.",
     points: ["Akses root penuh", "SSH key atau password", "Snapshot sebelum rilis"],
   },
   {
@@ -121,7 +121,7 @@ const useCases = [
 const faqs = [
   {
     q: "Berapa cepat VPS aktif setelah bayar?",
-    a: "Bayar masuk, provisioning langsung jalan. Umumnya aktif dalam hitungan detik sampai beberapa menit, tergantung region dan OS. Transfer manual diverifikasi admin maksimal 1x24 jam.",
+    a: "Kalau bayar pakai saldo atau pembayaran online, server langsung dibuat. Biasanya aktif dalam hitungan detik sampai beberapa menit, tergantung region dan OS. Transfer bank dicek admin maksimal 1x24 jam di hari kerja.",
   },
   {
     q: "Dapat akses root nggak?",
@@ -129,7 +129,7 @@ const faqs = [
   },
   {
     q: "Bisa upgrade tanpa kehilangan data?",
-    a: "Bisa. Upgrade pakai resize droplet, data tetap aman. Biaya dihitung prorata dari sisa masa aktif. Tetap backup data penting sebelum perubahan besar.",
+    a: "Bisa. Server dipindah ke paket baru tanpa kehilangan data, dan biayanya dihitung dari sisa masa aktif. Tetap backup data penting sebelum upgrade.",
   },
   {
     q: "Kalau masa aktif habis, gimana?",
@@ -141,11 +141,11 @@ const faqs = [
   },
   {
     q: "Bisa bayar pakai apa?",
-    a: "Transfer bank manual dan Tripay (QRIS & VA). Metode yang tersedia mengikuti pengaturan admin dan tampil otomatis saat checkout.",
+    a: "Bisa pakai saldo, Transfer BANK, atau pembayaran online lewat Tripay (QRIS, VA, e-wallet, dan gerai retail). Pilihan yang aktif muncul otomatis saat checkout.",
   },
   {
     q: "Ada refund nggak?",
-    a: "Kalau provisioning gagal karena masalah di sisi kami, dana bisa dikembalikan sebagai saldo akun. Lihat kebijakan refund untuk detailnya.",
+    a: "Kalau pembuatan server gagal karena masalah di sisi kami, dana bisa dikembalikan sebagai saldo akun. Lihat kebijakan refund untuk detailnya.",
   },
 ];
 
@@ -361,7 +361,7 @@ export default async function HomePage() {
                       <span className="text-[#4ADE80]">✓</span> Server dibuat · sgp1
                     </p>
                     <p>
-                      <span className="text-[#4ADE80]">✓</span> Kredensial dikirim ke WhatsApp
+                      <span className="text-[#4ADE80]">✓</span> Akses dikirim ke WhatsApp
                     </p>
                   </div>
 
@@ -386,7 +386,7 @@ export default async function HomePage() {
                     <div className="h-full w-full rounded-full bg-gradient-to-r from-[#16A34A] to-[#86EFAC]" />
                   </div>
                   <p className="flex items-center justify-between text-[11px] text-white/35">
-                    <span>provisioning selesai</span>
+                    <span>server siap</span>
                     <span className="text-[#86EFAC]">100%</span>
                   </p>
                 </div>
@@ -405,7 +405,7 @@ export default async function HomePage() {
 
             <div className="absolute -bottom-4 -left-3 hidden items-center gap-2 rounded-xl border border-white/15 bg-[#0E4D38] px-3.5 py-2.5 text-xs text-white shadow-xl sm:flex">
               <ShieldCheck className="size-4 text-[#86EFAC]" />
-              Pembayaran terenkripsi &amp; idempoten
+              Pembayaran aman dan tercatat
             </div>
           </Reveal>
         </div>
@@ -416,7 +416,7 @@ export default async function HomePage() {
         <div className="ws-container grid gap-3 py-5 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { icon: Clock, title: "Aktivasi otomatis", body: "Tanpa antrean manual" },
-            { icon: Lock, title: "Pembayaran aman", body: "Gateway & verifikasi manual" },
+            { icon: Lock, title: "Pembayaran aman", body: "Saldo, bank, atau online" },
             { icon: RefreshCw, title: "Perpanjangan otomatis", body: "Dari saldo akun" },
             { icon: KeyRound, title: "Root access", body: "SSH key atau password" },
           ].map((item) => (
@@ -451,7 +451,7 @@ export default async function HomePage() {
                   atau <strong className="text-[#101613]">{formatIDR(weeklyCheapest)}/minggu</strong>
                 </>
               ) : null}
-              . Semua paket sudah dapat akses root, IPv4, dan panel kontrol.
+              . Semua paket sudah termasuk akses root, IPv4, dan panel kontrol.
             </p>
           </Reveal>
 
@@ -482,7 +482,7 @@ export default async function HomePage() {
                 Kontrol penuh, tanpa ribet.
               </h2>
               <p className="mt-3 text-base leading-relaxed text-[#5B6B60]">
-                Dari deploy pertama sampai operasional harian. Semua kontrol tetap di tanganmu.
+                Dari awal pasang sampai operasional harian. Semua kontrol tetap di tanganmu.
               </p>
 
               <div className="mt-7 rounded-2xl border border-[#D8E2DB] bg-white p-5">
@@ -490,7 +490,7 @@ export default async function HomePage() {
                   <Cloud className="size-4 text-[#0B3D2E]" /> Infrastruktur cloud
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-[#5B6B60]">
-                  Server di region pilihan dengan monitoring aktif. Mode mock tersedia untuk uji coba tanpa kredit cloud.
+                  Server jalan di region pilihan dan statusnya dipantau langsung dari panel. Kamu bisa lihat kondisi server tanpa perlu cek manual.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {regionRows.map((region) => (
@@ -648,12 +648,12 @@ export default async function HomePage() {
               Semua server, satu dashboard.
             </h2>
             <p className="mt-3 max-w-xl text-base leading-relaxed text-white/65">
-              Status server, kredensial, snapshot, dan riwayat aksi dalam satu tempat. Semua aksi tercatat untuk keamanan.
+              Status server, akses, snapshot, dan riwayat aksi ada di satu tempat. Semua aksi tercatat untuk keamanan.
             </p>
             <ul className="mt-6 flex flex-col gap-3">
               {[
                 "Reset password root sekali klik",
-                "Rebuild OS dan snapshot kapan saja",
+                "Pasang ulang OS dan buat snapshot kapan saja",
                 "Lihat IP, spesifikasi, dan masa aktif",
                 "Riwayat aksi lengkap dengan status",
               ].map((item) => (

@@ -32,7 +32,7 @@ export default async function AdminPaymentsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Verifikasi pembayaran"
-        description="Tinjau bukti transfer manual dan riwayat transaksi gateway."
+        description="Tinjau bukti transfer bank dan riwayat transaksi online."
         actions={
           <Button asChild variant="outline" className="border-[#D8E2DB] bg-white">
             <Link href="/admin/invoices?status=unpaid">

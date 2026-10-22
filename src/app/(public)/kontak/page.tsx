@@ -92,7 +92,7 @@ export default async function ContactPage() {
             <div>
               <h2 className="text-sm font-bold text-[#101613]">Waktu respons</h2>
               <p className="mt-1 text-sm leading-relaxed text-[#5B6B60]">
-                Tiket prioritas urgent ditangani lebih dulu. Verifikasi transfer manual maksimal 1x24 jam pada
+                Tiket prioritas urgent ditangani lebih dulu. Verifikasi transfer bank maksimal 1x24 jam pada
                 hari kerja. Notifikasi otomatis tetap berjalan di luar jam kerja.
               </p>
             </div>

@@ -211,10 +211,10 @@ Server kamu siap digunakan.
 Kelola VPS:
 {link}
 
-⚠️ _Simpan kredensial ini. Jangan bagikan password kepada siapa pun._`,
+⚠️ _Simpan data akses ini. Jangan bagikan password kepada siapa pun._`,
   },
   provisioning_failed: {
-    title: "Provisioning gagal",
+    title: "Pembuatan server gagal",
     body: `⚠️ *VPS BELUM BERHASIL DIBUAT*
 
 Hai {nama},

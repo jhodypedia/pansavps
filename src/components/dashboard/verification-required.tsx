@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export function VerificationRequired({
   title = "Verifikasi akun diperlukan",
-  description = "Verifikasi via kode WhatsApp (prioritas) atau tautan email sebelum melakukan pembelian.",
+  description = "Verifikasi lewat kode WhatsApp (prioritas) atau tautan email sebelum membeli.",
 }: {
   title?: string;
   description?: string;

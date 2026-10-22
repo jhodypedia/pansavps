@@ -39,7 +39,7 @@ type EmailTemplateView = {
 const adminEvents = [
   ["order_created", "Pesanan baru"],
   ["payment_paid", "Pembayaran diterima"],
-  ["provisioning_failed", "Provisioning gagal"],
+  ["provisioning_failed", "Pembuatan server gagal"],
   ["ticket_created", "Tiket baru"],
   ["ticket_replied", "Balasan user"],
   ["topup_pending", "Top up menunggu"],
@@ -56,7 +56,7 @@ const userEvents = [
   ["refund_processed", "Refund ke saldo"],
   ["balance_adjusted", "Saldo disesuaikan"],
   ["provisioning_done", "VPS aktif"],
-  ["provisioning_failed", "Provisioning gagal"],
+  ["provisioning_failed", "Pembuatan server gagal"],
   ["invoice_reminder", "Pengingat jatuh tempo"],
   ["weekly_expiry_reminder", "Pengingat VPS mingguan"],
   ["service_suspended", "Layanan ditangguhkan"],
@@ -283,8 +283,8 @@ export function AdminSettingsTabs({
         <div className="space-y-6">
           <DoAccountsManager accounts={doAccounts} />
           <SectionCard
-            title="Preferensi provisioning"
-            description="Region default dan mode mock. Token akun dikelola di daftar akun di atas."
+            title="Preferensi server"
+            description="Region default dan mode uji. Token akun dikelola di daftar akun di atas."
           >
             <ActionForm action={submitFor("digitalocean")} inlineError>
               <div className="space-y-2">
@@ -299,8 +299,8 @@ export function AdminSettingsTabs({
               </div>
               <CheckField
                 name="do_mock_mode"
-                label="Mode mock"
-                hint="Buat VPS palsu untuk pengembangan tanpa memanggil API DigitalOcean."
+                label="Mode uji"
+                hint="Buat VPS contoh untuk pengembangan tanpa memanggil API DigitalOcean."
                 defaultChecked={settings.do_mock_mode === "true"}
               />
               <SaveButton />
@@ -348,14 +348,14 @@ export function AdminSettingsTabs({
 
       <TabsContent value="payment">
         <div className="space-y-6">
-          <SectionCard title="Transfer manual" description="Pembayaran dengan verifikasi bukti oleh admin.">
+          <SectionCard title="Transfer BANK" description="Pembayaran lewat transfer bank, bukti dicek admin.">
             <ActionForm action={submitFor("payment")} inlineError>
               <input type="hidden" name="tripay_enabled" value={settings.tripay_enabled} />
               <input type="hidden" name="tripay_api_key" value="" />
               <input type="hidden" name="tripay_private_key" value="" />
               <input type="hidden" name="tripay_merchant_code" value={settings.tripay_merchant_code} />
               <input type="hidden" name="tripay_is_sandbox" value={settings.tripay_is_sandbox} />
-              <CheckField name="manual_enabled" label="Aktifkan transfer manual" defaultChecked={settings.manual_enabled === "true"} />
+              <CheckField name="manual_enabled" label="Aktifkan transfer bank" defaultChecked={settings.manual_enabled === "true"} />
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="manual_bank_name">Nama bank</Label>
@@ -379,11 +379,11 @@ export function AdminSettingsTabs({
                 <Input id="payment_providers_order" name="payment_providers_order" defaultValue={settings.payment_providers_order} placeholder="manual,tripay" />
                 <p className="text-xs text-[#8A9A90]">Pisahkan dengan koma. Provider nonaktif otomatis dilewati.</p>
               </div>
-              <SaveButton>Simpan pembayaran manual</SaveButton>
+              <SaveButton>Simpan pengaturan transfer bank</SaveButton>
             </ActionForm>
           </SectionCard>
 
-          <SectionCard title="Tripay" description="Kredensial gateway. Daftar channel diambil otomatis dari API; kode channel tidak perlu diisi.">
+          <SectionCard title="Tripay" description="Kunci API Tripay. Daftar channel diambil otomatis, jadi kode channel nggak perlu diisi.">
             <ActionForm action={submitFor("payment")} inlineError>
               <input type="hidden" name="manual_enabled" value={settings.manual_enabled} />
               <input type="hidden" name="manual_bank_name" value={settings.manual_bank_name} />

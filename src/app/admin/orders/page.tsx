@@ -23,7 +23,7 @@ const filters = [
   { key: "all", label: "Semua" },
   { key: "pending_payment", label: "Menunggu bayar" },
   { key: "paid", label: "Dibayar" },
-  { key: "provisioning", label: "Provisioning" },
+  { key: "provisioning", label: "Diproses" },
   { key: "active", label: "Aktif" },
   { key: "failed", label: "Gagal" },
 ];
@@ -57,7 +57,7 @@ export default async function AdminOrdersPage({
     <div className="space-y-6">
       <PageHeader
         title="Pesanan"
-        description="Semua pesanan VPS beserta status pembayaran dan provisioning."
+        description="Semua pesanan VPS beserta status pembayaran dan proses pembuatan server."
         actions={
           <ExportCsvButton type="orders" />
         }

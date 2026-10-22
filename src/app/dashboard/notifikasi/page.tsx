@@ -77,7 +77,7 @@ export default async function NotificationsPage({
                 action={clearNotificationsAction}
                 variant="outline"
                 className="border-[#FECACA] text-[#B91C1C] hover:bg-[#FEE2E2]"
-                confirm="Hapus semua notifikasi? Tindakan ini tidak dapat dibatalkan."
+                confirm="Hapus semua notifikasi? Ini nggak bisa dibatalkan."
               >
                 <Trash2 className="size-3.5" /> Hapus semua
               </ActionButton>
@@ -136,7 +136,7 @@ export default async function NotificationsPage({
           description={
             filter === "unread"
               ? "Semua kabar terbaru sudah kamu baca. Notifikasi baru akan muncul di sini."
-              : "Pemberitahuan status pesanan, pembayaran, dan layanan akan muncul di sini."
+              : "Kabar status pesanan, pembayaran, dan layanan bakal muncul di sini."
           }
           action={
             filter === "unread" && allRows.length > 0 ? (

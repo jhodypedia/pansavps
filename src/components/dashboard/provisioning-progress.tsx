@@ -70,7 +70,7 @@ export function ProvisioningProgress({ serviceId }: { serviceId: string }) {
           router.refresh();
         }
       } catch {
-        setError("Status terbaru belum dapat dimuat. Kami akan mencoba lagi otomatis.");
+        setError("Status terbaru belum bisa dimuat. Kami coba lagi otomatis, ya.");
       } finally {
         busy.current = false;
         if (manual) setChecking(false);

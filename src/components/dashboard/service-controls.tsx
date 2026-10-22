@@ -177,7 +177,7 @@ export function SnapshotDialog({ serviceId }: { serviceId: string }) {
         <DialogHeader>
           <DialogTitle>Buat snapshot</DialogTitle>
           <DialogDescription>
-            Snapshot menyimpan kondisi disk saat ini. Proses dapat memakan waktu beberapa menit.
+            Snapshot menyimpan kondisi disk saat ini. Prosesnya bisa makan waktu beberapa menit.
           </DialogDescription>
         </DialogHeader>
         <ActionForm action={serviceActionAction} onSuccess={() => setOpen(false)}>
@@ -213,14 +213,14 @@ export function RebuildDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="border-[#FECACA] text-[#B91C1C] hover:bg-[#FEE2E2]">
-          <ServerCog className="size-3.5" /> Rebuild OS
+          <ServerCog className="size-3.5" /> Pasang ulang OS
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Rebuild sistem operasi</DialogTitle>
+          <DialogTitle>Pasang ulang sistem operasi</DialogTitle>
           <DialogDescription>
-            Semua data di disk akan dihapus dan diganti dengan OS baru. Tindakan ini tidak dapat
+            Semua data di disk bakal dihapus dan diganti OS baru. Tindakan ini nggak bisa
             dibatalkan.
           </DialogDescription>
         </DialogHeader>
@@ -256,10 +256,10 @@ export function RebuildDialog({
             </Button>
             <SubmitButton
               variant="destructive"
-              pendingText="Merebuild…"
+              pendingText="Memasang ulang…"
               disabled={image === ""}
             >
-              Rebuild sekarang
+              Pasang ulang sekarang
             </SubmitButton>
           </DialogFooter>
         </ActionForm>
@@ -342,7 +342,7 @@ export function RevealPassword({ serviceId, hasPassword }: { serviceId: string; 
         {pending ? "Membuka…" : "Tampilkan password root"}
       </Button>
       <p className="text-xs text-[#8A9A90]">
-        Akses kredensial dicatat di log audit. Maksimal 5 kali per 10 menit.
+        Setiap akses ke data sensitif dicatat. Maksimal 5 kali per 10 menit.
       </p>
     </div>
   );
@@ -355,7 +355,7 @@ export function AutoRenewToggle({ serviceId, enabled }: { serviceId: string; ena
       variant={enabled ? "outline" : "default"}
       className={enabled ? "border-[#D8E2DB] bg-white" : "bg-[#0B3D2E] text-white hover:bg-[#0E4D38]"}
     >
-      {enabled ? "Matikan auto-renew" : "Aktifkan auto-renew"}
+      {enabled ? "Matikan perpanjangan otomatis" : "Aktifkan perpanjangan otomatis"}
     </ActionButton>
   );
 }
@@ -390,8 +390,8 @@ export function RenewServiceDialog({
         <DialogHeader>
           <DialogTitle>Perpanjang {hostname}</DialogTitle>
           <DialogDescription>
-            Perpanjangan memperpanjang masa aktif dari tanggal berakhir saat ini. VPS mingguan dapat
-            diperpanjang sebelum batas 7 hari agar tidak dihapus otomatis.
+            Perpanjangan menambah masa aktif dari tanggal berakhir yang sekarang. VPS mingguan
+            bisa diperpanjang sebelum 7 hari biar nggak dihapus otomatis.
           </DialogDescription>
         </DialogHeader>
         <ActionForm action={renewServiceAction} onSuccess={() => setOpen(false)}>
@@ -454,7 +454,7 @@ export function UpgradeServiceDialog({
         <DialogHeader>
           <DialogTitle>Upgrade paket</DialogTitle>
           <DialogDescription>
-            Biaya dihitung prorata sisa masa aktif. Resize dilakukan otomatis setelah pembayaran.
+            Biayanya dihitung dari sisa masa aktif. Upgrade dijalankan otomatis setelah pembayaran.
           </DialogDescription>
         </DialogHeader>
         {targets.length === 0 ? (
@@ -485,7 +485,7 @@ export function UpgradeServiceDialog({
                 className="h-9 w-full rounded-md border border-[#D8E2DB] bg-white px-3 text-sm"
               >
                 <option value="balance">Saldo akun · {formatPrice(balance)} (opsional)</option>
-                <option value="manual">Transfer manual</option>
+                <option value="manual">Transfer BANK</option>
               </select>
             </div>
             <DialogFooter>
@@ -546,7 +546,7 @@ function PaymentSelect({
         </div>
       ) : null}
       <p className="text-xs text-[#8A9A90]">
-        Saldo tidak cukup? Pilih transfer manual atau pembayaran online. Tidak perlu top up saldo.
+        Saldo tidak cukup? Pilih transfer bank atau pembayaran online. Tidak perlu top up saldo.
       </p>
     </div>
   );

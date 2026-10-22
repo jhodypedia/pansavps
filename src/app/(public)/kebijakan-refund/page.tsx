@@ -10,41 +10,41 @@ export default function RefundPage() {
     <LegalPage
       title="Kebijakan Refund"
       updated="20 Oktober 2026"
-      intro={`Kami ingin setiap transaksi di ${brand.siteName} berjalan adil. Kebijakan ini menjelaskan kapan refund dapat diberikan dan bagaimana prosesnya.`}
+      intro={`Kami mau semua transaksi di ${brand.siteName} tetap adil. Di sini kami jelaskan kapan dana bisa dikembalikan dan bagaimana caranya.`}
       sections={[
         {
           heading: "Refund ke saldo",
           body: [
-            "Jika provisioning gagal karena masalah pada sistem kami dan layanan tidak dapat diaktifkan, dana dapat dikembalikan sebagai saldo akun.",
-            "Permintaan refund dapat diajukan dari halaman detail pesanan atau melalui tiket dengan departemen billing. Sertakan nomor pesanan dan alasan singkat.",
+            "Kalau server gagal dibuat karena masalah di sistem kami dan layanan tidak bisa dipakai, dana bisa dikembalikan ke saldo akun.",
+            "Ajukan refund dari halaman detail pesanan atau lewat tiket departemen billing. Sertakan nomor pesanan dan alasan singkatnya.",
           ],
         },
         {
           heading: "Refund ke metode pembayaran asal",
           body: [
-            "Refund ke metode pembayaran asal dapat dipertimbangkan untuk kasus tertentu, dengan memperhitungkan biaya transaksi yang tidak dapat ditarik kembali oleh penyedia pembayaran.",
-            "Waktu pemrosesan refund mengikuti kebijakan penyedia pembayaran dan dapat memakan waktu hingga 14 hari kerja.",
+            "Untuk kasus tertentu, refund ke metode pembayaran asal bisa dipertimbangkan. Nominalnya akan memperhitungkan biaya transaksi yang tidak bisa ditarik lagi oleh penyedia pembayaran.",
+            "Waktu prosesnya mengikuti kebijakan penyedia pembayaran, bisa sampai 14 hari kerja.",
           ],
         },
         {
           heading: "Kondisi yang tidak memenuhi syarat refund",
           body: [
-            "Layanan yang sudah aktif dan digunakan, termasuk pemakaian sebagian periode, umumnya tidak dapat direfund penuh.",
-            "Pelanggaran syarat dan ketentuan, penggunaan untuk aktivitas ilegal, atau penangguhan akibat pelanggaran tidak disertai refund.",
-            "Ketidaksesuaian yang disebabkan oleh konfigurasi pengguna setelah akses root diberikan bukan merupakan alasan refund.",
+            "Layanan yang sudah aktif dan dipakai, termasuk pemakaian sebagian periode, umumnya tidak bisa direfund penuh.",
+            "Pelanggaran syarat dan ketentuan, aktivitas ilegal, atau penangguhan karena pelanggaran tidak disertai refund.",
+            "Masalah yang muncul dari konfigurasi pengguna setelah akses root diberikan bukan alasan refund.",
           ],
         },
         {
-          heading: "Pembatalan sebelum provisioning",
+          heading: "Pembatalan sebelum server dibuat",
           body: [
-            "Pesanan yang belum dibayar dapat dibatalkan tanpa biaya. Jika pembayaran sudah diterima tetapi server belum dibuat, refund ke saldo dapat diproses setelah verifikasi.",
+            "Pesanan yang belum dibayar bisa dibatalkan tanpa biaya. Kalau pembayaran sudah masuk tapi server belum dibuat, refund ke saldo bisa diproses setelah dicek.",
           ],
         },
         {
           heading: "Cara mengajukan",
           body: [
-            "Buka tiket dengan departemen billing atau hubungi support. Sertakan nomor invoice, nomor pesanan, dan penjelasan masalah.",
-            "Tim kami akan meninjau permintaan dan memberikan keputusan melalui tiket atau email resmi.",
+            "Buka tiket departemen billing atau hubungi support. Sertakan nomor invoice, nomor pesanan, dan penjelasan masalahnya.",
+            "Tim kami bakal cek permintaanmu dan kasih keputusan lewat tiket atau email resmi.",
           ],
         },
       ]}

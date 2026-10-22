@@ -128,7 +128,7 @@ export default async function AdminServiceDetailPage({
               <InfoRow label="Masa aktif" value={`${formatDate(service.periodStart)} — ${formatDate(service.periodEnd)}`} />
               <InfoRow label="Siklus" value={cycleLabel[service.billingCycle]} />
               <InfoRow
-                label="Auto renew"
+                label="Perpanjangan otomatis"
                 value={service.billingCycle === "weekly" ? "Dihapus otomatis" : service.autoRenew ? "Aktif" : "Nonaktif"}
               />
             </dl>
@@ -202,7 +202,7 @@ export default async function AdminServiceDetailPage({
             </Button>
           </SectionCard>
 
-          <SectionCard title="Provisioning">
+          <SectionCard title="Pembuatan server">
             {job ? (
               <dl className="divide-y divide-[#EDF1EE]">
                 <InfoRow label="Job ID" value={<span className="font-mono text-xs">{job.id}</span>} />
@@ -212,7 +212,7 @@ export default async function AdminServiceDetailPage({
                 {job.lastError ? <InfoRow label="Error" value={<span className="text-xs text-[#B91C1C]">{job.lastError}</span>} /> : null}
               </dl>
             ) : (
-              <p className="text-sm text-[#5B6B60]">Tidak ada job provisioning aktif.</p>
+              <p className="text-sm text-[#5B6B60]">Tidak ada job proses pembuatan server.</p>
             )}
           </SectionCard>
 

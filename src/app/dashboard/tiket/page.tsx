@@ -51,7 +51,7 @@ export default async function TicketsPage({
     <div className="space-y-6">
       <PageHeader
         title="Tiket support"
-        description="Tim support siap membantu masalah teknis, billing, dan pertanyaan umum."
+        description="Tim support siap bantu masalah teknis, billing, atau pertanyaan lain."
         actions={
           <Button asChild className="bg-[#0B3D2E] text-white hover:bg-[#0E4D38]">
             <Link href="/dashboard/tiket/baru">
@@ -96,7 +96,7 @@ export default async function TicketsPage({
         <EmptyState
           icon={LifeBuoy}
           title={filter === "all" ? "Belum ada tiket" : "Tidak ada tiket dengan status ini"}
-          description="Buka tiket jika mengalami kendala. Sertakan detail masalah agar tim support bisa membantu lebih cepat."
+          description="Buka tiket kalau ada kendala. Sertakan detail masalahnya biar tim support bisa bantu lebih cepat."
           action={
             <Button asChild className="bg-[#0B3D2E] text-white hover:bg-[#0E4D38]">
               <Link href="/dashboard/tiket/baru">

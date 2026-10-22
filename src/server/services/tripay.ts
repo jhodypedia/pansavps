@@ -98,7 +98,7 @@ export async function reconcileTripayPayment(
       return {
         status: invoice.status,
         settled: false,
-        message: "Status pembayaran belum dapat diperiksa ke gateway.",
+        message: "Status pembayaran belum bisa dicek ke penyedia pembayaran.",
       };
     }
   }

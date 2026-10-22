@@ -106,7 +106,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <PageHeader
         title={`Halo, ${firstName}`}
-        description={`Selamat datang kembali di panel ${brand.siteName}. Pantau layanan, tagihan, dan aktivitas akunmu di satu tempat.`}
+        description={`Ini ringkasan layanan, tagihan, dan aktivitas akunmu di ${brand.siteName}. Kalau ada yang perlu dicek, semuanya ada di sini.`}
         actions={
           <>
             <Button asChild variant="outline" className="border-[#D8E2DB] bg-white">
@@ -130,7 +130,7 @@ export default async function DashboardPage() {
             {unpaid.length} tagihan menunggu pembayaran ({formatIDR(unpaidTotal)})
           </AlertTitle>
           <AlertDescription className="text-[#92400E]/80">
-            Selesaikan pembayaran agar layanan tidak ditangguhkan.{" "}
+            Bayar sebelum jatuh tempo biar layanan tetap jalan.{" "}
             <Link
               href="/dashboard/invoices"
               className="font-semibold text-[#92400E] underline underline-offset-2"
@@ -191,7 +191,7 @@ export default async function DashboardPage() {
       <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
         <SectionCard
           title="VPS saya"
-          description="Layanan aktif dan yang sedang disiapkan."
+          description="Layanan yang aktif dan yang sedang disiapkan."
           action={
             <Button asChild variant="ghost" size="sm" className="text-[#0B3D2E] hover:bg-[#F3F9F5]">
               <Link href="/dashboard/vps">
@@ -206,7 +206,7 @@ export default async function DashboardPage() {
               <EmptyState
                 icon={Server}
                 title="Belum ada VPS"
-                description="Pesan VPS pertamamu dan server akan aktif otomatis setelah pembayaran terkonfirmasi."
+                description="Pesan VPS pertamamu. Setelah pembayaran masuk, server langsung dibuat."
                 action={
                   <Button asChild className="bg-[#0B3D2E] text-white hover:bg-[#0E4D38]">
                     <Link href="/dashboard/pesanan/baru">

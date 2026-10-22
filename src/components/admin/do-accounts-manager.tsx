@@ -70,7 +70,7 @@ function AccountFields({
             defaultChecked={account?.isActive ?? true}
             className="accent-[#0B3D2E]"
           />
-          Aktif untuk provisioning
+          Dipakai untuk pembuatan server
         </label>
       </div>
     </>
@@ -81,13 +81,13 @@ export function DoAccountsManager({ accounts }: { accounts: DoAccountView[] }) {
   return (
     <SectionCard
       title="Akun DigitalOcean"
-      description="Kelola beberapa token DigitalOcean. Provisioning memakai akun default lebih dulu, lalu otomatis mencoba akun aktif lain jika kapasitas penuh."
+      description="Kelola beberapa token DigitalOcean. Pembuatan server memakai akun default lebih dulu, lalu otomatis mencoba akun aktif lain jika kapasitas penuh."
     >
       <div className="space-y-4">
         {accounts.length === 0 ? (
           <div className="rounded-xl border border-dashed border-[#D8E2DB] bg-[#F9FBFA] p-5 text-sm text-[#5B6B60]">
             Belum ada akun. Tambahkan token DigitalOcean di bawah. Mode mock tetap aktif jika
-            diaktifkan pada preferensi provisioning.
+            diaktifkan di preferensi server.
           </div>
         ) : null}
 

@@ -214,7 +214,7 @@ export function InvoiceList({ items }: { items: InvoiceListItem[] }) {
           </p>
           <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-[#5B6B60]">
             {items.length === 0
-              ? "Invoice akan muncul setelah kamu memesan VPS, memperpanjang layanan, atau melakukan top up."
+              ? "Invoice bakal muncul setelah kamu memesan VPS, memperpanjang layanan, atau top up."
               : "Coba ubah filter atau kata kunci pencarian."}
           </p>
           {items.length === 0 ? (

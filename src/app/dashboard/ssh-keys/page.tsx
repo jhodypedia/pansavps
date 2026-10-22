@@ -62,7 +62,7 @@ export default async function SshKeysPage() {
                   </div>
                   <ActionButton
                     action={deleteSshKeyAction.bind(null, key.id)}
-                    confirm={`Hapus SSH key "${key.name}"? Key yang dipakai VPS aktif tidak dapat dihapus.`}
+                    confirm={`Hapus SSH key "${key.name}"? Key yang sedang dipakai VPS aktif nggak bisa dihapus.`}
                     variant="ghost"
                     className="shrink-0 self-start text-[#B91C1C] hover:bg-[#FEE2E2]"
                   >

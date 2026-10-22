@@ -355,7 +355,7 @@ export async function revealRootPassword(input: {
     throw new ServiceError("FORBIDDEN", "VPS ini bukan milik kamu.");
   }
   if (input.actor.role === "admin" && (!input.reason || input.reason.trim().length < 5)) {
-    throw new ServiceError("REASON_REQUIRED", "Alasan akses kredensial wajib diisi (minimal 5 karakter).");
+    throw new ServiceError("REASON_REQUIRED", "Alasan akses data wajib diisi (minimal 5 karakter).");
   }
   if (!service.rootPasswordEncrypted) {
     throw new ServiceError("NO_PASSWORD", "Password belum tersedia untuk VPS ini.");
@@ -364,7 +364,7 @@ export async function revealRootPassword(input: {
   try {
     password = decrypt(service.rootPasswordEncrypted);
   } catch {
-    throw new ServiceError("DECRYPT_FAILED", "Gagal membaca kredensial. Hubungi admin.");
+    throw new ServiceError("DECRYPT_FAILED", "Gagal membaca data akses. Hubungi admin.");
   }
   await writeAudit({
     actor: input.actor,

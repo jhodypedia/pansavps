@@ -136,7 +136,7 @@ async function failJob(jobId: string, serviceId: string, orderId: string | null,
         const refund = await refundOrder(
           resolvedOrderId,
           "system",
-          `Refund otomatis karena provisioning gagal: ${reason}`,
+          `Refund otomatis karena pembuatan server gagal: ${reason}`,
           { reason, notify: false },
         );
         refunded = true;
@@ -181,13 +181,13 @@ async function failJob(jobId: string, serviceId: string, orderId: string | null,
       });
       await notifyAdmins({
         type: "provisioning_failed",
-        title: "Provisioning gagal",
+        title: "Pembuatan server gagal",
         body: `${svc.hostname} (${user.email}) gagal: ${reason}${
           refunded ? ` · Refund ${formatIDR(refundAmount)} ke saldo.` : " · Refund otomatis gagal."
         }`,
         link: resolvedOrderId ? `/admin/orders/${resolvedOrderId}` : "/admin/services",
         waEvent: "provisioning_failed",
-        waMessage: `Provisioning GAGAL\nHostname: ${svc.hostname}\nUser: ${user.email}\nAlasan: ${reason.slice(0, 200)}\n${
+        waMessage: `PEMBUATAN SERVER GAGAL\nHostname: ${svc.hostname}\nUser: ${user.email}\nAlasan: ${reason.slice(0, 200)}\n${
           refunded ? `Refund: ${formatIDR(refundAmount)} ke saldo` : "Refund otomatis GAGAL, cek manual."
         }`,
       });
@@ -472,10 +472,10 @@ export async function processDueJobs(limit = 10): Promise<ProvisionSummary> {
     } catch (error) {
       const message =
         error instanceof DigitalOceanError
-          ? "Provisioning gagal pada penyedia cloud. Coba lagi beberapa saat."
+          ? "Pembuatan server gagal pada penyedia cloud. Coba lagi beberapa saat."
           : error instanceof Error && error.message
             ? error.message.slice(0, 300)
-            : "Kesalahan tidak diketahui saat provisioning.";
+            : "Ada kesalahan yang belum diketahui saat membuat server.";
       try {
         await failJob(job.id, job.refId, null, message);
       } catch (inner) {
@@ -488,7 +488,7 @@ export async function processDueJobs(limit = 10): Promise<ProvisionSummary> {
 }
 
 /**
- * Backfill untuk job provisioning yang sudah final gagal tetapi refund-nya
+ * Backfill untuk proses pembuatan server yang sudah final gagal tetapi refund-nya
  * belum tercatat (misalnya job gagal sebelum fitur refund otomatis aktif).
  */
 export async function refundFailedProvisioning(
@@ -520,12 +520,12 @@ export async function refundFailedProvisioning(
       .get();
     if (existingRefund) continue;
 
-    const reason = job.lastError ?? "Provisioning tidak berhasil diselesaikan.";
+    const reason = job.lastError ?? "Pembuatan server tidak berhasil diselesaikan.";
     try {
       const result = await refundOrder(
         order.id,
         "system",
-        `Refund otomatis karena provisioning gagal: ${reason}`,
+        `Refund otomatis karena pembuatan server gagal: ${reason}`,
         { reason },
       );
       if (!result.alreadyRefunded) {

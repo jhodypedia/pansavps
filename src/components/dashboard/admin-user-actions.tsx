@@ -126,7 +126,7 @@ export function AdjustBalanceForm({ userId, balance }: { userId: string; balance
       </div>
       <div className="space-y-2">
         <Label htmlFor={`note-${userId}`}>Catatan</Label>
-        <Input id={`note-${userId}`} name="note" required minLength={5} placeholder="Kompensasi downtime / koreksi saldo" />
+        <Input id={`note-${userId}`} name="note" required minLength={5} placeholder="Kompensasi gangguan / koreksi saldo" />
       </div>
       <SubmitButton pendingText="Menyimpan…" className="w-full bg-[#0B3D2E] text-white hover:bg-[#0E4D38]">
         <Wallet className="size-4" /> Sesuaikan saldo (saat ini {formatIDR(balance)})

@@ -77,7 +77,7 @@ export default async function AdminWhatsAppPage() {
 
       <SectionCard
         title="Koneksi perangkat"
-        description="Sesi WhatsApp disimpan di worker; kredensial tidak pernah dikirim ke browser."
+        description="Sesi WhatsApp disimpan di worker; data sensitif tidak pernah dikirim ke browser."
         action={failedIds.length > 0 ? <RetryFailedWa ids={failedIds} /> : null}
       >
         <WhatsAppConnect
@@ -135,7 +135,7 @@ export default async function AdminWhatsAppPage() {
 
       <SectionCard
         title="Template WhatsApp"
-        description="Placeholder diganti otomatis. Password provisioning dikirim sekali dan disimpan terenkripsi."
+        description="Placeholder diganti otomatis. Password dari proses pembuatan server dikirim sekali dan disimpan terenkripsi."
         bodyClassName="p-0"
       >
         <div className="divide-y divide-[#EDF1EE]">

@@ -269,7 +269,7 @@ function brandHtml(
               Butuh bantuan? Balas email ini atau hubungi <a href="mailto:${safeSupport}" style="color:#0B3D2E;font-weight:600;text-decoration:underline">${safeSupport}</a>.
             </p>
             <p style="margin:0;font-family:'Segoe UI',Arial,Helvetica,sans-serif;font-size:11px;line-height:1.6;color:#8A9A90">
-              Email ini dikirim otomatis oleh ${safeName}. Jangan bagikan kredensial atau kode verifikasi kepada siapa pun.
+              Email ini dikirim otomatis oleh ${safeName}. Jangan bagikan data akses atau kode verifikasi kepada siapa pun.
             </p>
             <p style="margin:10px 0 0;font-family:'Segoe UI',Arial,Helvetica,sans-serif;font-size:11px;line-height:1.6;color:#A3B0A7">© ${new Date().getFullYear()} ${safeName}. Hak cipta dilindungi.</p>
           </td>

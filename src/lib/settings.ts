@@ -37,7 +37,7 @@ export const SETTING_DEFAULTS: Record<string, string> = {
   manual_account_number: "1234567890",
   manual_account_name: "PT Pansa Digital Nusantara",
   manual_instructions:
-    "Transfer tepat sesuai nominal invoice. Setelah transfer, unggah bukti pembayaran di halaman invoice. Verifikasi maksimal 1x24 jam pada hari kerja.",
+    "Transfer sesuai nominal invoice, ya. Setelah itu unggah bukti transfer di halaman ini. Admin cek maksimal 1x24 jam di hari kerja.",
 
   payment_providers_order: "manual,tripay",
   default_order_expiry_hours: "24",
@@ -346,7 +346,7 @@ Total: {total}
 
 [Lihat status pesanan]({link})
 
-> Proses provisioning biasanya selesai dalam beberapa menit. Kami akan mengirim detail akses setelah server aktif.
+> Proses pembuatan server biasanya cuma beberapa menit. Detail akses kami kirim setelah server aktif.
 
 {brand}`,
   },
@@ -369,12 +369,12 @@ Berlaku sampai: {jatuh_tempo}
 
 [Kelola VPS]({link})
 
-> Simpan kredensial ini di tempat aman. Jangan bagikan password kepada siapa pun, termasuk yang mengaku sebagai tim {brand}.
+> Simpan data akses ini di tempat aman. Jangan bagikan password kepada siapa pun, termasuk yang mengaku sebagai tim {brand}.
 
 {brand}`,
   },
   provisioning_failed: {
-    title: "Provisioning gagal",
+    title: "Pembuatan server gagal",
     subject: "VPS {hostname} gagal dibuat",
     body: `Halo {nama},
 
@@ -395,14 +395,14 @@ Terjadi kendala saat menyiapkan {hostname}. Tim kami sudah diberi tahu.
     body: `Halo {nama} ⏰
 
 **VPS mingguan kamu segera berakhir**
-VPS {hostname} akan berakhir pada {jatuh_tempo}. Karena ini paket mingguan, droplet akan **dihapus otomatis** saat masa aktif selesai.
+VPS {hostname} akan berakhir pada {jatuh_tempo}. Karena ini paket mingguan, server akan **dihapus otomatis** saat masa aktif selesai.
 
 Hostname: {hostname}
 Berakhir: {jatuh_tempo}
 
 [Perpanjang sekarang]({link})
 
-> Data pada droplet yang sudah dihapus tidak dapat dipulihkan. Perpanjang sebelum batas waktu jika masih membutuhkan server.
+> Data pada server yang sudah dihapus tidak dapat dipulihkan. Perpanjang sebelum batas waktu jika masih membutuhkan server.
 
 {brand}`,
   },
@@ -419,7 +419,7 @@ Jatuh tempo: {jatuh_tempo}
 
 [Perpanjang sekarang]({link})
 
-> Jika auto-renew aktif dan saldo cukup, perpanjangan diproses otomatis.
+> Jika perpanjangan otomatis aktif dan saldo cukup, perpanjangan diproses otomatis.
 
 {brand}`,
   },
@@ -436,7 +436,7 @@ Status: Ditangguhkan
 
 [Perpanjang & aktifkan kembali]({link})
 
-> Segera perpanjang sebelum masa tenggang berakhir agar data dan droplet tidak dihapus.
+> Segera perpanjang sebelum masa tenggang berakhir agar data dan server tidak dihapus.
 
 {brand}`,
   },
@@ -446,14 +446,14 @@ Status: Ditangguhkan
     body: `Halo {nama},
 
 **Layanan VPS telah dihentikan**
-VPS {hostname} telah dihentikan dan droplet dihapus. Paket mingguan dihapus otomatis setelah 7 hari; paket lainnya setelah masa tenggang.
+VPS {hostname} telah dihentikan dan server dihapus. Paket mingguan dihapus otomatis setelah 7 hari; paket lainnya setelah masa tenggang.
 
 Hostname: {hostname}
 Status: Dihentikan
 
 [Lihat layanan]({link})
 
-> Data pada droplet yang sudah dihapus tidak dapat dipulihkan.
+> Data pada server yang sudah dihapus tidak dapat dipulihkan.
 
 {brand}`,
   },

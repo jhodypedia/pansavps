@@ -221,7 +221,7 @@ export default async function InvoiceDetailPage({
   const provisioningActive = Boolean(service && service.status === "provisioning");
   const failureDetail =
     order?.errorMessage?.trim() ||
-    "Penyedia cloud tidak dapat menyelesaikan pembuatan VPS untuk pesanan ini.";
+    "Penyedia cloud belum berhasil membuat VPS untuk pesanan ini.";
   const paidBannerText =
     invoice.type === "topup"
       ? "Saldo sudah ditambahkan dan siap digunakan."
@@ -260,7 +260,7 @@ export default async function InvoiceDetailPage({
     gateway?.paymentName ||
     gateway?.method ||
     (invoice.paymentProvider === "manual"
-      ? "Transfer manual"
+      ? "Transfer BANK"
       : invoice.paymentProvider === "balance"
         ? "Saldo akun"
         : invoice.paymentProvider === "tripay"
@@ -269,12 +269,12 @@ export default async function InvoiceDetailPage({
   const cycleText = cycle && cycleLabel[cycle] ? cycleLabel[cycle] : "Layanan";
   const subtitle =
     invoice.type === "topup"
-      ? "Saldo akan ditambahkan otomatis setelah pembayaran terkonfirmasi."
+      ? "Saldo otomatis masuk setelah pembayaran dikonfirmasi."
       : service
         ? `${service.hostname} · ${cycleText}`
         : snapshot
           ? `${snapshot.planName} · ${cycleText}`
-          : "Layanan cloud VPS dengan aktivasi otomatis.";
+          : "Layanan VPS yang aktif otomatis setelah pembayaran.";
   const paymentStep: "done" | "active" | "failed" =
     settled
       ? "done"
@@ -349,12 +349,12 @@ export default async function InvoiceDetailPage({
         : service?.status === "active"
           ? `${service.hostname} siap digunakan.`
           : service?.status === "provisioning"
-            ? "Aktivasi otomatis sedang berjalan."
+            ? "Server sedang disiapkan otomatis."
             : service?.status === "failed" || service?.status === "terminated"
               ? "Hubungi support untuk bantuan."
               : paid
-                ? "Aktivasi akan segera dimulai."
-                : "Aktif otomatis setelah pembayaran.";
+                ? "Server akan segera disiapkan."
+                : "Aktif otomatis begitu pembayaran masuk.";
 
   return (
     <div className="space-y-6">
@@ -405,7 +405,7 @@ export default async function InvoiceDetailPage({
                 <p className="mt-2 text-xs leading-relaxed text-[#991B1B]/70">
                   {refunded
                     ? `Dana ${formatIDR(invoice.amount)} sudah dikembalikan ke saldo akun. Kamu tetap berada di halaman invoice ini.`
-                    : "Kamu tetap berada di halaman invoice ini. Coba provisioning ulang atau ajukan refund tanpa kehilangan detail pembayaran."}
+                    : "Kamu tetap berada di halaman invoice ini. Coba buat server lagi atau ajukan refund tanpa kehilangan detail pembayaran."}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {refunded ? (
@@ -661,8 +661,8 @@ export default async function InvoiceDetailPage({
               ) : null}
               {displayFee > 0 ? (
                 <p className="mt-3 text-[11px] leading-relaxed text-[#8A9A90]">
-                  Biaya layanan mengikuti channel pembayaran online. Pembayaran dengan saldo atau
-                  transfer manual hanya sebesar subtotal.
+                  Biaya layanan tergantung metode pembayaran online. Kalau pakai saldo atau
+                  transfer bank, kamu cukup bayar subtotal.
                 </p>
               ) : null}
             </div>
@@ -678,13 +678,13 @@ export default async function InvoiceDetailPage({
                   label="Metode"
                   value={
                     paymentLabel ??
-                    (invoice.paymentProvider === "manual" ? "Transfer manual" : "Pembayaran online")
+                    (invoice.paymentProvider === "manual" ? "Transfer BANK" : "Pembayaran online")
                   }
                 />
               ) : null}
               {gateway?.reference ? (
                 <InfoRow
-                  label="Referensi gateway"
+                  label="Referensi pembayaran"
                   value={<span className="font-mono text-xs">{gateway.reference}</span>}
                 />
               ) : null}
@@ -734,8 +734,8 @@ export default async function InvoiceDetailPage({
               </div>
             ) : invoice.status === "expired" ? (
               <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#FDE68A] bg-[#FFFBEB] p-4 text-sm text-[#92400E]">
-                <XCircle className="size-4" /> Invoice sudah kedaluwarsa karena melewati batas 30 menit.
-                Silakan buat pesanan atau top up baru.
+                <XCircle className="size-4" /> Invoice sudah kedaluwarsa karena lewat batas 30 menit.
+                Buat pesanan atau top up baru, yuk.
               </div>
             ) : null}
           </SectionCard>
@@ -749,7 +749,7 @@ export default async function InvoiceDetailPage({
                   const paymentGateway = readPaymentGateway(payment.rawWebhook);
                   const paymentMethod =
                     payment.provider === "manual"
-                      ? "Transfer manual"
+                      ? "Transfer BANK"
                       : payment.provider === "balance"
                         ? "Saldo akun"
                         : paymentGateway?.paymentName ||
@@ -857,8 +857,8 @@ export default async function InvoiceDetailPage({
                 <ShieldCheck className="size-4" />
               </span>
               <p className="text-sm leading-relaxed text-[#5B6B60]">
-                Pembayaran diverifikasi maksimal 1x24 jam pada hari kerja. Jika lebih dari itu,
-                hubungi support dengan menyertakan nomor invoice.
+                Pembayaran dicek maksimal 1x24 jam di hari kerja. Kalau lebih dari itu,
+                hubungi support dan sertakan nomor invoice.
               </p>
             </div>
             <Button asChild className="mt-4 w-full bg-[#0B3D2E] text-white hover:bg-[#0E4D38]">
@@ -873,7 +873,7 @@ export default async function InvoiceDetailPage({
               <Info className="size-3.5" /> Catatan keamanan
             </p>
             <p className="mt-1">
-              Admin tidak pernah meminta password atau kode OTP. Pembayaran hanya ke rekening resmi
+              Admin nggak pernah minta password atau kode OTP. Pembayaran cuma ke rekening resmi
               yang tertera di halaman ini.
             </p>
           </div>

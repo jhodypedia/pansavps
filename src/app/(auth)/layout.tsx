@@ -11,17 +11,17 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <Logo name={brand.siteName} logoUrl={brand.logoUrl} inverted />
         <div className="max-w-md">
           <h2 className="font-display text-3xl leading-tight font-bold tracking-tight text-white xl:text-4xl">
-            Infrastruktur yang siap saat kamu butuh.
+            VPS siap dipakai, tanpa ribet.
           </h2>
           <p className="mt-4 text-sm leading-relaxed text-white/65">
-            Kelola VPS, invoice, dan kredensial dari satu dashboard. Aktivasi otomatis, notifikasi WhatsApp,
-            dan riwayat aksi yang transparan.
+            Kelola VPS, invoice, dan akses server dari satu dashboard. Begitu pembayaran masuk, server
+            langsung dibuat, dan kabar terbaru dikirim lewat WhatsApp.
           </p>
           <ul className="mt-8 flex flex-col gap-4">
             {[
-              { icon: RefreshCw, text: "Provisioning otomatis setelah pembayaran" },
-              { icon: ShieldCheck, text: "Kredensial terenkripsi & audit trail" },
-              { icon: Lock, text: "Kontrol penuh akses root dan SSH key" },
+              { icon: RefreshCw, text: "Server aktif otomatis setelah pembayaran" },
+              { icon: ShieldCheck, text: "Password dan akses server tersimpan aman" },
+              { icon: Lock, text: "Akses root dan SSH key sepenuhnya milikmu" },
             ].map((item) => (
               <li key={item.text} className="flex items-start gap-3 text-sm text-white/80">
                 <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-white/10">

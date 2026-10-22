@@ -30,29 +30,29 @@ export const metadata: Metadata = {
 
 const groups = [
   {
-    title: "Provisioning & infrastruktur",
+    title: "Server & infrastruktur",
     items: [
-      { icon: Zap, title: "Aktivasi otomatis", body: "Pembayaran terkonfirmasi langsung memicu pembuatan droplet. Tanpa menunggu jam kerja." },
-      { icon: Cloud, title: "Infrastruktur cloud", body: "Server di region pilihan dengan monitoring dan tag per layanan untuk sinkronisasi." },
-      { icon: Globe2, title: "Multi-region", body: "Singapore, New York, dan Frankfurt. Pilih region terdekat dengan penggunamu." },
+      { icon: Zap, title: "Aktivasi otomatis", body: "Pembayaran masuk, server langsung dibuat. Nggak perlu nunggu jam kerja." },
+      { icon: Cloud, title: "Infrastruktur cloud", body: "Server jalan di region pilihan dan statusnya dipantau dari panel." },
+      { icon: Globe2, title: "Banyak region", body: "Singapore, New York, dan Frankfurt. Pilih yang paling dekat dengan penggunamu." },
       { icon: Database, title: "Snapshot", body: "Buat dan hapus snapshot kapan saja dari panel, sebelum perubahan besar." },
     ],
   },
   {
     title: "Kontrol & keamanan",
     items: [
-      { icon: Terminal, title: "Aksi server", body: "Power on/off, reboot, power cycle, rebuild OS, dan rename langsung dari dashboard." },
-      { icon: KeyRound, title: "SSH key & password", body: "Gunakan password acak atau SSH key sendiri. Kredensial disimpan terenkripsi AES-256-GCM." },
-      { icon: Lock, title: "Audit trail", body: "Setiap aksi user dan admin dicatat lengkap dengan IP dan waktu." },
-      { icon: ShieldCheck, title: "Role guard", body: "Halaman admin dilindungi pemeriksaan sesi dan role di server, bukan hanya UI." },
+      { icon: Terminal, title: "Aksi server", body: "Nyalakan, matikan, reboot, pasang ulang OS, atau ganti nama langsung dari dashboard." },
+      { icon: KeyRound, title: "SSH key & password", body: "Mau pakai password acak atau SSH key sendiri? Bisa. Data akses disimpan terenkripsi AES-256-GCM." },
+      { icon: Lock, title: "Riwayat aktivitas", body: "Setiap aksi user dan admin dicatat lengkap dengan IP dan waktu." },
+      { icon: ShieldCheck, title: "Akses admin terjaga", body: "Halaman admin dicek langsung di server, bukan cuma disembunyikan di tampilan." },
     ],
   },
   {
     title: "Billing & operasional",
     items: [
       { icon: Wallet, title: "Saldo akun", body: "Top up saldo untuk pembayaran instan dan perpanjangan otomatis." },
-      { icon: RefreshCw, title: "Perpanjangan otomatis", body: "Aktifkan auto-renew agar layanan tidak terputus saat masa aktif habis." },
-      { icon: Layers, title: "Upgrade prorata", body: "Naik paket tanpa kehilangan data, biaya dihitung berdasarkan sisa masa aktif." },
+      { icon: RefreshCw, title: "Perpanjangan otomatis", body: "Aktifkan perpanjangan otomatis agar layanan tidak terputus saat masa aktif habis." },
+      { icon: Layers, title: "Upgrade sesuai sisa masa aktif", body: "Naik paket tanpa kehilangan data, biaya dihitung berdasarkan sisa masa aktif." },
       { icon: Clock, title: "Pengingat jatuh tempo", body: "Notifikasi email dan WhatsApp dikirim sebelum masa aktif berakhir." },
     ],
   },
@@ -60,8 +60,8 @@ const groups = [
     title: "Dukungan & notifikasi",
     items: [
       { icon: MessageCircle, title: "Tiket support", body: "Buka tiket dari dashboard dan pantau balasan tim support." },
-      { icon: Server, title: "Status real-time", body: "Pantau progres provisioning dan status server tanpa refresh manual." },
-      { icon: Cpu, title: "Monitoring spesifikasi", body: "Lihat vCPU, RAM, storage, dan transfer sesuai paket aktif." },
+      { icon: Server, title: "Status langsung", body: "Pantau progres pembuatan server dan statusnya tanpa refresh manual." },
+      { icon: Cpu, title: "Detail server", body: "Lihat vCPU, RAM, storage, dan transfer sesuai paket aktif." },
       { icon: Check, title: "Notifikasi lengkap", body: "Email dan WhatsApp untuk pembayaran, aktivasi, dan perubahan layanan." },
     ],
   },
@@ -77,8 +77,7 @@ export default function FeaturesPage() {
             Dibangun untuk operasional nyata, bukan sekadar demo.
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/70">
-            Semua fitur dirancang agar kamu bisa fokus ke aplikasi, bukan mengurus server. Kontrol tetap di
-            tanganmu, dengan pengamanan berlapis.
+            Biar kamu fokus ke aplikasi, bukan ribet ngurus server. Kontrol tetap di tanganmu, dan semua aksi penting tercatat.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild className="bg-white text-[#0B3D2E] hover:bg-[#E7F4EC]">
@@ -122,7 +121,7 @@ export default function FeaturesPage() {
         <div className="ws-container flex flex-col items-start justify-between gap-5 py-12 md:flex-row md:items-center">
           <div>
             <h2 className="font-display text-2xl font-bold text-[#101613]">Siap mencoba?</h2>
-            <p className="mt-1.5 text-sm text-[#5B6B60]">Buat akun dan deploy VPS pertamamu hari ini.</p>
+            <p className="mt-1.5 text-sm text-[#5B6B60]">Buat akun dan mulai pakai VPS pertamamu hari ini.</p>
           </div>
           <Button asChild size="lg" className="bg-[#0B3D2E] text-white hover:bg-[#0E4D38]">
             <Link href="/register">

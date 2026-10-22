@@ -46,7 +46,7 @@ export default async function OrdersPage({
     <div className="space-y-6">
       <PageHeader
         title="Pesanan"
-        description="Riwayat pesanan VPS, status pembayaran, dan proses provisioning."
+        description="Riwayat pesanan VPS, status pembayaran, dan proses pembuatan server."
         actions={
           <Button asChild className="bg-[#0B3D2E] text-white hover:bg-[#0E4D38]">
             <Link href="/dashboard/pesanan/baru">
@@ -91,7 +91,7 @@ export default async function OrdersPage({
         <EmptyState
           icon={ShoppingCart}
           title={filter === "all" ? "Belum ada pesanan" : "Tidak ada pesanan dengan status ini"}
-          description="Pesanan VPS pertamamu akan muncul di sini beserta status pembayaran dan provisioning."
+          description="Pesanan VPS pertamamu bakal muncul di sini, lengkap dengan status pembayaran dan proses pembuatan servernya."
           action={
             <Button asChild className="bg-[#0B3D2E] text-white hover:bg-[#0E4D38]">
               <Link href="/dashboard/pesanan/baru">

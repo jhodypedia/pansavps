@@ -10,56 +10,56 @@ export default function PrivacyPage() {
     <LegalPage
       title="Kebijakan Privasi"
       updated="20 Oktober 2026"
-      intro={`Kebijakan ini menjelaskan bagaimana ${brand.siteName} mengumpulkan, menggunakan, dan melindungi data pribadi kamu saat menggunakan layanan.`}
+      intro={`Di sini kami jelaskan data apa yang ${brand.siteName} kumpulkan, bagaimana kami memakainya, dan cara kami menjaganya saat kamu memakai layanan.`}
       sections={[
         {
           heading: "Data yang kami kumpulkan",
           body: [
-            "Data akun seperti nama, alamat email, nomor WhatsApp, dan kata sandi yang disimpan dalam bentuk hash.",
-            "Data transaksi seperti pesanan, invoice, metode pembayaran, dan riwayat saldo. Kami tidak menyimpan nomor kartu atau kredensial perbankan lengkap.",
-            "Data teknis seperti alamat IP, user agent, log audit, dan aktivitas server yang diperlukan untuk keamanan dan operasional.",
+            "Data akun seperti nama, email, nomor WhatsApp, dan password yang disimpan dalam bentuk hash.",
+            "Data transaksi seperti pesanan, invoice, metode pembayaran, dan riwayat saldo. Kami tidak menyimpan nomor kartu atau data perbankan lengkap.",
+            "Data teknis seperti IP, user agent, log aktivitas, dan aktivitas server yang dibutuhkan untuk keamanan dan operasional.",
           ],
         },
         {
-          heading: "Cara kami menggunakan data",
+          heading: "Cara kami memakai data",
           body: [
-            "Untuk menyediakan layanan, memproses pembayaran, melakukan provisioning server, mengirim notifikasi, dan memberikan dukungan.",
+            "Untuk menjalankan layanan, memproses pembayaran, menyiapkan server, mengirim notifikasi, dan memberi dukungan.",
             "Untuk mencegah penyalahgunaan, mendeteksi aktivitas mencurigakan, dan memenuhi kewajiban hukum.",
-            "Untuk meningkatkan kualitas layanan melalui analisis agregat yang tidak mengidentifikasi individu.",
+            "Untuk memperbaiki kualitas layanan lewat analisis gabungan yang tidak menunjuk ke satu orang.",
           ],
         },
         {
           heading: "Berbagi data dengan pihak ketiga",
           body: [
-            "Kami dapat membagikan data yang diperlukan kepada penyedia infrastruktur cloud, penyedia pembayaran (Tripay), penyedia layanan email (SMTP), dan penyedia pesan (WhatsApp) semata-mata untuk menjalankan layanan.",
-            "Kami tidak menjual data pribadi kepada pihak ketiga.",
+            "Kami bisa membagikan data yang perlu saja ke penyedia infrastruktur cloud, penyedia pembayaran (Tripay), penyedia email, dan penyedia pesan WhatsApp. Tujuannya cuma untuk menjalankan layanan.",
+            "Kami tidak menjual data pribadi ke pihak ketiga.",
           ],
         },
         {
           heading: "Penyimpanan dan keamanan",
           body: [
-            "Kredensial sensitif seperti password root server dan kunci API disimpan terenkripsi menggunakan AES-256-GCM.",
-            "Akses ke data dibatasi berdasarkan peran. Setiap akses admin terhadap kredensial dicatat dalam audit log.",
-            "Kami menyimpan data selama akun aktif atau selama diperlukan untuk memenuhi kewajiban hukum dan penyelesaian sengketa.",
+            "Data sensitif seperti password root server dan kunci API disimpan terenkripsi dengan AES-256-GCM.",
+            "Akses ke data dibatasi sesuai peran. Setiap akses admin ke data sensitif dicatat di log.",
+            "Kami menyimpan data selama akun aktif atau selama masih dibutuhkan untuk kewajiban hukum dan penyelesaian sengketa.",
           ],
         },
         {
           heading: "Hak kamu",
           body: [
-            "Kamu dapat memperbarui data profil, mengganti password, dan mengeluarkan sesi aktif dari halaman pengaturan.",
-            "Untuk permintaan akses, koreksi, atau penghapusan data, hubungi support melalui kanal resmi. Kami akan menindaklanjuti sesuai ketentuan yang berlaku.",
+            "Kamu bisa memperbarui profil, mengganti password, dan mengeluarkan sesi aktif dari halaman Pengaturan.",
+            "Kalau mau minta akses, koreksi, atau penghapusan data, hubungi support lewat kanal resmi. Kami akan tindak lanjuti sesuai aturan yang berlaku.",
           ],
         },
         {
           heading: "Cookie dan sesi",
           body: [
-            "Kami menggunakan cookie sesi yang bersifat httpOnly untuk menjaga status login. Cookie ini tidak digunakan untuk iklan pihak ketiga.",
+            "Kami memakai cookie sesi httpOnly untuk menjaga status login. Cookie ini tidak dipakai untuk iklan pihak ketiga.",
           ],
         },
         {
           heading: "Perubahan kebijakan",
           body: [
-            "Kebijakan ini dapat diperbarui sewaktu-waktu. Perubahan material akan diinformasikan melalui kanal resmi atau halaman ini.",
+            "Kebijakan ini bisa diperbarui kapan saja. Perubahan penting akan kami infokan lewat kanal resmi atau halaman ini.",
           ],
         },
       ]}

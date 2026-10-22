@@ -688,6 +688,19 @@ export function CheckoutWizard({
                 </div>
               ) : null}
 
+              {paymentMethod === "manual" ? (
+                <div
+                  role="status"
+                  className="rounded-xl border border-[#FDE68A] bg-[#FFFBEB] p-4 text-[#92400E]"
+                >
+                  <p className="text-sm font-bold">Transfer BANK</p>
+                  <p className="mt-1 text-xs leading-relaxed">
+                    Rekening tujuan dan langkah transfer muncul di invoice setelah pesanan dibuat.
+                    Siapkan bukti transfer untuk diunggah, ya.
+                  </p>
+                </div>
+              ) : null}
+
               <div className="space-y-2">
                 <Label htmlFor="promo">Kode promo (opsional)</Label>
                 <div className="flex gap-2">

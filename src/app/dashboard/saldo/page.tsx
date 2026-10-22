@@ -83,7 +83,7 @@ export default async function BalancePage() {
     <div className="space-y-6">
       <PageHeader
         title="Saldo akun"
-        description="Pantau saldo, isi ulang, dan lihat semua mutasi dalam satu tempat."
+        description="Cek saldo, isi ulang, dan lihat semua mutasinya di sini."
         actions={
           <Button asChild variant="outline" className="border-[#D8E2DB] bg-white">
             <Link href="/dashboard/invoices">
@@ -155,7 +155,7 @@ export default async function BalancePage() {
             <div>
               <p className="text-sm font-bold text-[#92400E]">Top up menunggu pembayaran</p>
               <p className="mt-0.5 text-xs text-[#92400E]/75">
-                Selesaikan pembayaran agar saldo segera ditambahkan.
+                Selesaikan pembayaran biar saldo langsung masuk.
               </p>
             </div>
             <span className="text-sm font-bold text-[#92400E]">{formatIDR(pendingTopupTotal)}</span>
@@ -207,7 +207,7 @@ export default async function BalancePage() {
             <ul className="mt-3 space-y-2 text-xs leading-relaxed text-[#5B6B60]">
               <li className="flex gap-2">
                 <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-[#16A34A]" />
-                Saldo hanya dapat digunakan untuk layanan di toko ini dan tidak dapat dipindahkan ke
+                Saldo cuma bisa dipakai untuk layanan di toko ini dan nggak bisa dipindahkan ke
                 pengguna lain.
               </li>
               <li className="flex gap-2">
@@ -216,7 +216,7 @@ export default async function BalancePage() {
               </li>
               <li className="flex gap-2">
                 <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-[#16A34A]" />
-                Top up manual diverifikasi maksimal 1x24 jam pada hari kerja.
+                Top up transfer bank dicek maksimal 1x24 jam di hari kerja.
               </li>
             </ul>
           </div>

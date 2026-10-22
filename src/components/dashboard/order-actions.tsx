@@ -57,7 +57,7 @@ export function OrderActions({
           variant="default"
           className="bg-[#0B3D2E] text-white hover:bg-[#0E4D38]"
         >
-          <RotateCcw className="size-3.5" /> Coba provisioning lagi
+          <RotateCcw className="size-3.5" /> Coba buat server lagi
         </ActionButton>
       ) : null}
       {canRefund ? (
@@ -90,7 +90,7 @@ export function OrderActions({
                   rows={4}
                   minLength={10}
                   required
-                  placeholder="Contoh: provisioning gagal berulang dan saya ingin dana dikembalikan ke saldo."
+                  placeholder="Contoh: pembuatan server gagal berulang dan saya ingin dana dikembalikan ke saldo."
                 />
                 <p className="text-xs text-[#8A9A90]">Minimal 10 karakter.</p>
               </div>

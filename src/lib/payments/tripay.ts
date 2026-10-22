@@ -180,12 +180,19 @@ function normalizeChannel(raw: unknown): TripayChannel | null {
  * sebentar agar halaman pembayaran tidak memanggil API berulang kali.
  * Jika gateway belum aktif / API gagal, gunakan channel default dari admin.
  */
-export async function listTripayChannels(): Promise<TripayChannel[]> {
+export async function listTripayChannels(
+  options: { force?: boolean } = {},
+): Promise<TripayChannel[]> {
   const s = getSettings();
   if (s.tripay_enabled !== "true" || !s.tripay_api_key) return [];
 
   const key = channelCacheKey(s.tripay_api_key, s.tripay_is_sandbox);
-  if (channelCache && channelCache.key === key && channelCache.expiresAt > Date.now()) {
+  if (
+    !options.force &&
+    channelCache &&
+    channelCache.key === key &&
+    channelCache.expiresAt > Date.now()
+  ) {
     return channelCache.channels;
   }
 
@@ -288,7 +295,7 @@ export async function createTripayPayment(
     throw new Error(
       detail
         ? `Gagal membuat transaksi Tripay: ${detail}`
-        : "Gagal membuat transaksi Tripay. Periksa konfigurasi gateway.",
+        : "Gagal membuat transaksi Tripay. Periksa pengaturan pembayaran.",
     );
   }
   const tx = normalizeTripayTransaction(

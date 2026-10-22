@@ -104,7 +104,7 @@ export default async function AdminOverviewPage() {
     <div className="space-y-6">
       <PageHeader
         title="Ringkasan operasional"
-        description="Pantau pendapatan, pesanan, provisioning, dan kondisi layanan."
+        description="Pantau pendapatan, pesanan, proses pembuatan server, dan kondisi layanan."
         actions={
           <>
             <ActionButton
@@ -180,7 +180,7 @@ export default async function AdminOverviewPage() {
                     <AlertTriangle className="size-4" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-[#101613]">Provisioning gagal</p>
+                    <p className="text-sm font-semibold text-[#101613]">Pembuatan server gagal</p>
                     <p className="text-xs text-[#8A9A90]">{failedJobs.length} job gagal · {queuedJobs.length} antre</p>
                   </div>
                   <ArrowRight className="size-4 text-[#8A9A90]" />

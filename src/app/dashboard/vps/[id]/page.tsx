@@ -213,9 +213,9 @@ export default async function ServiceDetailPage({
         <div className="rounded-2xl border border-[#FDE68A] bg-[#FFFBEB] p-4 text-sm text-[#92400E]">
           <p className="font-bold">VPS mingguan · dihapus otomatis</p>
           <p className="mt-1 leading-relaxed">
-            Masa aktif berakhir <strong>{formatDateTime(service.periodEnd)}</strong>. Droplet akan dihapus
-            otomatis saat masa aktif selesai. Kamu akan menerima pengingat H-1; perpanjang sebelum batas waktu
-            jika masih membutuhkan server.
+            Masa aktif berakhir <strong>{formatDateTime(service.periodEnd)}</strong>. Server akan dihapus
+            otomatis saat masa aktif selesai. Kami akan ingatkan H-1; perpanjang sebelum batas waktu
+            kalau masih butuh server.
           </p>
         </div>
       ) : null}
@@ -332,7 +332,7 @@ export default async function ServiceDetailPage({
 
       {tab === "akses" ? (
         <div className="grid gap-6 lg:grid-cols-2">
-          <SectionCard title="Kredensial root" description="Gunakan SSH untuk akses aman.">
+          <SectionCard title="Akses root" description="Masuk lewat SSH biar lebih aman.">
             <div className="space-y-4">
               <div className="rounded-xl border border-[#EDF1EE] bg-[#FBFCFB] p-4">
                 <p className="text-xs text-[#8A9A90]">Username</p>
@@ -347,7 +347,7 @@ export default async function ServiceDetailPage({
               </div>
             </div>
           </SectionCard>
-          <SectionCard title="SSH key" description="Key yang terpasang saat provisioning.">
+          <SectionCard title="SSH key" description="SSH key yang dipakai saat server dibuat.">
             {service.sshKeyId ? (
               <p className="text-sm text-[#5B6B60]">
                 VPS ini dibuat menggunakan SSH key pilihanmu. Password root tetap tersedia sebagai
@@ -378,12 +378,12 @@ export default async function ServiceDetailPage({
 
       {tab === "aksi" ? (
         <div className="grid gap-6 lg:grid-cols-2">
-          <SectionCard title="Daya & sinkronisasi" description="Kontrol status server.">
+          <SectionCard title="Nyalakan & sinkronkan" description="Atur status server dari sini.">
             <div className="flex flex-wrap gap-2">
               <QuickPowerActions service={service} />
             </div>
           </SectionCard>
-          <SectionCard title="Sistem" description="Operasi yang memengaruhi sistem operasi.">
+          <SectionCard title="Sistem" description="Aksi yang mengubah sistem operasi atau akses.">
             <div className="flex flex-wrap gap-2">
               <ResetPasswordButton serviceId={service.id} />
               <RebuildDialog
@@ -406,14 +406,14 @@ export default async function ServiceDetailPage({
               </Link>
             </div>
             <p className="mt-3 text-xs text-[#8A9A90]">
-              Terminasi permanen dilakukan oleh admin melalui tiket agar data bisa dipastikan aman.
+              Penghapusan permanen dilakukan admin lewat tiket, biar datamu aman.
             </p>
           </SectionCard>
-          <SectionCard title="Status layanan" description="Pantau status terakhir.">
+          <SectionCard title="Status layanan" description="Cek kondisi terakhir server.">
             <dl className="divide-y divide-[#EDF1EE]">
               <InfoRow label="Status" value={<StatusBadge status={service.status} label={serviceStatusLabel[service.status]} />} />
-              <InfoRow label="Droplet ID" value={<span className="font-mono text-xs">{service.doDropletId ?? "—"}</span>} />
-              <InfoRow label="Size" value={<span className="font-mono">{service.sizeSlug}</span>} />
+              <InfoRow label="ID server" value={<span className="font-mono text-xs">{service.doDropletId ?? "—"}</span>} />
+              <InfoRow label="Tipe paket" value={<span className="font-mono">{service.sizeSlug}</span>} />
               <InfoRow label="Terakhir disinkronkan" value={formatRelative(service.periodEnd)} />
             </dl>
           </SectionCard>
@@ -423,7 +423,7 @@ export default async function ServiceDetailPage({
       {tab === "snapshot" ? (
         <SectionCard
           title="Snapshot"
-          description="Cadangan kondisi disk pada waktu tertentu."
+          description="Simpan kondisi server saat ini sebagai cadangan."
           action={<SnapshotDialog serviceId={service.id} />}
           bodyClassName="p-0"
         >
@@ -508,7 +508,7 @@ function FailedServiceView({
   const refunded = invoice?.status === "refunded";
   const reason =
     order?.errorMessage?.trim() ||
-    "Penyedia cloud tidak dapat menyelesaikan pembuatan VPS untuk pesanan ini.";
+    "Penyedia cloud belum berhasil membuat VPS untuk pesanan ini.";
 
   return (
     <div className="space-y-6">
@@ -543,7 +543,7 @@ function FailedServiceView({
             </span>
             <div className="min-w-0">
               <p className="text-[11px] font-semibold tracking-[0.2em] text-[#B91C1C] uppercase">
-                Provisioning terhenti
+                Pembuatan server terhenti
               </p>
               <h2 className="mt-1 font-display text-2xl font-bold tracking-tight text-[#991B1B] sm:text-3xl">
                 VPS gagal dibuat
@@ -554,7 +554,7 @@ function FailedServiceView({
               <p className="mt-2 max-w-2xl text-xs leading-relaxed text-[#991B1B]/70">
                 {refunded
                   ? `Dana ${formatIDR(invoice?.amount ?? 0)} sudah dikembalikan ke saldo akun. Tidak perlu mengulang pembayaran.`
-                  : "Kamu tetap bisa mencoba provisioning ulang atau mengajukan refund dari halaman ini."}
+                  : "Kamu tetap bisa mencoba pembuatan server ulang atau mengajukan refund dari halaman ini."}
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {invoice ? (
@@ -601,18 +601,18 @@ function FailedServiceView({
 
       <SectionCard
         title="Tindakan yang tersedia"
-        description="Kamu tidak perlu membuat pesanan baru kecuali ingin memilih paket atau region lain."
+        description="Kamu nggak perlu bikin pesanan baru, kecuali mau pilih paket atau region lain."
       >
         {refunded ? (
           <p className="text-sm leading-relaxed text-[#5B6B60]">
-            Dana sudah kembali ke saldo. Kamu bisa langsung membuat pesanan baru menggunakan saldo
-            tersebut atau menghubungi support jika masih ada kendala.
+            Dana sudah balik ke saldo. Kamu bisa langsung bikin pesanan baru pakai saldo itu,
+            atau hubungi support kalau masih ada kendala.
           </p>
         ) : order ? (
           <div className="space-y-3">
             <p className="text-sm leading-relaxed text-[#5B6B60]">
-              Coba provisioning ulang jika kendala bersifat sementara. Jika masih gagal, ajukan
-              refund ke saldo agar dana bisa dipakai untuk pesanan lain.
+              Coba buat server lagi kalau kendalanya cuma sementara. Masih gagal? Ajukan refund
+              ke saldo biar dananya bisa dipakai untuk pesanan lain.
             </p>
             <OrderActions
               orderId={order.id}
@@ -624,7 +624,7 @@ function FailedServiceView({
         ) : (
           <p className="text-sm leading-relaxed text-[#5B6B60]">
             Hubungi support dengan menyertakan hostname {service.hostname} agar tim kami dapat
-            memeriksa riwayat provisioning.
+            memeriksa riwayat pembuatan server.
           </p>
         )}
       </SectionCard>

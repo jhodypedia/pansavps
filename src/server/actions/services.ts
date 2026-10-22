@@ -52,10 +52,10 @@ export async function revealPasswordAction(
   const user = await getSessionUser();
   if (!user) return fail("Sesi berakhir.");
   const limit = rateLimit(`reveal:${user.id}:${serviceId}`, 5, 10 * 60 * 1000);
-  if (!limit.ok) return fail("Terlalu sering membuka kredensial. Coba lagi nanti.");
+  if (!limit.ok) return fail("Terlalu sering membuka data akses. Coba lagi nanti.");
   try {
     const result = await revealRootPassword({ serviceId, actor: user, reason });
-    return done("Kredensial berhasil dibuka. Jangan bagikan ke siapa pun.", {
+    return done("Data akses berhasil dibuka. Jangan bagikan ke siapa pun.", {
       data: { password: result.password },
     });
   } catch (error) {

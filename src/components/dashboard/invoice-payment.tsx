@@ -82,7 +82,7 @@ export function InvoicePaymentPanel({
 
   function payOnline() {
     if (!tripayChannel) {
-      setOnlineError("Pilih metode pembayaran online terlebih dahulu.");
+      setOnlineError("Pilih channel pembayaran online dulu, ya.");
       return;
     }
     setOnlineError(null);
@@ -91,7 +91,7 @@ export function InvoicePaymentPanel({
         const result = await payInvoiceAction(invoiceId, "tripay", tripayChannel);
         if (!result.ok) {
           setOnlineError(
-            "Pembayaran online belum dapat diproses. Coba lagi atau gunakan transfer manual.",
+            "Pembayaran online gagal diproses. Coba lagi atau pilih Transfer BANK.",
           );
           return;
         }
@@ -106,7 +106,7 @@ export function InvoicePaymentPanel({
         router.refresh();
       } catch {
         setOnlineError(
-          "Pembayaran online belum dapat diproses. Coba lagi atau gunakan transfer manual.",
+          "Pembayaran online gagal diproses. Coba lagi atau pilih Transfer BANK.",
         );
       }
     });
@@ -120,7 +120,7 @@ export function InvoicePaymentPanel({
           <p className="mt-1 text-xs leading-relaxed">
             {lastOnlineStatus === "EXPIRED"
               ? "Transaksi online sebelumnya sudah kedaluwarsa."
-              : "Transaksi online sebelumnya dibatalkan atau gagal di gateway."}{" "}
+              : "Transaksi online sebelumnya dibatalkan atau gagal di penyedia pembayaran."}{" "}
             Invoice ini masih aktif dan bisa kamu coba lagi dengan metode pembayaran di bawah.
           </p>
         </div>
@@ -176,8 +176,10 @@ export function InvoicePaymentPanel({
               >
                 <Landmark className="mt-0.5 size-4 text-[#0B3D2E]" />
                 <span>
-                  <span className="block text-sm font-semibold text-[#101613]">Transfer manual</span>
-                  <span className="block text-xs text-[#5B6B60]">Verifikasi oleh admin</span>
+                  <span className="block text-sm font-semibold text-[#101613]">Transfer BANK</span>
+                  <span className="block text-xs text-[#5B6B60]">
+                    Transfer dari m-banking atau ATM, lalu unggah buktinya.
+                  </span>
                 </span>
               </button>
             ) : null}
@@ -207,7 +209,7 @@ export function InvoicePaymentPanel({
             showGroups={false}
           />
           <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-[#D8E2DB] bg-white px-3 py-2 text-xs">
-            <span className="text-[#5B6B60]">Total di gateway</span>
+            <span className="text-[#5B6B60]">Total yang dibayar</span>
             <span className="text-right font-bold text-[#0B3D2E]">
               {formatIDR(gatewayTotal ?? amount)}
               {gatewayFee > 0 ? (
@@ -233,6 +235,22 @@ export function InvoicePaymentPanel({
         </ActionButton>
       ) : manual ? (
         <div className="space-y-4">
+          <div
+            role="status"
+            className="rounded-xl border border-[#FDE68A] bg-[#FFFBEB] p-4 text-[#92400E]"
+          >
+            <p className="text-sm font-bold">Transfer BANK</p>
+            <p className="mt-1 text-xs leading-relaxed">
+              Transfer tepat {formatIDR(amount)} ke rekening di bawah. Setelah itu unggah bukti
+              transfer supaya bisa langsung kami cek.
+            </p>
+            <ol className="mt-3 list-decimal space-y-1.5 pl-4 text-xs leading-relaxed">
+              <li>Buka m-banking atau ATM, lalu transfer sesuai nominal invoice.</li>
+              <li>Simpan bukti transfer, bisa screenshot atau foto struk.</li>
+              <li>Isi nama pengirim dan unggah bukti lewat form di bawah.</li>
+            </ol>
+          </div>
+
           <div className="rounded-xl border border-[#BFE3CC] bg-[#F3F9F5] p-4">
             <p className="text-xs font-semibold tracking-wide text-[#0B3D2E] uppercase">Rekening tujuan</p>
             <div className="mt-2 space-y-1.5">
@@ -374,7 +392,7 @@ function TopupMethods({
           className="h-9 w-full rounded-md border border-[#D8E2DB] bg-white px-3 text-sm"
           disabled={disabled}
         >
-          <option value="manual">Transfer manual</option>
+          <option value="manual">Transfer BANK</option>
           {tripayChannels.length > 0 ? <option value="tripay">Pembayaran online</option> : null}
         </select>
       </div>

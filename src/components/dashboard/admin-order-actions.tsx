@@ -35,7 +35,7 @@ export function AdminOrderActions({
           className="bg-[#0B3D2E] text-white hover:bg-[#0E4D38]"
           variant="default"
         >
-          <RotateCcw className="size-3.5" /> Retry provisioning
+          <RotateCcw className="size-3.5" /> Coba buat ulang
         </ActionButton>
       ) : null}
       {["failed", "cancelled", "expired", "active"].includes(status) ? (

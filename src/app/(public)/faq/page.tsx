@@ -12,7 +12,7 @@ import {
 
 export const metadata: Metadata = {
   title: "FAQ",
-  description: "Jawaban atas pertanyaan umum tentang VPS, pembayaran, provisioning, perpanjangan, dan refund.",
+  description: "Jawaban singkat soal VPS, pembayaran, aktivasi server, perpanjangan, dan refund.",
 };
 
 const groups = [
@@ -20,49 +20,49 @@ const groups = [
     title: "Pemesanan & pembayaran",
     items: [
       {
-        q: "Bagaimana alur pemesanan VPS?",
-        a: "Pilih paket di halaman harga, tentukan siklus pembayaran, region, sistem operasi, dan hostname. Setelah checkout, kamu akan mendapat invoice. Pembayaran melalui saldo diproses instan, sedangkan transfer manual menunggu verifikasi admin.",
+        q: "Bagaimana cara pesan VPS?",
+        a: "Pilih paket di halaman harga, tentukan siklus pembayaran, region, OS, dan hostname. Setelah checkout, invoice langsung dibuat. Bayar pakai saldo atau pembayaran online? Server langsung diproses. Kalau transfer bank, admin cek dulu buktinya.",
       },
       {
-        q: "Metode pembayaran apa yang tersedia?",
-        a: "Transfer bank manual dan Tripay. Metode yang tampil di checkout mengikuti pengaturan admin. Jika gateway belum diaktifkan, kamu tetap bisa menggunakan transfer manual atau saldo.",
+        q: "Metode pembayaran apa yang bisa dipakai?",
+        a: "Saldo akun, Transfer BANK, dan pembayaran online lewat Tripay (QRIS, VA, e-wallet, atau gerai retail). Pilihan yang aktif muncul otomatis saat checkout.",
       },
       {
-        q: "Apakah harga sudah termasuk pajak?",
-        a: "Harga yang ditampilkan adalah harga layanan. Pajak atau biaya tambahan dari penyedia pembayaran, bila ada, akan mengikuti ketentuan masing-masing penyedia.",
+        q: "Harga yang tampil sudah termasuk pajak?",
+        a: "Harga yang kamu lihat adalah harga layanan. Kalau penyedia pembayaran menambah biaya atau pajak, jumlahnya akan terlihat sebelum kamu bayar.",
       },
       {
-        q: "Bisakah saya membatalkan pesanan?",
-        a: "Pesanan yang belum dibayar dapat dibatalkan dari halaman detail pesanan. Setelah dibayar dan provisioning dimulai, pembatalan mengikuti kebijakan refund.",
+        q: "Bisa batalkan pesanan?",
+        a: "Bisa, selama belum dibayar. Buka detail pesanan lalu batalkan dari sana. Kalau sudah dibayar dan server mulai dibuat, ikuti kebijakan refund yang berlaku.",
       },
       {
         q: "Bagaimana cara top up saldo?",
-        a: "Buka menu Saldo di dashboard, masukkan nominal, lalu pilih metode pembayaran. Setelah pembayaran terverifikasi, saldo otomatis bertambah dan dapat dipakai untuk pemesanan maupun perpanjangan.",
+        a: "Buka menu Saldo, isi nominal, lalu pilih metode pembayaran. Setelah pembayaran masuk, saldo langsung bisa dipakai untuk pesanan baru atau perpanjangan.",
       },
     ],
   },
   {
-    title: "Server & provisioning",
+    title: "Server & aktivasi",
     items: [
       {
-        q: "Berapa lama server aktif setelah pembayaran?",
-        a: "Pembayaran saldo dan gateway yang terkonfirmasi otomatis memicu provisioning segera. Umumnya server aktif dalam hitungan detik hingga beberapa menit. Transfer manual menunggu verifikasi admin maksimal 1x24 jam pada hari kerja.",
+        q: "Berapa lama server aktif setelah bayar?",
+        a: "Kalau bayar pakai saldo atau pembayaran online, server langsung dibuat. Biasanya aktif dalam hitungan detik sampai beberapa menit, tergantung region dan OS. Transfer BANK dicek maksimal 1x24 jam di hari kerja.",
       },
       {
-        q: "Apakah saya mendapat akses root?",
-        a: "Ya, setiap VPS memberikan akses root penuh. Kamu dapat memilih login dengan password yang dihasilkan sistem atau memakai SSH key sendiri.",
+        q: "Bisa akses root?",
+        a: "Semua VPS bisa akses root penuh. Kamu bisa pakai password yang dibuat sistem atau SSH key milikmu sendiri.",
       },
       {
-        q: "Sistem operasi apa saja yang didukung?",
-        a: "Ubuntu 24.04, Ubuntu 22.04, Debian 12, AlmaLinux 9, dan Rocky Linux 9. Daftar image aktif dapat dilihat saat checkout.",
+        q: "Sistem operasi apa saja yang tersedia?",
+        a: "Ubuntu 24.04, Ubuntu 22.04, Debian 12, AlmaLinux 9, dan Rocky Linux 9. Daftar image yang aktif bisa dilihat saat checkout.",
       },
       {
-        q: "Apa yang harus dilakukan jika provisioning gagal?",
-        a: "Buka detail pesanan. Jika tombol coba ulang tersedia, kamu dapat menjadwalkan provisioning ulang. Jika masih gagal, buka tiket atau minta refund ke saldo.",
+        q: "Kalau server gagal dibuat, gimana?",
+        a: "Buka detail pesanan. Kalau tombol coba buat server lagi muncul, klik tombol itu. Masih gagal? Buka tiket atau minta refund ke saldo.",
       },
       {
-        q: "Apakah bisa upgrade paket?",
-        a: "Bisa. Upgrade tersedia dari halaman detail VPS selama server aktif. Biaya dihitung prorata berdasarkan sisa masa aktif, lalu droplet di-resize ke paket baru.",
+        q: "Bisa upgrade paket?",
+        a: "Bisa, dari halaman detail VPS selama server masih aktif. Biayanya dihitung dari sisa masa aktif, lalu server dipindah ke paket baru.",
       },
     ],
   },
@@ -71,19 +71,19 @@ const groups = [
     items: [
       {
         q: "Bagaimana perpanjangan otomatis bekerja?",
-        a: "Jika auto-renew aktif dan saldo mencukupi, sistem membuat invoice perpanjangan dan membayarnya otomatis saat masa aktif berakhir. Pastikan saldo selalu cukup.",
+        a: "Kalau perpanjangan otomatis aktif dan saldo cukup, invoice perpanjangan dibuat dan dibayar otomatis saat masa aktif habis. Jadi pastikan saldo selalu ada.",
       },
       {
-        q: "Apa yang terjadi jika saldo tidak cukup?",
-        a: "Layanan ditangguhkan setelah masa aktif berakhir. Data masih tersimpan selama masa tenggang. Kamu bisa memperpanjang dari halaman VPS untuk mengaktifkan kembali layanan.",
+        q: "Kalau saldo tidak cukup?",
+        a: "Layanan ditangguhkan setelah masa aktif berakhir. Data masih disimpan selama masa tenggang, dan kamu bisa perpanjang dari halaman VPS untuk mengaktifkannya lagi.",
       },
       {
         q: "Kapan VPS dihapus permanen?",
-        a: "Setelah melewati masa tenggang, droplet dihapus otomatis dan status layanan menjadi terminated. Data tidak dapat dipulihkan setelah penghapusan.",
+        a: "Setelah masa tenggang lewat, server dihapus otomatis. Data yang sudah terhapus tidak bisa dipulihkan.",
       },
       {
-        q: "Apakah ada pengingat sebelum jatuh tempo?",
-        a: "Ya. Pengingat dikirim melalui email dan WhatsApp sesuai pengaturan admin, biasanya beberapa hari sebelum jatuh tempo.",
+        q: "Ada pengingat sebelum jatuh tempo?",
+        a: "Ada. Pengingat dikirim lewat email dan WhatsApp beberapa hari sebelum masa aktif habis.",
       },
     ],
   },
@@ -91,20 +91,20 @@ const groups = [
     title: "Keamanan & akun",
     items: [
       {
-        q: "Bagaimana kredensial disimpan?",
-        a: "Password root dan secret gateway disimpan terenkripsi AES-256-GCM. Akses ke kredensial dicatat dalam audit log, termasuk akses oleh admin.",
+        q: "Bagaimana data akses disimpan?",
+        a: "Password root dan kunci pembayaran disimpan terenkripsi AES-256-GCM. Setiap akses ke data sensitif, termasuk oleh admin, dicatat di log.",
       },
       {
-        q: "Apakah bisa memakai SSH key?",
-        a: "Bisa. Tambahkan public key di menu SSH Keys, lalu pilih saat checkout atau saat rebuild. Public key tidak bersifat rahasia, tetapi tetap kami simpan per akun.",
+        q: "Bisa pakai SSH key?",
+        a: "Bisa. Tambahkan public key di menu SSH Keys, lalu pilih saat checkout atau pasang ulang OS. Public key bukan rahasia, tapi tetap kami simpan per akun.",
       },
       {
-        q: "Bagaimana mengamankan akun?",
-        a: "Gunakan password kuat dan unik, jangan bagikan kredensial server, dan keluarkan sesi yang tidak dikenal dari halaman Pengaturan. Verifikasi email juga disarankan.",
+        q: "Bagaimana cara mengamankan akun?",
+        a: "Pakai password yang kuat dan unik, jangan bagikan data akses server, dan keluarkan sesi yang tidak dikenal dari halaman Pengaturan. Verifikasi email juga sebaiknya dilakukan.",
       },
       {
-        q: "Apakah data saya dibagikan?",
-        a: "Kami hanya menggunakan data yang diperlukan untuk operasional layanan. Lihat Kebijakan Privasi untuk rincian.",
+        q: "Data saya dibagikan?",
+        a: "Kami hanya memakai data yang dibutuhkan untuk menjalankan layanan. Rinciannya ada di Kebijakan Privasi.",
       },
     ],
   },

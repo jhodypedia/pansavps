@@ -130,7 +130,7 @@ export default async function OrderDetailPage({
       {refund ? (
         <div className="rounded-2xl border border-[#BFE3CC] bg-[#F3F9F5] p-5">
           <p className="flex items-center gap-2 text-sm font-bold text-[#0B3D2E]">
-            <CheckCircle2 className="size-4 text-[#16A34A]" /> Dana sudah dikembalikan ke saldo
+            <CheckCircle2 className="size-4 text-[#16A34A]" /> Dana sudah balik ke saldo
           </p>
           <p className="mt-1 text-sm text-[#5B6B60]">
             Refund <strong className="text-[#0B3D2E]">{formatIDR(refund.amount)}</strong> sudah
@@ -144,11 +144,11 @@ export default async function OrderDetailPage({
       ) : order.status === "failed" ? (
         <div className="rounded-2xl border border-[#FECACA] bg-[#FEF2F2] p-5">
           <p className="flex items-center gap-2 text-sm font-bold text-[#991B1B]">
-            <CircleAlert className="size-4" /> Provisioning gagal
+            <CircleAlert className="size-4" /> Pembuatan server gagal
           </p>
           <p className="mt-1 text-sm text-[#991B1B]/80">
             {order.errorMessage ??
-              "Server gagal dibuat. Kamu bisa mencoba lagi atau mengajukan refund ke saldo."}
+              "Server belum berhasil dibuat. Kamu bisa coba lagi atau ajukan refund ke saldo."}
           </p>
           <div className="mt-4">
             <OrderActions
@@ -197,7 +197,7 @@ export default async function OrderDetailPage({
               <div className="mt-4 flex flex-col gap-2 rounded-xl border border-[#FDE68A] bg-[#FFFBEB] p-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="flex items-center gap-2 text-sm text-[#92400E]">
                   <Clock className="size-4" />
-                  Selesaikan pembayaran sebelum {formatDateTime(order.expiresAt)}
+                  Bayar sebelum {formatDateTime(order.expiresAt)}
                 </p>
                 {invoice ? (
                   <Button asChild size="sm" className="bg-[#0B3D2E] text-white hover:bg-[#0E4D38]">
@@ -292,11 +292,11 @@ export default async function OrderDetailPage({
           <SectionCard title="Aksi pesanan">
             {refund ? (
               <p className="text-sm text-[#5B6B60]">
-                Pesanan ini sudah direfund ke saldo. Tidak ada aksi lanjutan yang diperlukan.
+                Pesanan ini sudah direfund ke saldo. Nggak ada aksi lanjutan yang perlu dilakukan.
               </p>
             ) : order.status === "failed" ? (
               <p className="text-sm text-[#5B6B60]">
-                Gunakan tombol <strong className="text-[#101613]">Coba provisioning lagi</strong> atau{" "}
+                Gunakan tombol <strong className="text-[#101613]">Coba buat server lagi</strong> atau{" "}
                 <strong className="text-[#101613]">Ajukan refund</strong> pada banner di atas.
               </p>
             ) : ["pending_payment", "cancelled", "expired"].includes(order.status) ? (
@@ -308,14 +308,14 @@ export default async function OrderDetailPage({
               />
             ) : (
               <p className="text-sm text-[#5B6B60]">
-                Pesanan ini sudah diproses. Kelola server dari halaman VPS.
+                Pesanan ini sudah diproses. Server bisa kamu kelola dari halaman VPS.
               </p>
             )}
             <div className="mt-4 space-y-2 border-t border-[#EDF1EE] pt-4 text-xs text-[#8A9A90]">
               <p className="flex items-center gap-2">
                 <CalendarClock className="size-3.5" /> Kedaluwarsa {formatRelative(order.expiresAt)}
               </p>
-              <p>Butuh bantuan? Buka tiket dan sertakan nomor pesanan.</p>
+              <p>Butuh bantuan? Buka tiket dan sertakan nomor pesanan, ya.</p>
             </div>
           </SectionCard>
         </div>

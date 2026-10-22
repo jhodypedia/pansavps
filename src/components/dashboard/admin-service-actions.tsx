@@ -91,7 +91,7 @@ export function AdminTerminateDialog({ serviceId, hostname }: { serviceId: strin
         <DialogHeader>
           <DialogTitle>Terminasi VPS</DialogTitle>
           <DialogDescription>
-            Droplet akan dihapus permanen dan seluruh data hilang. Tindakan ini tercatat di audit log.
+            Server akan dihapus permanen dan seluruh data ikut hilang. Tindakan ini tercatat di log.
           </DialogDescription>
         </DialogHeader>
         <ActionForm action={serviceActionAction} onSuccess={() => setOpen(false)}>
@@ -150,7 +150,7 @@ export function AdminRevealPassword({ serviceId }: { serviceId: string }) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Akses kredensial</DialogTitle>
+          <DialogTitle>Akses data sensitif</DialogTitle>
           <DialogDescription>
             Tindakan ini dicatat di audit log. Isi alasan akses sebelum menampilkan password.
           </DialogDescription>

@@ -20,14 +20,14 @@ export function availableProviders(): ProviderInfo[] {
   const all: ProviderInfo[] = [
     {
       id: "manual",
-      label: "Transfer Manual",
-      description: `Transfer ke ${s.manual_bank_name} ${s.manual_account_number}. Verifikasi oleh admin.`,
+      label: "Transfer BANK",
+      description: "Transfer dari m-banking atau ATM, lalu unggah buktinya.",
       enabled: s.manual_enabled === "true",
     },
     {
       id: "tripay",
-      label: "Pembayaran Online",
-      description: "QRIS, virtual account, dan gerai retail.",
+      label: "Pembayaran online",
+      description: "QRIS, VA, e-wallet, atau gerai retail. Channel muncul otomatis.",
       enabled: tripayEnabled(),
     },
   ];
@@ -52,7 +52,7 @@ export async function createGatewayPayment(
   channel?: string,
 ): Promise<PaymentIntent> {
   if (method === "tripay") return createTripayPayment(invoice, customer, channel);
-  throw new Error("Metode pembayaran gateway tidak dikenal.");
+  throw new Error("Metode pembayaran online tidak dikenal.");
 }
 
 export { tripayEnabled };

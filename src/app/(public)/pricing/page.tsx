@@ -96,7 +96,7 @@ export default async function PricingPage() {
             <PricingTable items={items} />
           ) : (
             <div className="rounded-2xl border border-dashed border-[#D8E2DB] bg-[#FBFCFB] p-12 text-center">
-              <p className="text-sm text-[#5B6B60]">Belum ada paket aktif. Silakan hubungi support.</p>
+              <p className="text-sm text-[#5B6B60]">Belum ada paket aktif. Hubungi support, ya.</p>
             </div>
           )}
 
