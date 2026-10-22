@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { invoices } from "@/lib/db/schema";
+import { invoices, payments } from "@/lib/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { rateLimit } from "@/lib/rate-limit";
 import { reconcileTripayPayment } from "@/server/services/tripay";
@@ -53,11 +53,18 @@ export async function GET(
     .from(invoices)
     .where(eq(invoices.id, invoice.id))
     .get();
+  const latestTripayPayment = db
+    .select({ status: payments.status })
+    .from(payments)
+    .where(and(eq(payments.invoiceId, invoice.id), eq(payments.provider, "tripay")))
+    .orderBy(desc(payments.createdAt))
+    .get();
 
   return NextResponse.json({
     ok: true,
     status: latest?.status ?? invoice.status,
     paidAt: latest?.paidAt ?? invoice.paidAt,
+    paymentStatus: latestTripayPayment?.status ?? null,
     message,
   });
 }

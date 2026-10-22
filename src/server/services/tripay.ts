@@ -136,7 +136,7 @@ export async function reconcileTripayPayment(
       settled: false,
       message:
         tx.status === "failed"
-          ? "Pembayaran gagal atau transaksi sudah kedaluwarsa."
+          ? "Pembayaran online tidak berhasil atau transaksi sudah kedaluwarsa."
           : "Pembayaran belum diterima. Status akan diperbarui otomatis.",
     };
   }

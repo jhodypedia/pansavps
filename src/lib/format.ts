@@ -115,6 +115,13 @@ export const invoiceStatusLabel: Record<string, string> = {
   refunded: "Dikembalikan",
 };
 
+export const paymentStatusLabel: Record<string, string> = {
+  pending: "Menunggu",
+  paid: "Lunas",
+  failed: "Tidak berhasil",
+  rejected: "Ditolak",
+};
+
 export const serviceStatusLabel: Record<string, string> = {
   provisioning: "Menyiapkan",
   active: "Aktif",

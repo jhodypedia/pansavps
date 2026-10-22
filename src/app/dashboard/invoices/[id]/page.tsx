@@ -32,6 +32,7 @@ import {
   formatIDR,
   invoiceStatusLabel,
   invoiceTypeLabel,
+  paymentStatusLabel,
 } from "@/lib/format";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -54,6 +55,7 @@ type GatewayDisplay = {
   method?: string;
   paymentName?: string;
   reference?: string;
+  status?: string;
 };
 
 function numberValue(value: unknown): number | undefined {
@@ -91,6 +93,7 @@ function readGateway(value: unknown): GatewayDisplay | null {
     method: stringValue(row.method),
     paymentName: stringValue(row.paymentName) ?? stringValue(row.payment_name),
     reference: stringValue(row.reference),
+    status: stringValue(row.status),
   };
 }
 
@@ -181,6 +184,9 @@ export default async function InvoiceDetailPage({
     .orderBy(desc(payments.createdAt))
     .all();
   const pendingPayment = paymentRows.find((payment) => payment.status === "pending");
+  const lastTripayPayment = paymentRows.find((payment) => payment.provider === "tripay") ?? null;
+  const lastOnlineFailed =
+    invoice.status === "unpaid" && lastTripayPayment?.status === "failed";
   const providers = availableProviders();
   const tripayChannels = await listTripayChannels();
   const bank = manualBankDetails();
@@ -219,6 +225,11 @@ export default async function InvoiceDetailPage({
         : "Pembayaran diterima. Server sedang disiapkan dan halaman ini diperbarui otomatis.";
   const gateway =
     invoice.paymentProvider === "tripay" ? readGateway(meta.tripay) : null;
+  const lastOnlineGatewayStatus = gateway?.status?.toUpperCase() ?? null;
+  const lastOnlineBadgeLabel =
+    lastOnlineGatewayStatus === "EXPIRED"
+      ? "Pembayaran online kedaluwarsa"
+      : "Pembayaran online dibatalkan";
   const displaySubtotal =
     gateway?.subtotal && gateway.subtotal > 0 ? gateway.subtotal : invoice.amount;
   const displayFee = gateway?.feeCustomer ?? 0;
@@ -249,9 +260,11 @@ export default async function InvoiceDetailPage({
   const paymentStep: "done" | "active" | "failed" =
     settled
       ? "done"
-      : invoice.status === "expired" || invoice.status === "cancelled"
+      : lastOnlineFailed
         ? "failed"
-        : "active";
+        : invoice.status === "expired" || invoice.status === "cancelled"
+          ? "failed"
+          : "active";
   const serviceStep: "done" | "active" | "pending" | "failed" =
     serviceFailed
       ? "failed"
@@ -270,20 +283,24 @@ export default async function InvoiceDetailPage({
                 : "pending";
   const paymentStepTitle = settled
     ? "Pembayaran diterima"
-    : invoice.status === "cancelled"
-      ? "Pembayaran dibatalkan"
-      : invoice.status === "expired"
-        ? "Pembayaran kedaluwarsa"
-        : "Menunggu pembayaran";
+    : lastOnlineFailed
+      ? "Pembayaran online belum berhasil"
+      : invoice.status === "cancelled"
+        ? "Pembayaran dibatalkan"
+        : invoice.status === "expired"
+          ? "Pembayaran kedaluwarsa"
+          : "Menunggu pembayaran";
   const paymentStepDescription = paid
     ? formatDateTime(invoice.paidAt)
     : refunded
       ? `Dibayar ${formatDateTime(invoice.paidAt)} · dana dikembalikan ke saldo`
-      : invoice.status === "cancelled"
-        ? "Invoice dibatalkan sebelum pembayaran."
-        : invoice.status === "expired"
-          ? "Buat invoice baru untuk melanjutkan"
-          : `Batas ${formatDateTime(invoice.dueDate)}`;
+      : lastOnlineFailed
+        ? "Invoice masih aktif. Coba lagi atau pilih metode pembayaran lain."
+        : invoice.status === "cancelled"
+          ? "Invoice dibatalkan sebelum pembayaran."
+          : invoice.status === "expired"
+            ? "Buat invoice baru untuk melanjutkan"
+            : `Batas ${formatDateTime(invoice.dueDate)}`;
   const serviceStepTitle = serviceFailed
     ? "VPS gagal dibuat"
     : refunded
@@ -334,6 +351,9 @@ export default async function InvoiceDetailPage({
         description={
           <span className="inline-flex flex-wrap items-center gap-2">
             <StatusBadge status={invoice.status} label={invoiceStatusLabel[invoice.status]} />
+            {lastOnlineFailed ? (
+              <StatusBadge status="failed" label={lastOnlineBadgeLabel} />
+            ) : null}
             <span>{invoiceTypeLabel[invoice.type]} · dibuat {formatDateTime(invoice.createdAt)}</span>
           </span>
         }
@@ -435,7 +455,11 @@ export default async function InvoiceDetailPage({
       ) : null}
 
       {invoice.status === "unpaid" || invoice.status === "expired" ? (
-        <InvoiceStatusWatcher invoiceId={invoice.id} status={invoice.status} />
+        <InvoiceStatusWatcher
+          invoiceId={invoice.id}
+          status={invoice.status}
+          paymentStatus={lastTripayPayment?.status ?? null}
+        />
       ) : null}
 
       <section className="relative overflow-hidden rounded-3xl border border-[#0B3D2E]/10 bg-gradient-to-br from-[#082E22] via-[#0B3D2E] to-[#145A42] p-6 text-white shadow-[0_30px_80px_-40px_rgba(11,61,46,0.9)] sm:p-8">
@@ -756,7 +780,10 @@ export default async function InvoiceDetailPage({
                             </a>
                           </Button>
                         ) : null}
-                        <StatusBadge status={payment.status} label={payment.status} />
+                        <StatusBadge
+                          status={payment.status}
+                          label={paymentStatusLabel[payment.status] ?? payment.status}
+                        />
                       </div>
                     </li>
                   );
@@ -793,6 +820,8 @@ export default async function InvoiceDetailPage({
                   balance={user.balance}
                   bank={bank}
                   hasPendingProof={Boolean(pendingPayment?.proofUrl)}
+                  lastOnlineFailed={lastOnlineFailed}
+                  lastOnlineStatus={lastOnlineGatewayStatus}
                 />
               ) : (
                 <VerificationRequired

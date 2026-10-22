@@ -10,6 +10,7 @@ type StatusResponse = {
   ok?: boolean;
   status?: string;
   paidAt?: number | string | null;
+  paymentStatus?: string | null;
   message?: string;
 };
 
@@ -24,16 +25,23 @@ function formatTime(date: Date): string {
 export function InvoiceStatusWatcher({
   invoiceId,
   status,
+  paymentStatus,
 }: {
   invoiceId: string;
   status: string;
+  paymentStatus?: string | null;
 }) {
   const router = useRouter();
   const busy = useRef(false);
   const settled = useRef(false);
+  const knownPaymentStatus = useRef(paymentStatus ?? null);
   const [checking, setChecking] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
+
+  useEffect(() => {
+    knownPaymentStatus.current = paymentStatus ?? null;
+  }, [paymentStatus]);
 
   const check = useCallback(
     async (manual = false) => {
@@ -58,6 +66,21 @@ export function InvoiceStatusWatcher({
           router.refresh();
           return;
         }
+
+        const nextPaymentStatus = data.paymentStatus ?? null;
+        const changed =
+          nextPaymentStatus !== null && nextPaymentStatus !== knownPaymentStatus.current;
+        if (changed) knownPaymentStatus.current = nextPaymentStatus;
+
+        if (nextPaymentStatus === "failed") {
+          setMessage(
+            data.message ??
+              "Pembayaran online sebelumnya dibatalkan atau gagal. Invoice masih bisa dibayar ulang.",
+          );
+          if (changed) router.refresh();
+          return;
+        }
+
         if (manual) {
           setMessage(data.message ?? "Pembayaran belum terdeteksi. Coba lagi beberapa saat.");
         }

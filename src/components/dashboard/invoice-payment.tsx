@@ -31,6 +31,8 @@ export function InvoicePaymentPanel({
   balance,
   bank,
   hasPendingProof,
+  lastOnlineFailed = false,
+  lastOnlineStatus,
 }: {
   invoiceId: string;
   amount: number;
@@ -43,6 +45,8 @@ export function InvoicePaymentPanel({
   balance: number;
   bank: { bank: string; accountNumber: string; accountName: string; instructions: string };
   hasPendingProof: boolean;
+  lastOnlineFailed?: boolean;
+  lastOnlineStatus?: string | null;
 }) {
   const onlineEnabled =
     providers.some((provider) => provider.id === "tripay") && tripayChannels.length > 0;
@@ -108,6 +112,19 @@ export function InvoicePaymentPanel({
 
   return (
     <div className="space-y-4">
+      {lastOnlineFailed ? (
+        <div className="rounded-xl border border-[#FDE68A] bg-[#FFFBEB] p-4 text-sm text-[#92400E]">
+          <p className="font-semibold">Pembayaran online belum selesai</p>
+          <p className="mt-1 text-xs leading-relaxed">
+            {lastOnlineStatus === "EXPIRED"
+              ? "Transaksi online sebelumnya sudah kedaluwarsa."
+              : "Transaksi online sebelumnya dibatalkan atau gagal di gateway."}{" "}
+            Invoice ini belum dibayar dan masih bisa kamu coba lagi dengan metode pembayaran di
+            bawah.
+          </p>
+        </div>
+      ) : null}
+
       {hasPendingProof ? (
         <div className="rounded-xl border border-[#FDE68A] bg-[#FFFBEB] p-4 text-sm text-[#92400E]">
           Bukti transfer sudah diunggah dan sedang menunggu verifikasi admin. Kamu bisa mengunggah
