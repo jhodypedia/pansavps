@@ -235,8 +235,14 @@ export default async function InvoiceDetailPage({
   const gateway =
     invoice.paymentProvider === "tripay" ? readGateway(meta.tripay) : null;
   const lastOnlineGatewayStatus = gateway?.status?.toUpperCase() ?? null;
+  const useGatewayStatus =
+    !settled &&
+    Boolean(lastOnlineGatewayStatus) &&
+    (invoice.status === "unpaid" ||
+      lastOnlineGatewayStatus === "FAILED" ||
+      lastOnlineGatewayStatus === "EXPIRED");
   const displayStatus =
-    invoice.status === "unpaid" && lastOnlineGatewayStatus
+    useGatewayStatus && lastOnlineGatewayStatus
       ? (tripayDisplayStatus[lastOnlineGatewayStatus] ?? {
           status: invoice.status,
           label: invoiceStatusLabel[invoice.status],

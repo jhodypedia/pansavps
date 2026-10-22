@@ -60,10 +60,15 @@ export default async function InvoicesPage() {
     const gatewayStatus =
       typeof tripay?.status === "string" ? tripay.status.trim().toUpperCase() : null;
     const displayStatus =
-      invoice.status === "unpaid" && gatewayStatus === "FAILED"
-        ? "failed"
-        : invoice.status === "unpaid" && gatewayStatus === "EXPIRED"
-          ? "expired"
+      invoice.status === "unpaid"
+        ? gatewayStatus === "FAILED"
+          ? "failed"
+          : gatewayStatus === "EXPIRED"
+            ? "expired"
+            : invoice.status
+        : (invoice.status === "expired" || invoice.status === "cancelled") &&
+            gatewayStatus === "FAILED"
+          ? "failed"
           : invoice.status;
 
     return {
