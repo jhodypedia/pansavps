@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   Box,
+  CircleAlert,
   Cpu,
   Database,
   Globe2,
@@ -16,7 +17,7 @@ import {
 } from "lucide-react";
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { invoices, osImages, plans, regions } from "@/lib/db/schema";
+import { invoices, orders, osImages, plans, regions, services } from "@/lib/db/schema";
 import { isUserVerified, requireUser } from "@/lib/auth";
 import {
   cycleLabel,
@@ -42,6 +43,7 @@ import { SubmitButton } from "@/components/shared/submit-button";
 import { InfoRow, SectionCard } from "@/components/dashboard/section-card";
 import { ProvisioningProgress } from "@/components/dashboard/provisioning-progress";
 import { ActionForm } from "@/components/dashboard/action-form";
+import { OrderActions } from "@/components/dashboard/order-actions";
 import {
   AutoRenewToggle,
   DeleteSnapshotButton,
@@ -82,7 +84,38 @@ export default async function ServiceDetailPage({
   const verified = isUserVerified(user);
 
   const service = getVisibleServiceForUser(id, user.id);
-  if (!service) notFound();
+  if (!service) {
+    const hidden = db
+      .select()
+      .from(services)
+      .where(and(eq(services.id, id), eq(services.userId, user.id)))
+      .get();
+    if (!hidden) notFound();
+
+    const hiddenOrder = hidden.orderId
+      ? db.select().from(orders).where(eq(orders.id, hidden.orderId)).get()
+      : null;
+    const hiddenInvoice = hidden.orderId
+      ? db
+          .select()
+          .from(invoices)
+          .where(and(eq(invoices.orderId, hidden.orderId), eq(invoices.userId, user.id)))
+          .get()
+      : null;
+    const failed =
+      hidden.status === "failed" ||
+      (hidden.status === "terminated" &&
+        Boolean(hiddenOrder && ["failed", "cancelled"].includes(hiddenOrder.status)));
+    if (!failed) notFound();
+
+    return (
+      <FailedServiceView
+        service={hidden}
+        order={hiddenOrder ?? null}
+        invoice={hiddenInvoice ?? null}
+      />
+    );
+  }
 
   const plan = db.select().from(plans).where(eq(plans.id, service.planId)).get();
   const region = db.select().from(regions).where(eq(regions.slug, service.regionSlug)).get();
@@ -459,6 +492,142 @@ export default async function ServiceDetailPage({
           )}
         </SectionCard>
       ) : null}
+    </div>
+  );
+}
+
+function FailedServiceView({
+  service,
+  order,
+  invoice,
+}: {
+  service: typeof services.$inferSelect;
+  order: typeof orders.$inferSelect | null;
+  invoice: typeof invoices.$inferSelect | null;
+}) {
+  const refunded = invoice?.status === "refunded";
+  const reason =
+    order?.errorMessage?.trim() ||
+    "Penyedia cloud tidak dapat menyelesaikan pembuatan VPS untuk pesanan ini.";
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "VPS saya", href: "/dashboard/vps" },
+          { label: service.hostname },
+        ]}
+        title={service.hostname}
+        description={
+          <span className="inline-flex flex-wrap items-center gap-2">
+            <StatusBadge status="failed" label="Gagal dibuat" />
+            <span>Dibuat {formatDateTime(service.createdAt)}</span>
+          </span>
+        }
+        actions={
+          <Button asChild variant="outline" className="border-[#D8E2DB] bg-white">
+            <Link href="/dashboard/vps">
+              <ArrowLeft className="size-4" /> Kembali
+            </Link>
+          </Button>
+        }
+      />
+
+      <section className="relative overflow-hidden rounded-3xl border border-[#FECACA] bg-[#FEF2F2] p-6 sm:p-8">
+        <div className="pointer-events-none absolute -right-16 -top-20 size-64 rounded-full bg-[#FCA5A5]/20 blur-3xl" />
+        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex min-w-0 items-start gap-4">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[#FEE2E2] text-[#B91C1C]">
+              <CircleAlert className="size-6" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold tracking-[0.2em] text-[#B91C1C] uppercase">
+                Provisioning terhenti
+              </p>
+              <h2 className="mt-1 font-display text-2xl font-bold tracking-tight text-[#991B1B] sm:text-3xl">
+                VPS gagal dibuat
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#991B1B]/80">
+                {reason}
+              </p>
+              <p className="mt-2 max-w-2xl text-xs leading-relaxed text-[#991B1B]/70">
+                {refunded
+                  ? `Dana ${formatIDR(invoice?.amount ?? 0)} sudah dikembalikan ke saldo akun. Tidak perlu mengulang pembayaran.`
+                  : "Kamu tetap bisa mencoba provisioning ulang atau mengajukan refund dari halaman ini."}
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {invoice ? (
+                  <Button asChild size="sm" className="bg-[#0B3D2E] text-white hover:bg-[#0E4D38]">
+                    <Link href={`/dashboard/invoices/${invoice.id}`}>Kembali ke invoice</Link>
+                  </Button>
+                ) : null}
+                {order ? (
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="border-[#FECACA] bg-white text-[#991B1B] hover:bg-[#FEE2E2]"
+                  >
+                    <Link href={`/dashboard/pesanan/${order.id}`}>Detail pesanan</Link>
+                  </Button>
+                ) : null}
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="border-[#FECACA] bg-white text-[#991B1B] hover:bg-[#FEE2E2]"
+                >
+                  <Link
+                    href={
+                      invoice
+                        ? `/dashboard/tiket/baru?invoice=${invoice.invoiceNumber}`
+                        : "/dashboard/tiket/baru"
+                    }
+                  >
+                    Buka tiket
+                  </Link>
+                </Button>
+                {refunded ? (
+                  <Button asChild size="sm" variant="outline" className="border-[#BFE3CC] bg-white text-[#0B3D2E]">
+                    <Link href="/dashboard/saldo">Lihat saldo</Link>
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SectionCard
+        title="Tindakan yang tersedia"
+        description="Kamu tidak perlu membuat pesanan baru kecuali ingin memilih paket atau region lain."
+      >
+        {refunded ? (
+          <p className="text-sm leading-relaxed text-[#5B6B60]">
+            Dana sudah kembali ke saldo. Kamu bisa langsung membuat pesanan baru menggunakan saldo
+            tersebut atau menghubungi support jika masih ada kendala.
+          </p>
+        ) : order ? (
+          <div className="space-y-3">
+            <p className="text-sm leading-relaxed text-[#5B6B60]">
+              Coba provisioning ulang jika kendala bersifat sementara. Jika masih gagal, ajukan
+              refund ke saldo agar dana bisa dipakai untuk pesanan lain.
+            </p>
+            <OrderActions
+              orderId={order.id}
+              status={order.status}
+              orderNumber={order.orderNumber}
+              hasRefund={refunded}
+            />
+          </div>
+        ) : (
+          <p className="text-sm leading-relaxed text-[#5B6B60]">
+            Hubungi support dengan menyertakan hostname {service.hostname} agar tim kami dapat
+            memeriksa riwayat provisioning.
+          </p>
+        )}
+      </SectionCard>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import {
   Check,
   CheckCircle2,
   Circle,
+  CircleAlert,
   Clock3,
   CreditCard,
   Download,
@@ -24,6 +25,7 @@ import { isUserVerified, requireUser } from "@/lib/auth";
 import { availableProviders } from "@/lib/payments";
 import { listTripayChannels } from "@/lib/payments/tripay";
 import { manualBankDetails } from "@/server/services/billing";
+import { isServiceVisible } from "@/server/services/services";
 import {
   cycleLabel,
   formatDateTime,
@@ -36,6 +38,8 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { InfoRow, SectionCard } from "@/components/dashboard/section-card";
 import { InvoicePaymentPanel } from "@/components/dashboard/invoice-payment";
 import { InvoiceStatusWatcher } from "@/components/dashboard/invoice-status-watcher";
+import { PollRefresh } from "@/components/dashboard/poll-refresh";
+import { OrderActions } from "@/components/dashboard/order-actions";
 import { VerificationRequired } from "@/components/dashboard/verification-required";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -148,11 +152,11 @@ export default async function InvoiceDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ baru?: string }>;
+  searchParams: Promise<{ baru?: string; dibayar?: string }>;
 }) {
   const user = await requireUser();
   const { id } = await params;
-  const { baru } = await searchParams;
+  const { baru, dibayar } = await searchParams;
   const verified = isUserVerified(user);
 
   const invoice = db
@@ -167,7 +171,9 @@ export default async function InvoiceDetailPage({
     : null;
   const service = invoice.serviceId
     ? db.select().from(services).where(eq(services.id, invoice.serviceId)).get()
-    : null;
+    : invoice.orderId
+      ? db.select().from(services).where(eq(services.orderId, invoice.orderId)).get()
+      : null;
   const paymentRows = db
     .select()
     .from(payments)
@@ -188,6 +194,29 @@ export default async function InvoiceDetailPage({
   const paid = invoice.status === "paid";
   const refunded = invoice.status === "refunded";
   const settled = paid || refunded;
+  const serviceFailed = Boolean(
+    service &&
+      (service.status === "failed" ||
+        (service.status === "terminated" &&
+          Boolean(order && ["failed", "cancelled"].includes(order.status)))),
+  );
+  const serviceVisible = service
+    ? isServiceVisible(service.status, order?.status ?? null)
+    : false;
+  const provisioningActive = Boolean(service && service.status === "provisioning");
+  const failureDetail =
+    order?.errorMessage?.trim() ||
+    "Penyedia cloud tidak dapat menyelesaikan pembuatan VPS untuk pesanan ini.";
+  const paidBannerText =
+    invoice.type === "topup"
+      ? "Saldo sudah ditambahkan dan siap digunakan."
+      : service?.status === "active"
+        ? invoice.type === "renewal"
+          ? "Masa aktif layanan sudah diperpanjang."
+          : invoice.type === "upgrade"
+            ? "Paket VPS sudah ditingkatkan."
+            : "VPS sudah aktif dan siap digunakan."
+        : "Pembayaran diterima. Server sedang disiapkan dan halaman ini diperbarui otomatis.";
   const gateway =
     invoice.paymentProvider === "tripay" ? readGateway(meta.tripay) : null;
   const displaySubtotal =
@@ -224,19 +253,21 @@ export default async function InvoiceDetailPage({
         ? "failed"
         : "active";
   const serviceStep: "done" | "active" | "pending" | "failed" =
-    refunded
-      ? "done"
-      : invoice.type === "topup"
-        ? paid
-          ? "done"
-          : "pending"
-        : service?.status === "active"
-          ? "done"
-          : service?.status === "failed" || service?.status === "terminated"
-            ? "failed"
-            : service?.status === "provisioning" || paid
-              ? "active"
-              : "pending";
+    serviceFailed
+      ? "failed"
+      : refunded
+        ? "done"
+        : invoice.type === "topup"
+          ? paid
+            ? "done"
+            : "pending"
+          : service?.status === "active"
+            ? "done"
+            : service?.status === "failed" || service?.status === "terminated"
+              ? "failed"
+              : service?.status === "provisioning" || paid
+                ? "active"
+                : "pending";
   const paymentStepTitle = settled
     ? "Pembayaran diterima"
     : invoice.status === "cancelled"
@@ -253,39 +284,46 @@ export default async function InvoiceDetailPage({
         : invoice.status === "expired"
           ? "Buat invoice baru untuk melanjutkan"
           : `Batas ${formatDateTime(invoice.dueDate)}`;
-  const serviceStepTitle = refunded
-    ? "Dana dikembalikan"
-    : invoice.type === "topup"
-      ? paid
-        ? "Saldo ditambahkan"
-        : "Saldo bertambah otomatis"
-      : service?.status === "active"
-        ? "Layanan aktif"
-        : service?.status === "failed" || service?.status === "terminated"
-          ? "Layanan perlu tindakan"
-          : service?.status === "provisioning"
-            ? "Server disiapkan"
-            : paid
-              ? "Layanan diproses"
-              : "Layanan disiapkan";
-  const serviceStepDescription = refunded
-    ? "Saldo akun sudah ditambahkan kembali."
-    : invoice.type === "topup"
-      ? paid
-        ? "Saldo siap digunakan."
-        : "Setelah pembayaran terkonfirmasi."
-      : service?.status === "active"
-        ? `${service.hostname} siap digunakan.`
-        : service?.status === "provisioning"
-          ? "Aktivasi otomatis sedang berjalan."
+  const serviceStepTitle = serviceFailed
+    ? "VPS gagal dibuat"
+    : refunded
+      ? "Dana dikembalikan"
+      : invoice.type === "topup"
+        ? paid
+          ? "Saldo ditambahkan"
+          : "Saldo bertambah otomatis"
+        : service?.status === "active"
+          ? "Layanan aktif"
           : service?.status === "failed" || service?.status === "terminated"
-            ? "Hubungi support untuk bantuan."
-            : paid
-              ? "Aktivasi akan segera dimulai."
-              : "Aktif otomatis setelah pembayaran.";
+            ? "Layanan perlu tindakan"
+            : service?.status === "provisioning"
+              ? "Server disiapkan"
+              : paid
+                ? "Layanan diproses"
+                : "Layanan disiapkan";
+  const serviceStepDescription = serviceFailed
+    ? refunded
+      ? "Dana sudah dikembalikan ke saldo akun."
+      : "Coba lagi atau ajukan refund dari halaman ini."
+    : refunded
+      ? "Saldo akun sudah ditambahkan kembali."
+      : invoice.type === "topup"
+        ? paid
+          ? "Saldo siap digunakan."
+          : "Setelah pembayaran terkonfirmasi."
+        : service?.status === "active"
+          ? `${service.hostname} siap digunakan.`
+          : service?.status === "provisioning"
+            ? "Aktivasi otomatis sedang berjalan."
+            : service?.status === "failed" || service?.status === "terminated"
+              ? "Hubungi support untuk bantuan."
+              : paid
+                ? "Aktivasi akan segera dimulai."
+                : "Aktif otomatis setelah pembayaran.";
 
   return (
     <div className="space-y-6">
+      <PollRefresh enabled={provisioningActive} intervalMs={7000} />
       <PageHeader
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
@@ -316,6 +354,73 @@ export default async function InvoiceDetailPage({
           </>
         }
       />
+
+      {serviceFailed ? (
+        <section className="overflow-hidden rounded-2xl border border-[#FECACA] bg-[#FEF2F2]">
+          <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex min-w-0 items-start gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#FEE2E2] text-[#B91C1C]">
+                <CircleAlert className="size-5" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-[#991B1B]">VPS gagal dibuat</p>
+                <p className="mt-1 text-sm leading-relaxed text-[#991B1B]/80">
+                  {failureDetail}
+                </p>
+                <p className="mt-2 text-xs leading-relaxed text-[#991B1B]/70">
+                  {refunded
+                    ? `Dana ${formatIDR(invoice.amount)} sudah dikembalikan ke saldo akun. Kamu tetap berada di halaman invoice ini.`
+                    : "Kamu tetap berada di halaman invoice ini. Coba provisioning ulang atau ajukan refund tanpa kehilangan detail pembayaran."}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {refunded ? (
+                    <Button asChild size="sm" className="bg-[#0B3D2E] text-white hover:bg-[#0E4D38]">
+                      <Link href="/dashboard/saldo">Lihat saldo</Link>
+                    </Button>
+                  ) : order ? (
+                    <OrderActions
+                      orderId={order.id}
+                      status={order.status}
+                      orderNumber={order.orderNumber}
+                      hasRefund={refunded}
+                    />
+                  ) : null}
+                  {order ? (
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="border-[#FECACA] bg-white text-[#991B1B] hover:bg-[#FEE2E2]"
+                    >
+                      <Link href={`/dashboard/pesanan/${order.id}`}>Detail pesanan</Link>
+                    </Button>
+                  ) : null}
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="border-[#FECACA] bg-white text-[#991B1B] hover:bg-[#FEE2E2]"
+                  >
+                    <Link href={`/dashboard/tiket/baru?invoice=${invoice.invoiceNumber}`}>
+                      Buka tiket
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {dibayar && settled && !serviceFailed ? (
+        <div className="flex items-start gap-3 rounded-2xl border border-[#BFE3CC] bg-[#F3F9F5] p-4">
+          <CheckCircle2 className="mt-0.5 size-5 text-[#16A34A]" />
+          <div>
+            <p className="text-sm font-bold text-[#0B3D2E]">Pembayaran berhasil diterima</p>
+            <p className="text-xs leading-relaxed text-[#5B6B60]">{paidBannerText}</p>
+          </div>
+        </div>
+      ) : null}
 
       {baru && invoice.status === "unpaid" ? (
         <div className="flex items-start gap-3 rounded-2xl border border-[#BFE3CC] bg-[#F3F9F5] p-4">
@@ -554,19 +659,29 @@ export default async function InvoiceDetailPage({
                 <InfoRow
                   label="Layanan"
                   value={
-                    <Link href={`/dashboard/vps/${service.id}`} className="inline-flex items-center gap-1 text-[#0B3D2E] hover:underline">
-                      <Server className="size-3.5" /> {service.hostname}
-                    </Link>
+                    serviceVisible ? (
+                      <Link
+                        href={`/dashboard/vps/${service.id}`}
+                        className="inline-flex items-center gap-1 text-[#0B3D2E] hover:underline"
+                      >
+                        <Server className="size-3.5" /> {service.hostname}
+                      </Link>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[#991B1B]">
+                        <Server className="size-3.5" /> {service.hostname} ·{" "}
+                        {serviceFailed ? "gagal dibuat" : "tidak aktif"}
+                      </span>
+                    )
                   }
                 />
               ) : null}
             </dl>
 
-            {refunded ? (
+            {refunded && !serviceFailed ? (
               <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#BFE3CC] bg-[#F3F9F5] p-4 text-sm text-[#0B3D2E]">
                 <RotateCcw className="size-4" /> Dana invoice ini sudah dikembalikan ke saldo akun.
               </div>
-            ) : paid ? (
+            ) : paid && !serviceFailed ? (
               <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#BFE3CC] bg-[#F3F9F5] p-4 text-sm text-[#0B3D2E]">
                 <CheckCircle2 className="size-4" /> Invoice sudah lunas. Terima kasih!
               </div>

@@ -223,7 +223,7 @@ export async function createOrderAction(
       revalidatePath(`/dashboard/pesanan/${result.order.id}`);
       revalidatePath("/dashboard/pesanan");
       return done("Pesanan dibuat dan dibayar dengan saldo. Server sedang disiapkan.", {
-        redirectTo: `/dashboard/pesanan/${result.order.id}?dibayar=1`,
+        redirectTo: `/dashboard/invoices/${invoice.id}?dibayar=1`,
       });
     }
     if (parsed.data.paymentMethod === "manual") {
@@ -292,7 +292,12 @@ export async function payInvoiceAction(
         revalidatePath("/dashboard/pesanan");
       }
       return done("Pembayaran dengan saldo berhasil.", {
-        redirectTo: order ? `/dashboard/pesanan/${order.id}?dibayar=1` : `/dashboard/invoices/${invoiceId}`,
+        redirectTo:
+          invoice.type === "new"
+            ? `/dashboard/invoices/${invoiceId}?dibayar=1`
+            : order
+              ? `/dashboard/pesanan/${order.id}?dibayar=1`
+              : `/dashboard/invoices/${invoiceId}`,
       });
     }
     return startGatewayPayment(invoice, method, channel);

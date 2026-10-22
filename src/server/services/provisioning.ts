@@ -4,6 +4,7 @@ import { and, asc, eq, inArray, lte, or, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   balanceTransactions,
+  invoices,
   jobs,
   orders,
   plans,
@@ -157,7 +158,18 @@ async function failJob(jobId: string, serviceId: string, orderId: string | null,
       const refundInfo = refunded
         ? `Dana ${formatIDR(refundAmount)} sudah dikembalikan otomatis ke saldo akunmu.`
         : "Silakan hubungi support untuk bantuan refund.";
-      const link = resolvedOrderId ? `/dashboard/pesanan/${resolvedOrderId}` : "/dashboard/vps";
+      const invoice = resolvedOrderId
+        ? db
+            .select({ id: invoices.id })
+            .from(invoices)
+            .where(eq(invoices.orderId, resolvedOrderId))
+            .get()
+        : null;
+      const link = invoice
+        ? `/dashboard/invoices/${invoice.id}`
+        : resolvedOrderId
+          ? `/dashboard/pesanan/${resolvedOrderId}`
+          : "/dashboard/vps";
       await notifyUserEvent({
         userId: user.id,
         event: "provisioning_failed",
