@@ -21,11 +21,11 @@ const groups = [
     items: [
       {
         q: "Bagaimana cara pesan VPS?",
-        a: "Pilih paket di halaman harga, tentukan siklus pembayaran, region, OS, dan hostname. Setelah checkout, invoice langsung dibuat. Bayar pakai saldo atau pembayaran online? Server langsung diproses. Kalau transfer bank, admin cek dulu buktinya.",
+        a: "Pilih paket di halaman harga, tentukan siklus pembayaran, region, OS, dan hostname. Setelah checkout, invoice langsung dibuat. Bayar pakai saldo atau pembayaran otomatis? Server langsung diproses. Kalau transfer bank, admin cek dulu buktinya.",
       },
       {
         q: "Metode pembayaran apa yang bisa dipakai?",
-        a: "Saldo akun, Transfer BANK, dan pembayaran online lewat Tripay (QRIS, VA, e-wallet, atau gerai retail). Pilihan yang aktif muncul otomatis saat checkout.",
+        a: "Saldo akun, Transfer BANK, dan pembayaran otomatis lewat Tripay (QRIS, VA, e-wallet, atau gerai retail). Klik pembayaran otomatis, lalu pilih channel yang tersedia.",
       },
       {
         q: "Harga yang tampil sudah termasuk pajak?",
@@ -46,7 +46,7 @@ const groups = [
     items: [
       {
         q: "Berapa lama server aktif setelah bayar?",
-        a: "Kalau bayar pakai saldo atau pembayaran online, server langsung dibuat. Biasanya aktif dalam hitungan detik sampai beberapa menit, tergantung region dan OS. Transfer BANK dicek maksimal 1x24 jam di hari kerja.",
+        a: "Kalau bayar pakai saldo atau pembayaran otomatis, server langsung dibuat. Biasanya aktif dalam hitungan detik sampai beberapa menit, tergantung region dan OS. Transfer BANK dicek maksimal 1x24 jam di hari kerja.",
       },
       {
         q: "Bisa akses root?",

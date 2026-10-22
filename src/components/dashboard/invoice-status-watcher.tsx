@@ -75,7 +75,7 @@ export function InvoiceStatusWatcher({
         if (nextPaymentStatus === "failed") {
           setMessage(
             data.message ??
-              "Pembayaran online sebelumnya dibatalkan atau gagal. Invoice masih bisa dibayar ulang.",
+              "Pembayaran otomatis sebelumnya dibatalkan atau gagal. Invoice masih bisa dibayar ulang.",
           );
           if (changed) router.refresh();
           return;

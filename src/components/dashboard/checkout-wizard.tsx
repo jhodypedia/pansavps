@@ -6,6 +6,7 @@ import {
   ArrowRight,
   Check,
   CheckCircle2,
+  CreditCard,
   Cpu,
   Database,
   Globe2,
@@ -132,9 +133,10 @@ export function CheckoutWizard({
   const [newSshKeyName, setNewSshKeyName] = useState("");
   const [newSshKeyPublic, setNewSshKeyPublic] = useState("");
   const initialPaymentMethod =
-    providers.some((provider) => provider.id === "tripay") && tripayChannels.length > 0
+    providers.find((provider) => provider.id === "manual")?.id ??
+    (providers.some((provider) => provider.id === "tripay") && tripayChannels.length > 0
       ? "tripay"
-      : (providers.find((provider) => provider.id === "manual")?.id ?? "balance");
+      : "balance");
   const [paymentMethod, setPaymentMethod] = useState(initialPaymentMethod);
   const [paymentChannel, setPaymentChannel] = useState(tripayChannels[0]?.code ?? "");
   const [sshMode, setSshMode] = useState("password");
@@ -180,7 +182,7 @@ export function CheckoutWizard({
     paymentMethod === "balance"
       ? "Saldo akun"
       : paymentMethod === "tripay"
-        ? selectedChannel?.name ?? "Pembayaran online"
+        ? selectedChannel?.name ?? "Pembayaran otomatis"
         : providers.find((provider) => provider.id === paymentMethod)?.label ?? "Pembayaran";
 
   function applyPromo() {
@@ -625,52 +627,52 @@ export function CheckoutWizard({
                       <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[#0B3D2E]" />
                     ) : null}
                   </button>
-                  {providers
-                    .filter((provider) => provider.id !== "tripay")
-                    .map((provider) => (
-                      <button
-                        key={provider.id}
-                        type="button"
-                        onClick={() => setPaymentMethod(provider.id)}
-                        className={cn(
-                          "flex w-full items-start gap-3 rounded-xl border p-3.5 text-left",
-                          paymentMethod === provider.id
-                            ? "border-[#0B3D2E] bg-[#F3F9F5]"
-                            : "border-[#E3E8E4] bg-white hover:border-[#BFE3CC]",
-                        )}
-                        aria-pressed={paymentMethod === provider.id}
-                      >
-                        {provider.id === "manual" ? (
-                          <Landmark className="mt-0.5 size-4 shrink-0 text-[#0B3D2E]" />
-                        ) : (
-                          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-[#0B3D2E]" />
-                        )}
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-sm font-semibold text-[#101613]">
-                            {provider.label}
-                          </span>
-                          <span className="block text-xs text-[#5B6B60]">
-                            {provider.description}
-                          </span>
+                  {providers.map((provider) => (
+                    <button
+                      key={provider.id}
+                      type="button"
+                      onClick={() => setPaymentMethod(provider.id)}
+                      className={cn(
+                        "flex w-full items-start gap-3 rounded-xl border p-3.5 text-left",
+                        paymentMethod === provider.id
+                          ? "border-[#0B3D2E] bg-[#F3F9F5]"
+                          : "border-[#E3E8E4] bg-white hover:border-[#BFE3CC]",
+                      )}
+                      aria-pressed={paymentMethod === provider.id}
+                    >
+                      {provider.id === "manual" ? (
+                        <Landmark className="mt-0.5 size-4 shrink-0 text-[#0B3D2E]" />
+                      ) : provider.id === "tripay" ? (
+                        <CreditCard className="mt-0.5 size-4 shrink-0 text-[#0B3D2E]" />
+                      ) : (
+                        <ShieldCheck className="mt-0.5 size-4 shrink-0 text-[#0B3D2E]" />
+                      )}
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold text-[#101613]">
+                          {provider.label}
                         </span>
-                        {paymentMethod === provider.id ? (
-                          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[#0B3D2E]" />
-                        ) : null}
-                      </button>
-                    ))}
+                        <span className="block text-xs text-[#5B6B60]">
+                          {provider.description}
+                        </span>
+                      </span>
+                      {paymentMethod === provider.id ? (
+                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[#0B3D2E]" />
+                      ) : null}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {onlineEnabled ? (
+              {onlineEnabled && paymentMethod === "tripay" ? (
                 <div className="rounded-2xl border border-[#CFE6D8] bg-[#F9FCFA] p-4">
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <p className="text-sm font-semibold text-[#101613]">Pembayaran online</p>
+                      <p className="text-sm font-semibold text-[#101613]">Pilih channel pembayaran</p>
                       <p className="text-xs text-[#5B6B60]">
-                        QRIS, virtual account, e-wallet, dan gerai retail.
+                        Pilih salah satu channel yang tersedia.
                       </p>
                     </div>
-                    {paymentMethod === "tripay" && selectedChannel ? (
+                    {selectedChannel ? (
                       <span className="inline-flex w-fit items-center rounded-full border border-[#BFE3CC] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#0B3D2E]">
                         {selectedChannel.name}
                       </span>
@@ -678,11 +680,8 @@ export function CheckoutWizard({
                   </div>
                   <TripayChannelPicker
                     channels={tripayChannels}
-                    value={paymentMethod === "tripay" ? paymentChannel : ""}
-                    onChange={(code) => {
-                      setPaymentMethod("tripay");
-                      setPaymentChannel(code);
-                    }}
+                    value={paymentChannel}
+                    onChange={setPaymentChannel}
                     className="mt-3"
                   />
                 </div>

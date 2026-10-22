@@ -264,7 +264,7 @@ export default async function InvoiceDetailPage({
       : invoice.paymentProvider === "balance"
         ? "Saldo akun"
         : invoice.paymentProvider === "tripay"
-          ? "Pembayaran online"
+          ? "Pembayaran otomatis"
           : null);
   const cycleText = cycle && cycleLabel[cycle] ? cycleLabel[cycle] : "Layanan";
   const subtitle =
@@ -302,7 +302,7 @@ export default async function InvoiceDetailPage({
   const paymentStepTitle = settled
     ? "Pembayaran diterima"
     : lastOnlineFailed
-      ? "Pembayaran online belum berhasil"
+      ? "Pembayaran otomatis belum berhasil"
       : invoice.status === "cancelled"
         ? "Pembayaran dibatalkan"
         : invoice.status === "expired"
@@ -538,7 +538,7 @@ export default async function InvoiceDetailPage({
                 : refunded
                   ? "Total dikembalikan"
                   : displayFee > 0
-                    ? "Total pembayaran online"
+                    ? "Total pembayaran otomatis"
                     : "Total tagihan"}
             </p>
             <p className="mt-1 font-display text-4xl font-bold tracking-tight">
@@ -652,7 +652,7 @@ export default async function InvoiceDetailPage({
                         <dd className="font-semibold text-[#101613]">+{formatIDR(displayFee)}</dd>
                       </div>
                       <div className="flex justify-between gap-3 border-t border-dashed border-[#D8E2DB] pt-2">
-                        <dt className="font-semibold text-[#0B3D2E]">Total pembayaran online</dt>
+                        <dt className="font-semibold text-[#0B3D2E]">Total pembayaran otomatis</dt>
                         <dd className="font-bold text-[#0B3D2E]">{formatIDR(displayTotal)}</dd>
                       </div>
                     </>
@@ -661,7 +661,7 @@ export default async function InvoiceDetailPage({
               ) : null}
               {displayFee > 0 ? (
                 <p className="mt-3 text-[11px] leading-relaxed text-[#8A9A90]">
-                  Biaya layanan tergantung metode pembayaran online. Kalau pakai saldo atau
+                  Biaya layanan tergantung metode pembayaran otomatis. Kalau pakai saldo atau
                   transfer bank, kamu cukup bayar subtotal.
                 </p>
               ) : null}
@@ -678,7 +678,7 @@ export default async function InvoiceDetailPage({
                   label="Metode"
                   value={
                     paymentLabel ??
-                    (invoice.paymentProvider === "manual" ? "Transfer BANK" : "Pembayaran online")
+                    (invoice.paymentProvider === "manual" ? "Transfer BANK" : "Pembayaran otomatis")
                   }
                 />
               ) : null}
@@ -756,7 +756,7 @@ export default async function InvoiceDetailPage({
                           paymentGateway?.method ||
                           (payment.method && payment.method.toLowerCase() !== "tripay"
                             ? payment.method
-                            : "Pembayaran online");
+                            : "Pembayaran otomatis");
                   return (
                     <li
                       key={payment.id}

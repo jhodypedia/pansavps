@@ -107,7 +107,7 @@ export function TripayChannelPicker({
   if (items.length === 0) {
     return (
       <p className={cn("rounded-xl border border-[#FDE68A] bg-[#FFFBEB] p-3 text-xs text-[#92400E]", className)}>
-        Metode pembayaran online belum tersedia.
+        Metode pembayaran otomatis belum tersedia.
       </p>
     );
   }

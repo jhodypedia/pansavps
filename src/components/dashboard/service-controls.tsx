@@ -546,7 +546,7 @@ function PaymentSelect({
         </div>
       ) : null}
       <p className="text-xs text-[#8A9A90]">
-        Saldo tidak cukup? Pilih transfer bank atau pembayaran online. Tidak perlu top up saldo.
+        Saldo tidak cukup? Pilih transfer bank atau pembayaran otomatis. Tidak perlu top up saldo.
       </p>
     </div>
   );

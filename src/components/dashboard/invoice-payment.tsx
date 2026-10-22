@@ -53,13 +53,7 @@ export function InvoicePaymentPanel({
   const manualEnabled = providers.some((provider) => provider.id === "manual");
   const canBalance = type !== "topup" && balance >= amount;
   const [method, setMethod] = useState<"balance" | "manual" | "tripay">(
-    onlineEnabled
-      ? "tripay"
-      : canBalance
-        ? "balance"
-        : manualEnabled
-          ? "manual"
-          : "tripay",
+    canBalance ? "balance" : manualEnabled ? "manual" : "tripay",
   );
   const [tripayChannel, setTripayChannel] = useState(tripayChannels[0]?.code ?? "");
   const selectedChannel =
@@ -82,7 +76,7 @@ export function InvoicePaymentPanel({
 
   function payOnline() {
     if (!tripayChannel) {
-      setOnlineError("Pilih channel pembayaran online dulu, ya.");
+      setOnlineError("Pilih channel pembayaran otomatis dulu, ya.");
       return;
     }
     setOnlineError(null);
@@ -91,7 +85,7 @@ export function InvoicePaymentPanel({
         const result = await payInvoiceAction(invoiceId, "tripay", tripayChannel);
         if (!result.ok) {
           setOnlineError(
-            "Pembayaran online gagal diproses. Coba lagi atau pilih Transfer BANK.",
+            "Pembayaran otomatis gagal diproses. Coba lagi atau pilih Transfer BANK.",
           );
           return;
         }
@@ -106,7 +100,7 @@ export function InvoicePaymentPanel({
         router.refresh();
       } catch {
         setOnlineError(
-          "Pembayaran online gagal diproses. Coba lagi atau pilih Transfer BANK.",
+          "Pembayaran otomatis gagal diproses. Coba lagi atau pilih Transfer BANK.",
         );
       }
     });
@@ -116,7 +110,7 @@ export function InvoicePaymentPanel({
     <div className="space-y-4">
       {lastOnlineFailed ? (
         <div className="rounded-xl border border-[#FDE68A] bg-[#FFFBEB] p-4 text-sm text-[#92400E]">
-          <p className="font-semibold">Pembayaran online belum selesai</p>
+          <p className="font-semibold">Pembayaran otomatis belum selesai</p>
           <p className="mt-1 text-xs leading-relaxed">
             {lastOnlineStatus === "EXPIRED"
               ? "Transaksi online sebelumnya sudah kedaluwarsa."
@@ -183,20 +177,41 @@ export function InvoicePaymentPanel({
                 </span>
               </button>
             ) : null}
+            {onlineEnabled ? (
+              <button
+                type="button"
+                onClick={() => setMethod("tripay")}
+                className={cn(
+                  "flex items-start gap-3 rounded-xl border p-3.5 text-left",
+                  method === "tripay"
+                    ? "border-[#0B3D2E] bg-[#F3F9F5]"
+                    : "border-[#E3E8E4] bg-white hover:border-[#BFE3CC]",
+                )}
+                aria-pressed={method === "tripay"}
+              >
+                <CreditCard className="mt-0.5 size-4 text-[#0B3D2E]" />
+                <span>
+                  <span className="block text-sm font-semibold text-[#101613]">Pembayaran otomatis</span>
+                  <span className="block text-xs text-[#5B6B60]">
+                    QRIS, VA, e-wallet, atau gerai retail.
+                  </span>
+                </span>
+              </button>
+            ) : null}
           </div>
         </div>
       ) : null}
 
-      {onlineEnabled ? (
+      {onlineEnabled && method === "tripay" ? (
         <div className="rounded-xl border border-[#CFE6D8] bg-[#F9FCFA] p-3">
           <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="text-sm font-semibold text-[#101613]">Pembayaran online</p>
+              <p className="text-sm font-semibold text-[#101613]">Pembayaran otomatis</p>
               <p className="text-xs text-[#5B6B60]">
-                QRIS, virtual account, e-wallet, dan gerai retail.
+                Pilih channel pembayaran yang mau kamu pakai.
               </p>
             </div>
-            {method === "tripay" && selectedChannel ? (
+            {selectedChannel ? (
               <span className="inline-flex w-fit items-center rounded-full border border-[#BFE3CC] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#0B3D2E]">
                 {selectedChannel.name}
               </span>
@@ -204,7 +219,7 @@ export function InvoicePaymentPanel({
           </div>
           <TripayChannelPicker
             channels={tripayChannels}
-            value={method === "tripay" ? tripayChannel : ""}
+            value={tripayChannel}
             onChange={chooseOnlineChannel}
             showGroups={false}
           />
@@ -393,14 +408,14 @@ function TopupMethods({
           disabled={disabled}
         >
           <option value="manual">Transfer BANK</option>
-          {tripayChannels.length > 0 ? <option value="tripay">Pembayaran online</option> : null}
+          {tripayChannels.length > 0 ? <option value="tripay">Pembayaran otomatis</option> : null}
         </select>
       </div>
       {method === "tripay" ? (
         <div className="mt-3 rounded-xl border border-[#CFE6D8] bg-[#F9FCFA] p-3">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-semibold tracking-wide text-[#0B3D2E] uppercase">
-              Pilih metode pembayaran
+              Pilih channel pembayaran
             </p>
           </div>
           <TripayChannelPicker

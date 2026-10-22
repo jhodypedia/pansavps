@@ -26,8 +26,8 @@ export function availableProviders(): ProviderInfo[] {
     },
     {
       id: "tripay",
-      label: "Pembayaran online",
-      description: "QRIS, VA, e-wallet, atau gerai retail. Channel muncul otomatis.",
+      label: "Pembayaran otomatis",
+      description: "QRIS, VA, e-wallet, atau gerai retail. Channel muncul setelah dipilih.",
       enabled: tripayEnabled(),
     },
   ];
@@ -52,7 +52,7 @@ export async function createGatewayPayment(
   channel?: string,
 ): Promise<PaymentIntent> {
   if (method === "tripay") return createTripayPayment(invoice, customer, channel);
-  throw new Error("Metode pembayaran online tidak dikenal.");
+  throw new Error("Metode pembayaran otomatis tidak dikenal.");
 }
 
 export { tripayEnabled };

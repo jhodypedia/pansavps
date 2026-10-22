@@ -30,7 +30,7 @@ export default function TermsPage() {
           heading: "Pembayaran dan perpanjangan",
           body: [
             "Invoice dibuat saat kamu memesan atau memperpanjang layanan. Selesaikan pembayaran sebelum batas waktu yang tertera.",
-            "Pembayaran online diproses oleh penyedia pihak ketiga dan mengikuti ketentuan mereka. Transfer BANK dicek oleh admin.",
+            "Pembayaran otomatis diproses oleh penyedia pihak ketiga dan mengikuti ketentuan mereka. Transfer BANK dicek oleh admin.",
             "Perpanjangan otomatis bisa diaktifkan. Kalau saldo tidak cukup, layanan bisa ditangguhkan setelah masa aktif habis dan dihapus setelah masa tenggang.",
           ],
         },

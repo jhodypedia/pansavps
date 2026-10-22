@@ -95,7 +95,7 @@ function timelineText(invoice: InvoiceListItem) {
       ? `Dana dikembalikan ${formatDateShort(invoice.paidAt)}`
       : "Dana sudah dikembalikan";
   }
-  if (invoice.status === "failed") return "Pembayaran online gagal";
+  if (invoice.status === "failed") return "Pembayaran otomatis gagal";
   if (invoice.status === "expired") return "Invoice kedaluwarsa";
   if (invoice.status === "cancelled") return "Invoice dibatalkan";
   return formatDateShort(invoice.createdAt);

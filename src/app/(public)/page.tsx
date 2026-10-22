@@ -57,7 +57,7 @@ const features = [
   {
     icon: ShieldCheck,
     title: "Pembayaran aman",
-    body: "Transfer bank dicek admin, pembayaran online lewat Tripay. Semua transaksi tercatat.",
+    body: "Transfer bank dicek admin, pembayaran otomatis lewat Tripay. Semua transaksi tercatat.",
   },
   {
     icon: Wallet,
@@ -121,7 +121,7 @@ const useCases = [
 const faqs = [
   {
     q: "Berapa cepat VPS aktif setelah bayar?",
-    a: "Kalau bayar pakai saldo atau pembayaran online, server langsung dibuat. Biasanya aktif dalam hitungan detik sampai beberapa menit, tergantung region dan OS. Transfer bank dicek admin maksimal 1x24 jam di hari kerja.",
+    a: "Kalau bayar pakai saldo atau pembayaran otomatis, server langsung dibuat. Biasanya aktif dalam hitungan detik sampai beberapa menit, tergantung region dan OS. Transfer bank dicek admin maksimal 1x24 jam di hari kerja.",
   },
   {
     q: "Dapat akses root nggak?",
@@ -141,7 +141,7 @@ const faqs = [
   },
   {
     q: "Bisa bayar pakai apa?",
-    a: "Bisa pakai saldo, Transfer BANK, atau pembayaran online lewat Tripay (QRIS, VA, e-wallet, dan gerai retail). Pilihan yang aktif muncul otomatis saat checkout.",
+    a: "Bisa pakai saldo, Transfer BANK, atau pembayaran otomatis lewat Tripay (QRIS, VA, e-wallet, dan gerai retail). Klik pembayaran otomatis, lalu pilih channel yang tersedia.",
   },
   {
     q: "Ada refund nggak?",
