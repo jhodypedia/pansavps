@@ -58,6 +58,15 @@ type GatewayDisplay = {
   status?: string;
 };
 
+const tripayDisplayStatus: Record<string, { status: string; label: string }> = {
+  FAILED: { status: "failed", label: "Gagal" },
+  EXPIRED: { status: "expired", label: "Kedaluwarsa" },
+  PAID: { status: "paid", label: "Lunas" },
+  REFUND: { status: "refunded", label: "Dikembalikan" },
+  UNPAID: { status: "unpaid", label: "Menunggu Pembayaran" },
+  PENDING: { status: "unpaid", label: "Menunggu Pembayaran" },
+};
+
 function numberValue(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isFinite(value)) return Math.round(value);
   if (typeof value === "string" && value.trim()) {
@@ -226,10 +235,13 @@ export default async function InvoiceDetailPage({
   const gateway =
     invoice.paymentProvider === "tripay" ? readGateway(meta.tripay) : null;
   const lastOnlineGatewayStatus = gateway?.status?.toUpperCase() ?? null;
-  const lastOnlineBadgeLabel =
-    lastOnlineGatewayStatus === "EXPIRED"
-      ? "Pembayaran online kedaluwarsa"
-      : "Pembayaran online dibatalkan";
+  const displayStatus =
+    invoice.status === "unpaid" && lastOnlineGatewayStatus
+      ? (tripayDisplayStatus[lastOnlineGatewayStatus] ?? {
+          status: invoice.status,
+          label: invoiceStatusLabel[invoice.status],
+        })
+      : { status: invoice.status, label: invoiceStatusLabel[invoice.status] };
   const displaySubtotal =
     gateway?.subtotal && gateway.subtotal > 0 ? gateway.subtotal : invoice.amount;
   const displayFee = gateway?.feeCustomer ?? 0;
@@ -350,10 +362,7 @@ export default async function InvoiceDetailPage({
         title={`Invoice ${invoice.invoiceNumber}`}
         description={
           <span className="inline-flex flex-wrap items-center gap-2">
-            <StatusBadge status={invoice.status} label={invoiceStatusLabel[invoice.status]} />
-            {lastOnlineFailed ? (
-              <StatusBadge status="failed" label={lastOnlineBadgeLabel} />
-            ) : null}
+            <StatusBadge status={displayStatus.status} label={displayStatus.label} />
             <span>{invoiceTypeLabel[invoice.type]} · dibuat {formatDateTime(invoice.createdAt)}</span>
           </span>
         }
@@ -481,23 +490,27 @@ export default async function InvoiceDetailPage({
               <span
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold",
-                  paid || refunded
+                  displayStatus.status === "paid" || displayStatus.status === "refunded"
                     ? "border-[#86EFAC]/30 bg-[#86EFAC]/15 text-[#BBF7D0]"
-                    : invoice.status === "expired"
+                    : displayStatus.status === "expired" ||
+                        displayStatus.status === "cancelled" ||
+                        displayStatus.status === "failed"
                       ? "border-[#FCA5A5]/30 bg-[#FCA5A5]/15 text-[#FECACA]"
                       : "border-[#FDE68A]/30 bg-[#FDE68A]/15 text-[#FEF3C7]",
                 )}
               >
-                {paid ? (
+                {displayStatus.status === "paid" ? (
                   <CheckCircle2 className="size-3.5" />
-                ) : refunded ? (
+                ) : displayStatus.status === "refunded" ? (
                   <RotateCcw className="size-3.5" />
-                ) : invoice.status === "expired" ? (
+                ) : displayStatus.status === "expired" ||
+                  displayStatus.status === "cancelled" ||
+                  displayStatus.status === "failed" ? (
                   <XCircle className="size-3.5" />
                 ) : (
                   <Clock3 className="size-3.5" />
                 )}
-                {invoiceStatusLabel[invoice.status]}
+                {displayStatus.label}
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-[#D7EFE2]">
                 <CalendarClock className="size-3.5 text-[#A7D8BD]" />

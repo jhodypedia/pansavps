@@ -108,7 +108,7 @@ export const orderStatusLabel: Record<string, string> = {
 };
 
 export const invoiceStatusLabel: Record<string, string> = {
-  unpaid: "Belum Dibayar",
+  unpaid: "Menunggu Pembayaran",
   paid: "Lunas",
   cancelled: "Dibatalkan",
   expired: "Kedaluwarsa",

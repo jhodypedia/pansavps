@@ -119,8 +119,7 @@ export function InvoicePaymentPanel({
             {lastOnlineStatus === "EXPIRED"
               ? "Transaksi online sebelumnya sudah kedaluwarsa."
               : "Transaksi online sebelumnya dibatalkan atau gagal di gateway."}{" "}
-            Invoice ini belum dibayar dan masih bisa kamu coba lagi dengan metode pembayaran di
-            bawah.
+            Invoice ini masih aktif dan bisa kamu coba lagi dengan metode pembayaran di bawah.
           </p>
         </div>
       ) : null}
