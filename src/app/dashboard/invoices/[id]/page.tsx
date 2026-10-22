@@ -728,7 +728,7 @@ export default async function InvoiceDetailPage({
               </div>
             ) : invoice.status === "expired" ? (
               <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#FDE68A] bg-[#FFFBEB] p-4 text-sm text-[#92400E]">
-                <XCircle className="size-4" /> Invoice sudah kedaluwarsa karena belum dibayar dalam 30 menit.
+                <XCircle className="size-4" /> Invoice sudah kedaluwarsa karena melewati batas 30 menit.
                 Silakan buat pesanan atau top up baru.
               </div>
             ) : null}

@@ -53,12 +53,25 @@ export default async function InvoicesPage() {
       typeof metadata.planName === "string"
         ? metadata.planName
         : order?.priceSnapshot.planName ?? null;
+    const tripay =
+      metadata.tripay && typeof metadata.tripay === "object" && !Array.isArray(metadata.tripay)
+        ? (metadata.tripay as Record<string, unknown>)
+        : null;
+    const gatewayStatus =
+      typeof tripay?.status === "string" ? tripay.status.trim().toUpperCase() : null;
+    const displayStatus =
+      invoice.status === "unpaid" && gatewayStatus === "FAILED"
+        ? "failed"
+        : invoice.status === "unpaid" && gatewayStatus === "EXPIRED"
+          ? "expired"
+          : invoice.status;
 
     return {
       id: invoice.id,
       invoiceNumber: invoice.invoiceNumber,
       type: invoice.type,
-      status: invoice.status,
+      status: displayStatus,
+      rawStatus: invoice.status,
       amount: invoice.amount,
       createdAt: invoice.createdAt.toISOString(),
       dueDate: invoice.dueDate ? invoice.dueDate.toISOString() : null,
@@ -108,7 +121,7 @@ export default async function InvoicesPage() {
                 <Receipt className="size-3.5 text-[#86EFAC]" /> Ringkasan tagihan
               </span>
               <p className="mt-4 text-xs font-medium tracking-wide text-white/55 uppercase">
-                Total belum dibayar
+                Total menunggu pembayaran
               </p>
               <p className="mt-1 font-display text-4xl font-bold tracking-tight sm:text-5xl">
                 {unpaidTotal > 0 ? formatIDR(unpaidTotal) : "Semua lunas"}

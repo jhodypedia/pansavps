@@ -31,6 +31,7 @@ export type InvoiceListItem = {
   invoiceNumber: string;
   type: string;
   status: string;
+  rawStatus: string;
   amount: number;
   createdAt: string;
   dueDate: string | null;
@@ -39,14 +40,15 @@ export type InvoiceListItem = {
   orderNumber: string | null;
 };
 
-type Filter = "all" | "unpaid" | "paid" | "refunded" | "expired" | "cancelled";
+type Filter = "all" | "unpaid" | "failed" | "paid" | "refunded" | "expired" | "cancelled";
 type PageItem = number | "ellipsis";
 
 const PAGE_SIZE = 8;
 
 const filters: { id: Filter; label: string }[] = [
   { id: "all", label: "Semua" },
-  { id: "unpaid", label: "Belum dibayar" },
+  { id: "unpaid", label: "Menunggu" },
+  { id: "failed", label: "Gagal" },
   { id: "paid", label: "Lunas" },
   { id: "refunded", label: "Dikembalikan" },
   { id: "expired", label: "Kedaluwarsa" },
@@ -70,7 +72,7 @@ function statusIcon(status: string) {
   if (status === "unpaid") return Clock3;
   if (status === "paid") return CheckCircle2;
   if (status === "refunded") return RotateCcw;
-  if (status === "expired" || status === "cancelled") return XCircle;
+  if (status === "expired" || status === "cancelled" || status === "failed") return XCircle;
   return FileText;
 }
 
@@ -93,6 +95,7 @@ function timelineText(invoice: InvoiceListItem) {
       ? `Dana dikembalikan ${formatDateShort(invoice.paidAt)}`
       : "Dana sudah dikembalikan";
   }
+  if (invoice.status === "failed") return "Pembayaran online gagal";
   if (invoice.status === "expired") return "Invoice kedaluwarsa";
   if (invoice.status === "cancelled") return "Invoice dibatalkan";
   return formatDateShort(invoice.createdAt);
@@ -107,6 +110,7 @@ export function InvoiceList({ items }: { items: InvoiceListItem[] }) {
     const result: Record<Filter, number> = {
       all: items.length,
       unpaid: 0,
+      failed: 0,
       paid: 0,
       refunded: 0,
       expired: 0,
@@ -225,7 +229,7 @@ export function InvoiceList({ items }: { items: InvoiceListItem[] }) {
         <ul className="divide-y divide-[#EDF1EE]">
           {visible.map((invoice) => {
             const Icon = statusIcon(invoice.status);
-            const unpaid = invoice.status === "unpaid";
+            const unpaid = invoice.rawStatus === "unpaid";
             const typeLabel = invoiceTypeLabel[invoice.type] ?? invoice.type;
 
             return (
