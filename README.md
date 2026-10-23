@@ -58,6 +58,33 @@ Untuk pengembangan:
 npm run dev
 ```
 
+## Instalasi produksi cepat
+
+Untuk server Ubuntu baru (Nginx + systemd + HTTPS + proteksi dasar):
+
+```bash
+git clone https://github.com/jhodypedia/pansavps.git /root/cloud
+cd /root/cloud
+LETSENCRYPT_EMAIL=admin@example.com ./setup.sh
+```
+
+Migrasi dari server lama:
+
+```bash
+# Di server lama
+cd /root/cloud
+systemctl stop pansavps pansavps-wa
+tar -czf /tmp/pansavps-backup.tgz .env data
+systemctl start pansavps pansavps-wa
+
+# Di server baru
+RESTORE_ARCHIVE=/tmp/pansavps-backup.tgz \
+LETSENCRYPT_EMAIL=admin@example.com \
+./setup.sh
+```
+
+Panduan lengkap, opsi `CLOUDFLARE_ONLY`, dan catatan DNS Cloudflare ada di [`DEPLOY.md`](./DEPLOY.md).
+
 ## Setup awal di panel admin
 
 Masuk ke **Admin → Pengaturan**.

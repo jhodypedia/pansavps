@@ -10,6 +10,18 @@ export type RateResult = {
   retryAfterSeconds: number;
 };
 
+let cleanupCounter = 0;
+
+/**
+ * Hapus baris kedaluwarsa secara berkala, bukan di setiap request.
+ * Ini mengurangi write-lock SQLite saat traffic sedang tinggi.
+ */
+function cleanupExpired(now: Date) {
+  cleanupCounter += 1;
+  if (cleanupCounter % 200 !== 0) return;
+  db.delete(rateLimits).where(lt(rateLimits.expiresAt, now)).run();
+}
+
 /**
  * Rate limit sederhana berbasis SQLite (aman untuk multi-proses).
  * Tahan error: bila tabel belum ada, jangan blokir aplikasi.
@@ -17,9 +29,13 @@ export type RateResult = {
 export function rateLimit(key: string, limit: number, windowMs: number): RateResult {
   const now = new Date();
   try {
-    db.delete(rateLimits).where(lt(rateLimits.expiresAt, now)).run();
+    cleanupExpired(now);
     const row = db.select().from(rateLimits).where(eq(rateLimits.key, key)).get();
-    if (!row) {
+    const active = row && row.expiresAt.getTime() > now.getTime() ? row : null;
+    if (row && !active) {
+      db.delete(rateLimits).where(eq(rateLimits.key, key)).run();
+    }
+    if (!active) {
       db.insert(rateLimits)
         .values({
           key,
@@ -30,21 +46,21 @@ export function rateLimit(key: string, limit: number, windowMs: number): RateRes
         .run();
       return { ok: true, remaining: limit - 1, retryAfterSeconds: 0 };
     }
-    if (row.count >= limit) {
+    if (active.count >= limit) {
       return {
         ok: false,
         remaining: 0,
         retryAfterSeconds: Math.max(
           1,
-          Math.ceil((row.expiresAt.getTime() - now.getTime()) / 1000),
+          Math.ceil((active.expiresAt.getTime() - now.getTime()) / 1000),
         ),
       };
     }
     db.update(rateLimits)
-      .set({ count: row.count + 1 })
+      .set({ count: active.count + 1 })
       .where(eq(rateLimits.key, key))
       .run();
-    return { ok: true, remaining: limit - row.count - 1, retryAfterSeconds: 0 };
+    return { ok: true, remaining: limit - active.count - 1, retryAfterSeconds: 0 };
   } catch {
     return { ok: true, remaining: limit, retryAfterSeconds: 0 };
   }

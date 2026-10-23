@@ -1,0 +1,6 @@
+[Unit]
+Description=Perbarui daftar IP Cloudflare untuk Nginx PansaVPS
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/pansavps-update-cloudflare-ips
