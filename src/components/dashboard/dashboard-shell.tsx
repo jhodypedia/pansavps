@@ -44,6 +44,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CommandMenu, type SearchItem } from "@/components/dashboard/command-menu";
+import { LiveClock } from "@/components/dashboard/live-clock";
 import {
   NotificationBell,
   type NotificationPreview,
@@ -292,7 +293,7 @@ export function DashboardShell({
         </SheetContent>
       </Sheet>
 
-      <div className="lg:pl-[264px]">
+      <div className="flex min-h-screen flex-col lg:pl-[264px]">
         <header className="sticky top-0 z-30 border-b border-[#E3E8E4] bg-white/95 backdrop-blur">
           <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
             <Button
@@ -382,9 +383,20 @@ export function DashboardShell({
           </div>
         </header>
 
-        <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           <div className="mx-auto w-full max-w-[1280px]">{children}</div>
         </main>
+
+        <footer className="border-t border-[#E3E8E4] bg-white">
+          <div className="px-4 py-4 sm:px-6 lg:px-8">
+            <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-3 text-xs text-[#5B6B60] sm:flex-row sm:items-center sm:justify-between">
+              <p>
+                © {new Date().getFullYear()} {brandName}. Seluruh hak cipta dilindungi.
+              </p>
+              <LiveClock />
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );
