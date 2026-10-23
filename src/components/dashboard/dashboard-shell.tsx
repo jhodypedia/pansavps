@@ -311,6 +311,10 @@ export function DashboardShell({
             </div>
 
             <div className="ml-auto flex items-center gap-2">
+              <div className="mr-1 flex items-center sm:mr-0 sm:border-l sm:border-[#E3E8E4] sm:pl-3">
+                <LiveClock />
+              </div>
+
               <NotificationBell
                 items={notifications}
                 unread={unread}
@@ -389,11 +393,10 @@ export function DashboardShell({
 
         <footer className="border-t border-[#E3E8E4] bg-white">
           <div className="px-4 py-4 sm:px-6 lg:px-8">
-            <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-3 text-xs text-[#5B6B60] sm:flex-row sm:items-center sm:justify-between">
+            <div className="mx-auto w-full max-w-[1280px] text-xs text-[#5B6B60]">
               <p>
                 © {new Date().getFullYear()} {brandName}. Seluruh hak cipta dilindungi.
               </p>
-              <LiveClock />
             </div>
           </div>
         </footer>
